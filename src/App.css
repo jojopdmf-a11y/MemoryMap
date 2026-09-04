@@ -766,7 +766,8 @@
   font-weight: 600;
   padding: 4px 8px;
   white-space: nowrap;
-  transition: opacity 0.7s ease;
+  transition: opacity 0.75s ease, background-color 0.2s ease, color 0.2s ease,
+    border-color 0.2s ease;
 }
 
 .leaflet-tooltip.mm-label.is-active {
@@ -776,17 +777,7 @@
 }
 
 .leaflet-tooltip.mm-label.is-fading {
-  animation: mm-label-out 0.85s ease forwards;
   pointer-events: none;
-}
-
-@keyframes mm-label-out {
-  from {
-    opacity: 1;
-  }
-  to {
-    opacity: 0;
-  }
 }
 
 .leaflet-tooltip-right.mm-label::before {

@@ -17,6 +17,8 @@ const RUNTIME = `
   L.tileLayer(tiles.url, layerOpts).addTo(map);
 
   var layer = L.layerGroup().addTo(map);
+  var markers = [];
+  var pathLine = null;
   var revealed = 0;
   var playing = false;
   var timer = null;
@@ -157,49 +159,80 @@ const RUNTIME = `
     schedule();
   }
 
+  function applyLabelTone(m, i) {
+    var tip = m.getTooltip && m.getTooltip();
+    if (!tip) return;
+    var age = revealed - (i + 1);
+    tip.setOpacity(age >= 2 ? 0 : 1);
+    var el = tip.getElement && tip.getElement();
+    if (!el) return;
+    el.classList.toggle("is-active", age <= 0);
+    el.classList.toggle("is-fading", age >= 2);
+  }
+
   function draw(count) {
     revealed = Math.max(0, Math.min(stops.length, count));
-    map.closePopup();
-    layer.clearLayers();
-    var visible = stops.slice(0, revealed);
-    var visLatLngs = visible.map(function (s) { return [s.lat, s.lng]; });
-    if (look.path !== "none" && visLatLngs.length >= 2) {
-      L.polyline(visLatLngs, {
-        color: look.pathColor || "#8b3a2a",
-        weight: 3,
-        opacity: 0.9,
-        dashArray: look.path === "dashed" ? "8 8" : undefined
-      }).addTo(layer);
+    while (markers.length > revealed) {
+      layer.removeLayer(markers.pop());
     }
-    visible.forEach(function (stop, i) {
-      var active = i === visible.length - 1;
-      var html = popupHtml(stop, i + 1);
-      var label = pinLabel(stop);
-      var m = L.marker([stop.lat, stop.lng], {
-        icon: iconFor(i + 1, active),
-        zIndexOffset: active ? 1000 : 0
-      });
-      if (label) {
-        var age = revealed - (i + 1);
-        var labelCls = "mm-label";
-        if (age <= 0) labelCls += " is-active";
-        else if (age >= 2) labelCls += " is-fading";
-        m.bindTooltip(escapeHtml(label), {
-          permanent: true,
-          direction: "right",
-          offset: [10, 0],
-          opacity: 1,
-          interactive: false,
-          className: labelCls
+    for (var i = markers.length; i < revealed; i++) {
+      (function (index) {
+        var stop = stops[index];
+        var active = index === revealed - 1;
+        var html = popupHtml(stop, index + 1);
+        var label = pinLabel(stop);
+        var m = L.marker([stop.lat, stop.lng], {
+          icon: iconFor(index + 1, active),
+          zIndexOffset: active ? 1000 : 0
         });
+        if (label) {
+          var age = revealed - (index + 1);
+          var labelCls = "mm-label";
+          if (age <= 0) labelCls += " is-active";
+          else if (age >= 2) labelCls += " is-fading";
+          m.bindTooltip(escapeHtml(label), {
+            permanent: true,
+            direction: "right",
+            offset: [10, 0],
+            opacity: 1,
+            interactive: false,
+            className: labelCls
+          });
+        }
+        if (html) m.bindPopup(html, { className: "mm-popup", autoPan: false });
+        m.on("click", function () {
+          pause();
+          draw(index + 1);
+        });
+        m.addTo(layer);
+        markers.push(m);
+      })(i);
+    }
+    markers.forEach(function (m, index) {
+      var active = index === revealed - 1;
+      var wasActive = m.options.zIndexOffset === 1000;
+      if (wasActive !== active) {
+        m.setIcon(iconFor(index + 1, active));
+        m.setZIndexOffset(active ? 1000 : 0);
       }
-      if (html) m.bindPopup(html, { className: "mm-popup", autoPan: false });
-      m.on("click", function () {
-        pause();
-        draw(i + 1);
-      });
-      m.addTo(layer);
+      applyLabelTone(m, index);
     });
+    var visLatLngs = stops.slice(0, revealed).map(function (s) { return [s.lat, s.lng]; });
+    if (look.path !== "none" && visLatLngs.length >= 2) {
+      if (pathLine) {
+        pathLine.setLatLngs(visLatLngs);
+      } else {
+        pathLine = L.polyline(visLatLngs, {
+          color: look.pathColor || "#8b3a2a",
+          weight: 3,
+          opacity: 0.9,
+          dashArray: look.path === "dashed" ? "8 8" : undefined
+        }).addTo(layer);
+      }
+    } else if (pathLine) {
+      layer.removeLayer(pathLine);
+      pathLine = null;
+    }
 
     var items = list.querySelectorAll("li");
     items.forEach(function (li, i) {
@@ -308,6 +341,7 @@ body {
   font: 600 13px Palatino, Georgia, serif;
   padding: 4px 8px;
   white-space: nowrap;
+  transition: opacity 0.75s ease, background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
 }
 .leaflet-tooltip.mm-label.is-active {
   background: var(--terra);
@@ -315,12 +349,7 @@ body {
   border-color: var(--terra);
 }
 .leaflet-tooltip.mm-label.is-fading {
-  animation: mm-label-out 0.85s ease forwards;
   pointer-events: none;
-}
-@keyframes mm-label-out {
-  from { opacity: 1; }
-  to { opacity: 0; }
 }
 .leaflet-tooltip-right.mm-label::before { border-right-color: var(--paper); }
 .leaflet-tooltip-right.mm-label.is-active::before { border-right-color: var(--terra); }
