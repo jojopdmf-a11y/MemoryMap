@@ -1,0 +1,60 @@
+:root {
+  --paper: #f4efe6;
+  --ink: #2c2416;
+  --muted: #6d6254;
+  --terra: #8b3a2a;
+  --terra-soft: #c46a55;
+  --line: rgba(44, 36, 22, 0.12);
+  --map-bg: #e4ddd0;
+  --serif: Palatino, 'Palatino Linotype', 'Iowan Old Style', Georgia, serif;
+  --sans: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+
+html[data-theme='ink'] {
+  --paper: #161410;
+  --ink: #f3eadc;
+  --muted: #b8ad9c;
+  --terra: #d4785c;
+  --terra-soft: #e09a84;
+  --line: rgba(243, 234, 220, 0.14);
+  --map-bg: #1c1a16;
+}
+
+html[data-theme='dusk'] {
+  --paper: #1a1624;
+  --ink: #ece6f4;
+  --muted: #a89bb8;
+  --terra: #e08a6a;
+  --terra-soft: #e8a890;
+  --line: rgba(236, 230, 244, 0.12);
+  --map-bg: #121018;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  min-height: 100%;
+}
+
+html,
+body {
+  overflow-y: auto;
+}
+
+body {
+  font-family: var(--serif);
+  color: var(--ink);
+  background:
+    radial-gradient(1200px 500px at 10% -10%, color-mix(in srgb, var(--terra) 18%, transparent), transparent 50%),
+    var(--paper);
+}
+
+button,
+input {
+  font-family: inherit;
+}
