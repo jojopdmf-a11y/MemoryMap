@@ -83,12 +83,22 @@ export function formatDate(d: Date | null, fallback = ''): string {
 }
 
 export function displayDate(d: Date | null, fallback = ''): string {
-  if (!d) return fallback
-  return d.toLocaleDateString('en-US', {
-    month: 'long',
-    day: 'numeric',
-    year: 'numeric',
-  })
+  if (d instanceof Date && !Number.isNaN(d.getTime())) {
+    return d.toLocaleDateString('en-US', {
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric',
+    })
+  }
+  const parsed = parseDate(fallback)
+  if (parsed) {
+    return parsed.toLocaleDateString('en-US', {
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric',
+    })
+  }
+  return fallback.trim()
 }
 
 export function parseCoord(raw: string, kind: 'lat' | 'lng'): number | null {

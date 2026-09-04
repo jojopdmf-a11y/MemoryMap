@@ -448,6 +448,7 @@
   height: auto;
   min-height: 220px;
   margin-inline: auto;
+  overflow: hidden;
 }
 
 .preview-map {

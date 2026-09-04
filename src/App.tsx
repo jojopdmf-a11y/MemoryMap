@@ -6,7 +6,13 @@ import { DropZone, SheetPicker } from './components/DropZone'
 import { PreviewMap } from './components/PreviewMap'
 import { StopTable } from './components/StopTable'
 import { downloadText } from './download'
-import { createBlankStop, parseCsv, parseDate, titleFromFilename } from './csv'
+import {
+  createBlankStop,
+  displayDate,
+  parseCsv,
+  parseDate,
+  titleFromFilename,
+} from './csv'
 import { geocodePlace } from './geocode'
 import { SAMPLE_CSV, SAMPLE_FILENAME } from './sample'
 import {
@@ -270,6 +276,17 @@ export default function App() {
         <main className="workspace">
           <section className="map-panel">
             <PreviewMap stops={stops} look={look} revealed={revealed} />
+            {revealed > 0 && plottedStops[revealed - 1] && (
+              <aside className="map-date-window" aria-live="polite">
+                <span className="map-date-kicker">Date</span>
+                <strong className="map-date-value">
+                  {displayDate(
+                    plottedStops[revealed - 1].date,
+                    plottedStops[revealed - 1].dateRaw,
+                  ) || 'Date unknown'}
+                </strong>
+              </aside>
+            )}
             {ready && revealed === 0 && (
               <p className="map-cue">Press Play tour to watch the route appear</p>
             )}

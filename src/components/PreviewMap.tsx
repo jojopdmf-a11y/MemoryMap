@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
-import { displayDate, formatDate, stopLabel } from '../csv'
+import { formatDate, stopLabel } from '../csv'
 import {
   labelClassName,
   labelTone,
@@ -90,11 +90,16 @@ export function PreviewMap({ stops, look, revealed }: Props) {
       map.fitBounds(L.latLngBounds(latlngs).pad(0.18), { animate: false })
     }
     requestAnimationFrame(() => {
-      map.invalidateSize()
-      if (latlngs.length === 1) {
-        map.setView(latlngs[0], 6, { animate: false })
-      } else if (latlngs.length > 1) {
-        map.fitBounds(L.latLngBounds(latlngs).pad(0.18), { animate: false })
+      if (!mapRef.current || !map.getPane('mapPane')) return
+      try {
+        map.invalidateSize()
+        if (latlngs.length === 1) {
+          map.setView(latlngs[0], 6, { animate: false })
+        } else if (latlngs.length > 1) {
+          map.fitBounds(L.latLngBounds(latlngs).pad(0.18), { animate: false })
+        }
+      } catch {
+        /* Leaflet can throw if a pane is mid-teardown after HMR. */
       }
     })
   }, [plottedKey, stops])
@@ -190,29 +195,13 @@ export function PreviewMap({ stops, look, revealed }: Props) {
     }
   }, [stops, look, revealed])
 
-  const plotted = stops.filter(
-    (stop) => !stop.dismissed && stop.lat != null && stop.lng != null,
-  )
-  const current = revealed > 0 ? plotted[revealed - 1] : undefined
-  const dateText = current
-    ? displayDate(current.date, current.dateRaw.trim())
-    : ''
-
   return (
-    <>
-      <div
-        ref={containerRef}
-        className="preview-map"
-        role="img"
-        aria-label="Trip preview map"
-      />
-      {dateText ? (
-        <aside className="map-date-window" aria-live="polite">
-          <span className="map-date-kicker">Date</span>
-          <strong className="map-date-value">{dateText}</strong>
-        </aside>
-      ) : null}
-    </>
+    <div
+      ref={containerRef}
+      className="preview-map"
+      role="img"
+      aria-label="Trip preview map"
+    />
   )
 }
 
