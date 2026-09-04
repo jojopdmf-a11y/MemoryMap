@@ -465,7 +465,7 @@
   display: grid;
   gap: 2px;
   min-width: 8.5em;
-  max-width: min(240px, calc(100% - 72px));
+  max-width: min(280px, calc(100% - 72px));
   padding: 8px 12px 9px;
   pointer-events: none;
   background: color-mix(in srgb, var(--paper) 92%, transparent);
