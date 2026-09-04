@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import type { SheetChoice } from '../source'
+import { AdSlot } from './AdSlot'
 import { ManualTripForm } from './ManualTripForm'
 
 type Props = {
@@ -88,6 +89,7 @@ export function DropZone({
         </p>
       </form>
       <ManualTripForm importing={importing} onSubmit={onManual} />
+      <AdSlot variant="inline" />
       <p className="drop-actions">
         <button type="button" className="linkish" onClick={onSample}>
           Try a sample trip

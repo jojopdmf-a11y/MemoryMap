@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { formatDate, stopLabel } from '../csv'
-import { pinLabelText, popupInnerHtml, TILES, type Look } from '../look'
+import { labelClassName, pinLabelText, popupInnerHtml, TILES, type Look } from '../look'
 import type { Stop } from '../types'
 
 type Props = {
@@ -129,7 +129,7 @@ export function PreviewMap({ stops, look, revealed }: Props) {
           offset: [10, 0],
           opacity: 1,
           interactive: false,
-          className: active ? 'mm-label is-active' : 'mm-label',
+          className: labelClassName(index, revealed),
         })
       }
       const html = popupInnerHtml(card, look.fields, escapeHtml)

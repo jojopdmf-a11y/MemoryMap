@@ -1,4 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { AccountMenu } from './components/AccountMenu'
+import { AdSlot } from './components/AdSlot'
+import { CreditsDock } from './components/CreditsDock'
 import { DropZone, SheetPicker } from './components/DropZone'
 import { PreviewMap } from './components/PreviewMap'
 import { StopTable } from './components/StopTable'
@@ -221,12 +224,16 @@ export default function App() {
           <p className="kicker">MemoryMap</p>
           <p className="tagline">A trip, on a map, in one file.</p>
         </div>
-        {stops && (
-          <button type="button" className="ghost" onClick={reset}>
-            New file
-          </button>
-        )}
+        <div className="topbar-tools">
+          {stops && (
+            <button type="button" className="ghost" onClick={reset}>
+              New file
+            </button>
+          )}
+          <AccountMenu />
+        </div>
       </header>
+      <AdSlot variant="leaderboard" />
 
       {error && (
         <div className="banner" role="alert">
@@ -290,24 +297,18 @@ export default function App() {
                   onChange={(e) => setTitle(e.target.value)}
                 />
               </label>
-              <div className="panel-actions">
-                <button
-                  type="button"
-                  className="primary"
-                  disabled={!ready}
-                  onClick={download}
-                >
-                  Download map
-                </button>
-                <p className="hint">
-                  {busy
-                    ? 'Looking up places…'
-                    : !ready
-                      ? 'Skip or fix stops without coordinates to download.'
-                      : `${plotted.length} stop${plotted.length === 1 ? '' : 's'} ready.`}
-                </p>
-              </div>
             </div>
+            <CreditsDock
+              canDownload={ready}
+              onDownload={download}
+              hint={
+                busy
+                  ? 'Looking up places…'
+                  : !ready
+                    ? 'Skip or fix stops without coordinates to download.'
+                    : `${plotted.length} stop${plotted.length === 1 ? '' : 's'} ready. Payment is not live yet.`
+              }
+            />
             <StopTable
               stops={stops}
               fields={look.fields ?? DEFAULT_FIELDS}
@@ -337,6 +338,7 @@ export default function App() {
           </section>
         </main>
       )}
+      <AdSlot variant="footer" />
     </div>
   )
 }

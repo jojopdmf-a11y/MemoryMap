@@ -106,6 +106,25 @@ export const THEME_OPTIONS: Array<{ id: ThemeId; label: string }> = [
   { id: 'dusk', label: 'Dusk' },
 ]
 
+/** Keep a stop label up through the next two arrivals, then fade it. */
+export const LABEL_HOLD_AFTER = 2
+
+export type LabelTone = 'active' | 'visible' | 'fading'
+
+export function labelTone(index: number, revealed: number): LabelTone {
+  const age = revealed - (index + 1)
+  if (age <= 0) return 'active'
+  if (age < LABEL_HOLD_AFTER) return 'visible'
+  return 'fading'
+}
+
+export function labelClassName(index: number, revealed: number): string {
+  const tone = labelTone(index, revealed)
+  if (tone === 'active') return 'mm-label is-active'
+  if (tone === 'fading') return 'mm-label is-fading'
+  return 'mm-label'
+}
+
 export function fieldOn(fields: Partial<CardFields> | undefined, key: CardField): boolean {
   return fields?.[key] !== false
 }

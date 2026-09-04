@@ -180,13 +180,17 @@ const RUNTIME = `
         zIndexOffset: active ? 1000 : 0
       });
       if (label) {
+        var age = revealed - (i + 1);
+        var labelCls = "mm-label";
+        if (age <= 0) labelCls += " is-active";
+        else if (age >= 2) labelCls += " is-fading";
         m.bindTooltip(escapeHtml(label), {
           permanent: true,
           direction: "right",
           offset: [10, 0],
           opacity: 1,
           interactive: false,
-          className: active ? "mm-label is-active" : "mm-label"
+          className: labelCls
         });
       }
       if (html) m.bindPopup(html, { className: "mm-popup", autoPan: false });
@@ -309,6 +313,14 @@ body {
   background: var(--terra);
   color: var(--paper);
   border-color: var(--terra);
+}
+.leaflet-tooltip.mm-label.is-fading {
+  animation: mm-label-out 0.85s ease forwards;
+  pointer-events: none;
+}
+@keyframes mm-label-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
 }
 .leaflet-tooltip-right.mm-label::before { border-right-color: var(--paper); }
 .leaflet-tooltip-right.mm-label.is-active::before { border-right-color: var(--terra); }
