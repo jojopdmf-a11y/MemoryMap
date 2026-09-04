@@ -11,7 +11,12 @@ const RUNTIME = `
   var look = trip.look || {};
   var fields = look.fields || {};
   var tiles = trip.tiles || {};
-  var map = L.map("map", { zoomControl: false, scrollWheelZoom: false });
+  var map = L.map("map", {
+    zoomControl: false,
+    scrollWheelZoom: false,
+    zoomSnap: 0.25,
+    zoomDelta: 0.25
+  });
   L.control.zoom({ position: "topright" }).addTo(map);
   var dateBox = document.getElementById("mm-date");
   var dateTitle = document.getElementById("mm-date-title");

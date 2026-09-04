@@ -42,6 +42,8 @@ export function PreviewMap({ stops, look, revealed }: Props) {
       scrollWheelZoom: false,
       attributionControl: true,
       zoomControl: false,
+      zoomSnap: 0.25,
+      zoomDelta: 0.25,
     })
     L.control.zoom({ position: 'topright' }).addTo(map)
     layerRef.current = L.layerGroup().addTo(map)
