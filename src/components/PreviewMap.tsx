@@ -4,7 +4,10 @@ import 'leaflet/dist/leaflet.css'
 import { formatDate, stopLabel } from '../csv'
 import {
   labelClassName,
+  labelFillAlpha,
   labelTone,
+  pinFill,
+  pinInk,
   pinLabelText,
   popupInnerHtml,
   TILES,
@@ -161,6 +164,7 @@ export function PreviewMap({ stops, look, revealed }: Props) {
         )
         marker.addTo(layer)
         markersRef.current.set(stop.id, marker)
+        if (label) syncTooltip(marker, index, revealed, label, look.pinColor)
       } else {
         marker.setLatLng([stop.lat as number, stop.lng as number])
         const iconKey = `${look.pin}|${look.pinColor}|${active}|${index}`
@@ -170,7 +174,7 @@ export function PreviewMap({ stops, look, revealed }: Props) {
           iconKeysRef.current.set(marker, iconKey)
         }
         if (html) marker.setPopupContent(html)
-        syncTooltip(marker, index, revealed, label)
+        syncTooltip(marker, index, revealed, label, look.pinColor)
       }
     })
 
@@ -205,11 +209,20 @@ export function PreviewMap({ stops, look, revealed }: Props) {
   )
 }
 
+function paintLabel(el: HTMLElement, tone: ReturnType<typeof labelTone>, pinColor: string) {
+  const fill = pinFill(pinColor, labelFillAlpha(tone))
+  el.style.setProperty('--label-fill', fill)
+  el.style.setProperty('--label-ink', pinInk(pinColor))
+  el.classList.toggle('is-active', tone === 'active')
+  el.classList.toggle('is-fading', tone === 'fading')
+}
+
 function syncTooltip(
   marker: L.Marker,
   index: number,
   revealed: number,
   label: string,
+  pinColor: string,
 ) {
   const existing = marker.getTooltip()
   if (!label) {
@@ -225,6 +238,9 @@ function syncTooltip(
       interactive: false,
       className: labelClassName(index, revealed),
     })
+    const tip = marker.getTooltip()
+    const el = tip?.getElement()
+    if (el) paintLabel(el, labelTone(index, revealed), pinColor)
     return
   }
   existing.setContent(escapeHtml(label))
@@ -232,8 +248,7 @@ function syncTooltip(
   existing.setOpacity(tone === 'fading' ? 0 : 1)
   const el = existing.getElement()
   if (!el) return
-  el.classList.toggle('is-active', tone === 'active')
-  el.classList.toggle('is-fading', tone === 'fading')
+  paintLabel(el, tone, pinColor)
 }
 
 function pinIcon(n: number, look: Look, active: boolean): L.DivIcon {

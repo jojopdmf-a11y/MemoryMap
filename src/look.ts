@@ -125,6 +125,41 @@ export function labelClassName(index: number, revealed: number): string {
   return 'mm-label'
 }
 
+export function labelFillAlpha(tone: LabelTone): number {
+  if (tone === 'active') return 0.72
+  return 0.5
+}
+
+export function hexToRgb(hex: string): { r: number; g: number; b: number } | null {
+  const raw = hex.trim().replace('#', '')
+  const full =
+    raw.length === 3
+      ? raw
+          .split('')
+          .map((c) => c + c)
+          .join('')
+      : raw
+  if (!/^[0-9a-fA-F]{6}$/.test(full)) return null
+  return {
+    r: Number.parseInt(full.slice(0, 2), 16),
+    g: Number.parseInt(full.slice(2, 4), 16),
+    b: Number.parseInt(full.slice(4, 6), 16),
+  }
+}
+
+export function pinFill(hex: string, alpha: number): string {
+  const rgb = hexToRgb(hex)
+  if (!rgb) return `rgba(139, 58, 42, ${alpha})`
+  return `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${alpha})`
+}
+
+export function pinInk(hex: string): string {
+  const rgb = hexToRgb(hex)
+  if (!rgb) return '#f4efe6'
+  const lum = (0.2126 * rgb.r + 0.7152 * rgb.g + 0.0722 * rgb.b) / 255
+  return lum > 0.62 ? '#2c2416' : '#f4efe6'
+}
+
 export function fieldOn(fields: Partial<CardFields> | undefined, key: CardField): boolean {
   return fields?.[key] !== false
 }

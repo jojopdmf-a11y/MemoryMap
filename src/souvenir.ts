@@ -170,6 +170,14 @@ const RUNTIME = `
     schedule();
   }
 
+  function pinRgb(hex) {
+    var raw = String(hex || "#8b3a2a").replace("#", "");
+    if (raw.length === 3) raw = raw[0] + raw[0] + raw[1] + raw[1] + raw[2] + raw[2];
+    var n = parseInt(raw, 16);
+    if (!isFinite(n)) return { r: 139, g: 58, b: 42 };
+    return { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255 };
+  }
+
   function applyLabelTone(m, i) {
     var tip = m.getTooltip && m.getTooltip();
     if (!tip) return;
@@ -177,6 +185,12 @@ const RUNTIME = `
     tip.setOpacity(age >= 2 ? 0 : 1);
     var el = tip.getElement && tip.getElement();
     if (!el) return;
+    var rgb = pinRgb(look.pinColor);
+    var alpha = age <= 0 ? 0.72 : 0.5;
+    var fill = "rgba(" + rgb.r + ", " + rgb.g + ", " + rgb.b + ", " + alpha + ")";
+    var lum = (0.2126 * rgb.r + 0.7152 * rgb.g + 0.0722 * rgb.b) / 255;
+    el.style.setProperty("--label-fill", fill);
+    el.style.setProperty("--label-ink", lum > 0.62 ? "#2c2416" : "#f4efe6");
     el.classList.toggle("is-active", age <= 0);
     el.classList.toggle("is-fading", age >= 2);
   }
@@ -350,26 +364,22 @@ body {
 }
 .leaflet-container { font-family: inherit; background: var(--map-bg); }
 .leaflet-tooltip.mm-label {
-  background: var(--paper);
-  color: var(--ink);
-  border: 1px solid var(--line);
+  --label-fill: rgba(139, 58, 42, 0.72);
+  --label-ink: #f4efe6;
+  background: var(--label-fill);
+  color: var(--label-ink);
+  border: 1px solid var(--label-fill);
   border-radius: 0;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.16);
   font: 600 13px Palatino, Georgia, serif;
   padding: 4px 8px;
   white-space: nowrap;
-  transition: opacity 0.75s ease, background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
-}
-.leaflet-tooltip.mm-label.is-active {
-  background: var(--terra);
-  color: var(--paper);
-  border-color: var(--terra);
+  transition: opacity 0.75s ease, background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease;
 }
 .leaflet-tooltip.mm-label.is-fading {
   pointer-events: none;
 }
-.leaflet-tooltip-right.mm-label::before { border-right-color: var(--paper); }
-.leaflet-tooltip-right.mm-label.is-active::before { border-right-color: var(--terra); }
+.leaflet-tooltip-right.mm-label::before { border-right-color: var(--label-fill); }
 .mm-date {
   position: absolute;
   z-index: 600;
