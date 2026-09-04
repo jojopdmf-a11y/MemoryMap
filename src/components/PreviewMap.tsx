@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
-import { formatDate, stopLabel } from '../csv'
+import { displayDate, formatDate, stopLabel } from '../csv'
 import {
   labelClassName,
   labelTone,
@@ -35,7 +35,12 @@ export function PreviewMap({ stops, look, revealed }: Props) {
     const el = containerRef.current
     if (!el || mapRef.current) return
 
-    const map = L.map(el, { scrollWheelZoom: false, attributionControl: true })
+    const map = L.map(el, {
+      scrollWheelZoom: false,
+      attributionControl: true,
+      zoomControl: false,
+    })
+    L.control.zoom({ position: 'topright' }).addTo(map)
     layerRef.current = L.layerGroup().addTo(map)
     map.setView([20, 0], 2)
     mapRef.current = map
@@ -185,8 +190,29 @@ export function PreviewMap({ stops, look, revealed }: Props) {
     }
   }, [stops, look, revealed])
 
+  const plotted = stops.filter(
+    (stop) => !stop.dismissed && stop.lat != null && stop.lng != null,
+  )
+  const current = revealed > 0 ? plotted[revealed - 1] : undefined
+  const dateText = current
+    ? displayDate(current.date, current.dateRaw.trim())
+    : ''
+
   return (
-    <div ref={containerRef} className="preview-map" role="img" aria-label="Trip preview map" />
+    <>
+      <div
+        ref={containerRef}
+        className="preview-map"
+        role="img"
+        aria-label="Trip preview map"
+      />
+      {dateText ? (
+        <aside className="map-date-window" aria-live="polite">
+          <span className="map-date-kicker">Date</span>
+          <strong className="map-date-value">{dateText}</strong>
+        </aside>
+      ) : null}
+    </>
   )
 }
 

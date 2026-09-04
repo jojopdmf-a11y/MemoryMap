@@ -11,7 +11,17 @@ const RUNTIME = `
   var look = trip.look || {};
   var fields = look.fields || {};
   var tiles = trip.tiles || {};
-  var map = L.map("map", { zoomControl: true, scrollWheelZoom: false });
+  var map = L.map("map", { zoomControl: false, scrollWheelZoom: false });
+  L.control.zoom({ position: "topright" }).addTo(map);
+  var dateBox = document.getElementById("mm-date");
+  var dateVal = document.getElementById("mm-date-value");
+
+  function prettyDate(raw) {
+    var m = /^(\\d{4})-(\\d{2})-(\\d{2})$/.exec(String(raw || "").trim());
+    if (!m) return String(raw || "").trim();
+    var months = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+    return months[+m[2] - 1] + " " + (+m[3]) + ", " + m[1];
+  }
   var layerOpts = { attribution: tiles.attribution || "", maxZoom: 19 };
   if (tiles.subdomains) layerOpts.subdomains = tiles.subdomains;
   L.tileLayer(tiles.url, layerOpts).addTo(map);
@@ -255,6 +265,11 @@ const RUNTIME = `
     if (scrub) scrub.value = String(revealed);
     if (scrubLabel) scrubLabel.textContent = revealed + " / " + stops.length;
     if (cue) cue.hidden = revealed > 0;
+    var dateText = current && current.date ? prettyDate(current.date) : "";
+    if (dateBox && dateVal) {
+      dateVal.textContent = dateText;
+      dateBox.hidden = !dateText;
+    }
     var currentLi = list.querySelector("li.is-current");
     if (currentLi && list) {
       var top = currentLi.offsetTop - list.clientHeight / 2 + currentLi.clientHeight / 2;
@@ -353,6 +368,29 @@ body {
 }
 .leaflet-tooltip-right.mm-label::before { border-right-color: var(--paper); }
 .leaflet-tooltip-right.mm-label.is-active::before { border-right-color: var(--terra); }
+.mm-date {
+  position: absolute;
+  z-index: 600;
+  top: 12px;
+  left: 12px;
+  display: grid;
+  gap: 2px;
+  min-width: 8.5em;
+  max-width: min(240px, calc(100% - 72px));
+  padding: 8px 12px 9px;
+  pointer-events: none;
+  background: color-mix(in srgb, var(--paper) 92%, transparent);
+  border: 1px solid var(--line);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+}
+.mm-date[hidden] { display: none; }
+.mm-date-kicker {
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.mm-date strong { font-size: 16px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.2; }
 .mm-cue {
   position: absolute;
   z-index: 500;
@@ -547,6 +585,10 @@ body {
 <body>
   <div class="mm-stage">
     <div id="map"></div>
+    <aside class="mm-date" id="mm-date" hidden>
+      <span class="mm-date-kicker">Date</span>
+      <strong id="mm-date-value"></strong>
+    </aside>
     <p class="mm-cue" id="mm-cue">Press Play tour to watch the route appear</p>
   </div>
   <header class="mm-chrome">

@@ -82,6 +82,15 @@ export function formatDate(d: Date | null, fallback = ''): string {
   return `${y}-${m}-${day}`
 }
 
+export function displayDate(d: Date | null, fallback = ''): string {
+  if (!d) return fallback
+  return d.toLocaleDateString('en-US', {
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
+  })
+}
+
 export function parseCoord(raw: string, kind: 'lat' | 'lng'): number | null {
   if (!raw.trim()) return null
   const n = Number.parseFloat(raw.replace(/,/g, ''))
