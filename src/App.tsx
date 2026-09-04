@@ -166,31 +166,25 @@ export default function App() {
 
   useEffect(() => {
     if (!playing) return
-    if (plotted.length === 0) {
-      setPlaying(false)
-      return
-    }
-    if (revealed === 0) {
-      setRevealed(1)
-      return
-    }
-    if (revealed >= plotted.length) {
+    if (plotted.length === 0 || revealed >= plotted.length) {
       setPlaying(false)
       return
     }
     const timer = window.setTimeout(() => {
-      setRevealed((n) => n + 1)
+      setRevealed((n) => Math.min(n + 1, plotted.length))
     }, look.speedMs)
     return () => window.clearTimeout(timer)
   }, [playing, revealed, look.speedMs, plotted.length])
 
   function togglePlay() {
-    if (!ready || plotted.length === 0) return
+    if (plotted.length === 0) return
     if (playing) {
       setPlaying(false)
       return
     }
-    if (revealed >= plotted.length) setRevealed(0)
+    if (revealed === 0 || revealed >= plotted.length) {
+      setRevealed(1)
+    }
     setPlaying(true)
   }
 
@@ -228,7 +222,7 @@ export default function App() {
       <header className="topbar">
         <div>
           <p className="kicker">MemoryMap</p>
-          <p className="tagline">A trip, on a map, in one file.</p>
+          <p className="tagline">Visualize Your Voyages, Treasure Your Travels.</p>
         </div>
         <div className="topbar-tools">
           {stops && (
@@ -300,7 +294,7 @@ export default function App() {
           <StyleBar
             look={look}
             playing={playing}
-            canPlay={ready}
+            canPlay={plotted.length > 0}
             revealed={revealed}
             stopCount={plotted.length}
             onChange={(patch) => setLook((current) => ({ ...current, ...patch }))}

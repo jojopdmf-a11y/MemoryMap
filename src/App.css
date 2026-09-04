@@ -216,6 +216,7 @@
 .tagline {
   margin: 4px 0 0;
   color: var(--muted);
+  max-width: 22em;
 }
 
 .banner {
