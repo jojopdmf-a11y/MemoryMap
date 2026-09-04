@@ -14,6 +14,7 @@ const RUNTIME = `
   var map = L.map("map", { zoomControl: false, scrollWheelZoom: false });
   L.control.zoom({ position: "topright" }).addTo(map);
   var dateBox = document.getElementById("mm-date");
+  var dateTitle = document.getElementById("mm-date-title");
   var dateVal = document.getElementById("mm-date-value");
 
   function prettyDate(raw) {
@@ -267,6 +268,7 @@ const RUNTIME = `
     if (cue) cue.hidden = revealed > 0;
     var dateText = current && current.date ? prettyDate(current.date) : "";
     if (dateBox && dateVal) {
+      if (dateTitle) dateTitle.textContent = trip.title || "Untitled trip";
       dateVal.textContent = dateText;
       dateBox.hidden = !dateText;
     }
@@ -384,13 +386,20 @@ body {
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
 }
 .mm-date[hidden] { display: none; }
+.mm-date-title {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
 .mm-date-kicker {
   font-size: 10px;
   letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--muted);
+  margin-top: 4px;
 }
-.mm-date strong { font-size: 16px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.2; }
+.mm-date-value { font-size: 16px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.2; }
 .mm-cue {
   position: absolute;
   z-index: 500;
@@ -586,8 +595,9 @@ body {
   <div class="mm-stage">
     <div id="map"></div>
     <aside class="mm-date" id="mm-date" hidden>
+      <strong class="mm-date-title" id="mm-date-title"></strong>
       <span class="mm-date-kicker">Date</span>
-      <strong id="mm-date-value"></strong>
+      <strong class="mm-date-value" id="mm-date-value"></strong>
     </aside>
     <p class="mm-cue" id="mm-cue">Press Play tour to watch the route appear</p>
   </div>

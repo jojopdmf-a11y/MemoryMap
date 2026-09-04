@@ -473,11 +473,19 @@
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
 }
 
+.map-date-title {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
 .map-date-kicker {
   font-size: 10px;
   letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--muted);
+  margin-top: 4px;
 }
 
 .map-date-value {

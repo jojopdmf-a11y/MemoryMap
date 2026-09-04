@@ -278,6 +278,9 @@ export default function App() {
             <PreviewMap stops={stops} look={look} revealed={revealed} />
             {revealed > 0 && plottedStops[revealed - 1] && (
               <aside className="map-date-window" aria-live="polite">
+                <strong className="map-date-title">
+                  {title.trim() || 'Untitled trip'}
+                </strong>
                 <span className="map-date-kicker">Date</span>
                 <strong className="map-date-value">
                   {displayDate(
