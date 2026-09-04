@@ -17,6 +17,7 @@ type Props = {
   onToggleField: (field: CardField) => void
   onChange: (id: string, patch: Partial<Stop>) => void
   onLookup: (id: string) => void
+  onAddStop: () => void
 }
 
 export function StopTable({
@@ -26,6 +27,7 @@ export function StopTable({
   onToggleField,
   onChange,
   onLookup,
+  onAddStop,
 }: Props) {
   return (
     <div className="table-wrap">
@@ -90,7 +92,22 @@ export function StopTable({
                   aria-label={`Title for stop ${index + 1}`}
                 />
               </td>
-              <td className="mono">{formatDate(stop.date, stop.dateRaw || '—')}</td>
+              <td>
+                <input
+                  className="mono"
+                  type={looksLikeIsoDate(stop.dateRaw) || !stop.dateRaw ? 'date' : 'text'}
+                  value={
+                    looksLikeIsoDate(stop.dateRaw)
+                      ? stop.dateRaw
+                      : formatDate(stop.date, stop.dateRaw)
+                  }
+                  placeholder="YYYY-MM-DD"
+                  onChange={(e) =>
+                    onChange(stop.id, { dateRaw: e.target.value })
+                  }
+                  aria-label={`Date for stop ${index + 1}`}
+                />
+              </td>
               <td>
                 <input
                   value={stop.place}
@@ -184,8 +201,17 @@ export function StopTable({
           ))}
         </tbody>
       </table>
+      <p className="table-foot">
+        <button type="button" className="linkish" onClick={onAddStop}>
+          Add a stop
+        </button>
+      </p>
     </div>
   )
+}
+
+function looksLikeIsoDate(raw: string): boolean {
+  return /^\d{4}-\d{2}-\d{2}$/.test(raw.trim())
 }
 
 function FieldHeader({

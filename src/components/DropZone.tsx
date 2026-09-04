@@ -1,10 +1,12 @@
 import { useState } from 'react'
 import type { SheetChoice } from '../source'
+import { ManualTripForm } from './ManualTripForm'
 
 type Props = {
   importing: boolean
   onFile: (file: File) => void
   onSheetsUrl: (url: string) => void
+  onManual: (csv: string, label: string) => void
   onSample: () => void
   onDownloadSample: () => void
 }
@@ -13,6 +15,7 @@ export function DropZone({
   importing,
   onFile,
   onSheetsUrl,
+  onManual,
   onSample,
   onDownloadSample,
 }: Props) {
@@ -43,8 +46,8 @@ export function DropZone({
       <p className="kicker">MemoryMap</p>
       <h1>Plot a trip from a spreadsheet</h1>
       <p className="lede">
-        Drop a CSV or Excel file, or paste a Google Sheets link. We will draw
-        the stops in order, then pack the map into a single HTML file.
+        Type the stops, drop a CSV or Excel file, or paste a Google Sheets
+        link. We will draw the route, then pack the map into a single HTML file.
       </p>
       <label className="drop-target">
         <input
@@ -84,6 +87,7 @@ export function DropZone({
           it. For a specific tab, open that tab before copying the link.
         </p>
       </form>
+      <ManualTripForm importing={importing} onSubmit={onManual} />
       <p className="drop-actions">
         <button type="button" className="linkish" onClick={onSample}>
           Try a sample trip

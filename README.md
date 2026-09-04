@@ -1,6 +1,6 @@
 # MemoryMap
 
-Drop a CSV of places and dates, an Excel workbook, or a Google Sheets link. Preview the route, then download a single HTML file that plays the trip on a map.
+Type the stops, drop a CSV of places and dates, an Excel workbook, or a Google Sheets link. Preview the route, then download a single HTML file that plays the trip on a map.
 
 The downloaded file has Leaflet, styles, and stop data baked in. It only needs the internet for map tiles.
 
@@ -17,6 +17,8 @@ Flexible, case-insensitive headers:
 Excel (`.xlsx`) and Google Sheets links work the same way. If the workbook has several tabs, you pick which one to plot. Apple Numbers needs an Excel or CSV export first.
 
 A Google Sheet must be shared as “Anyone with the link can view,” or download it and drop the file.
+
+On the landing page you can also type a trip label plus date, city, state, and country for each stop. The app turns that into the same CSV the rest of the flow uses.
 
 See `public/sample-trip.csv` for a mixed example.
 

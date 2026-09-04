@@ -110,6 +110,52 @@ export function titleFromFilename(name: string): string {
   return base.replace(/\b\w/g, (c) => c.toUpperCase())
 }
 
+export type ManualStopDraft = {
+  date: string
+  city: string
+  state: string
+  country: string
+}
+
+export function emptyManualStop(): ManualStopDraft {
+  return { date: '', city: '', state: '', country: '' }
+}
+
+export function filledManualStops(rows: ManualStopDraft[]): ManualStopDraft[] {
+  return rows.filter((row) =>
+    [row.date, row.city, row.state, row.country].some((value) => value.trim() !== ''),
+  )
+}
+
+export function manualStopsToCsv(rows: ManualStopDraft[]): string {
+  const filled = filledManualStops(rows).map((row) => ({
+    date: row.date.trim(),
+    city: row.city.trim(),
+    state: row.state.trim(),
+    country: row.country.trim(),
+  }))
+  return Papa.unparse({
+    fields: ['date', 'city', 'state', 'country'],
+    data: filled.map((row) => [row.date, row.city, row.state, row.country]),
+  })
+}
+
+export function createBlankStop(sourceRow: number): Stop {
+  return {
+    id: `stop-${sourceRow}-${Math.random().toString(36).slice(2, 8)}`,
+    sourceRow,
+    title: '',
+    dateRaw: '',
+    date: null,
+    place: '',
+    lat: null,
+    lng: null,
+    notes: '',
+    status: 'missing',
+    dismissed: false,
+  }
+}
+
 function mapHeaders(headers: string[]): Partial<Record<FieldKey, string>> {
   const mapped: Partial<Record<FieldKey, string>> = {}
   for (const header of headers) {

@@ -3,7 +3,7 @@ import { DropZone, SheetPicker } from './components/DropZone'
 import { PreviewMap } from './components/PreviewMap'
 import { StopTable } from './components/StopTable'
 import { downloadText } from './download'
-import { parseCsv, parseDate, titleFromFilename } from './csv'
+import { createBlankStop, parseCsv, parseDate, titleFromFilename } from './csv'
 import { geocodePlace } from './geocode'
 import { SAMPLE_CSV, SAMPLE_FILENAME } from './sample'
 import {
@@ -251,6 +251,7 @@ export default function App() {
           importing={importing}
           onFile={onFile}
           onSheetsUrl={onSheetsUrl}
+          onManual={(csv, label) => loadFromText(csv, label)}
           onSample={() => loadFromText(SAMPLE_CSV, SAMPLE_FILENAME)}
           onDownloadSample={() =>
             downloadText(SAMPLE_CSV, SAMPLE_FILENAME, 'text/csv;charset=utf-8')
@@ -323,6 +324,14 @@ export default function App() {
               }}
               onLookup={(id) => {
                 void lookupStop(id, geoGen.current)
+              }}
+              onAddStop={() => {
+                setStops((current) => {
+                  const nextRow = (current?.length ?? 0) + 2
+                  const blank = createBlankStop(nextRow)
+                  return current ? [...current, blank] : [blank]
+                })
+                setPlaying(false)
               }}
             />
           </section>
