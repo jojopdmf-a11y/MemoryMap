@@ -29,8 +29,8 @@ export const DEFAULT_LOOK: Look = {
   map: 'paper',
   pin: 'number',
   path: 'solid',
-  pinColor: '#8b3a2a',
-  pathColor: '#8b3a2a',
+  pinColor: '#1f7a6a',
+  pathColor: '#1f7a6a',
   speedMs: 1500,
   theme: 'cream',
   fields: { ...DEFAULT_FIELDS },
@@ -47,28 +47,28 @@ export type ThemeVars = {
 
 export const THEME_VARS: Record<ThemeId, ThemeVars> = {
   cream: {
-    paper: '#f4efe6',
-    ink: '#2c2416',
-    muted: '#6d6254',
-    terra: '#8b3a2a',
-    line: 'rgba(44, 36, 22, 0.12)',
-    mapBg: '#e4ddd0',
+    paper: '#eef5f2',
+    ink: '#16302c',
+    muted: '#5b706c',
+    terra: '#1f7a6a',
+    line: 'rgba(22, 48, 44, 0.1)',
+    mapBg: '#d7e6e0',
   },
   ink: {
-    paper: '#161410',
-    ink: '#f3eadc',
-    muted: '#b8ad9c',
-    terra: '#d4785c',
-    line: 'rgba(243, 234, 220, 0.14)',
-    mapBg: '#1c1a16',
+    paper: '#10201f',
+    ink: '#e6f2ee',
+    muted: '#9bb5af',
+    terra: '#5ec4b0',
+    line: 'rgba(230, 242, 238, 0.12)',
+    mapBg: '#0c1918',
   },
   dusk: {
-    paper: '#1a1624',
-    ink: '#ece6f4',
-    muted: '#a89bb8',
-    terra: '#e08a6a',
-    line: 'rgba(236, 230, 244, 0.12)',
-    mapBg: '#121018',
+    paper: '#121a28',
+    ink: '#e8eef8',
+    muted: '#9aabc4',
+    terra: '#5b9fd4',
+    line: 'rgba(232, 238, 248, 0.12)',
+    mapBg: '#0e1520',
   },
 }
 
@@ -101,9 +101,9 @@ export const SPEED_OPTIONS: Array<{ ms: number; label: string }> = [
 ]
 
 export const THEME_OPTIONS: Array<{ id: ThemeId; label: string }> = [
-  { id: 'cream', label: 'Cream' },
-  { id: 'ink', label: 'Ink' },
-  { id: 'dusk', label: 'Dusk' },
+  { id: 'cream', label: 'Mist' },
+  { id: 'ink', label: 'Harbor' },
+  { id: 'dusk', label: 'Tide' },
 ]
 
 /** Keep a stop label up through the next two arrivals, then fade it. */
@@ -149,15 +149,15 @@ export function hexToRgb(hex: string): { r: number; g: number; b: number } | nul
 
 export function pinFill(hex: string, alpha: number): string {
   const rgb = hexToRgb(hex)
-  if (!rgb) return `rgba(139, 58, 42, ${alpha})`
+  if (!rgb) return `rgba(31, 122, 106, ${alpha})`
   return `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${alpha})`
 }
 
 export function pinInk(hex: string): string {
   const rgb = hexToRgb(hex)
-  if (!rgb) return '#f4efe6'
+  if (!rgb) return '#eef5f2'
   const lum = (0.2126 * rgb.r + 0.7152 * rgb.g + 0.0722 * rgb.b) / 255
-  return lum > 0.62 ? '#2c2416' : '#f4efe6'
+  return lum > 0.62 ? '#16302c' : '#eef5f2'
 }
 
 export function fieldOn(fields: Partial<CardFields> | undefined, key: CardField): boolean {

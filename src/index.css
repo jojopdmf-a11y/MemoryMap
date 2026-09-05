@@ -1,33 +1,44 @@
 :root {
-  --paper: #f4efe6;
-  --ink: #2c2416;
-  --muted: #6d6254;
-  --terra: #8b3a2a;
-  --terra-soft: #c46a55;
-  --line: rgba(44, 36, 22, 0.12);
-  --map-bg: #e4ddd0;
+  --paper: #eef5f2;
+  --ink: #16302c;
+  --muted: #5b706c;
+  --terra: #1f7a6a;
+  --terra-soft: #4aa896;
+  --line: rgba(22, 48, 44, 0.1);
+  --map-bg: #d7e6e0;
+  --wash: color-mix(in srgb, var(--paper) 72%, white);
+  --wash-strong: color-mix(in srgb, var(--paper) 55%, white);
+  --shadow: 0 12px 32px color-mix(in srgb, var(--ink) 12%, transparent);
+  --shadow-soft: 0 8px 22px color-mix(in srgb, var(--ink) 9%, transparent);
+  --radius: 16px;
+  --radius-sm: 12px;
+  --radius-xs: 8px;
   --serif: Palatino, 'Palatino Linotype', 'Iowan Old Style', Georgia, serif;
   --sans: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
 
 html[data-theme='ink'] {
-  --paper: #161410;
-  --ink: #f3eadc;
-  --muted: #b8ad9c;
-  --terra: #d4785c;
-  --terra-soft: #e09a84;
-  --line: rgba(243, 234, 220, 0.14);
-  --map-bg: #1c1a16;
+  --paper: #10201f;
+  --ink: #e6f2ee;
+  --muted: #9bb5af;
+  --terra: #5ec4b0;
+  --terra-soft: #86d4c4;
+  --line: rgba(230, 242, 238, 0.12);
+  --map-bg: #0c1918;
+  --wash: color-mix(in srgb, var(--paper) 82%, white);
+  --wash-strong: color-mix(in srgb, var(--paper) 70%, white);
 }
 
 html[data-theme='dusk'] {
-  --paper: #1a1624;
-  --ink: #ece6f4;
-  --muted: #a89bb8;
-  --terra: #e08a6a;
-  --terra-soft: #e8a890;
-  --line: rgba(236, 230, 244, 0.12);
-  --map-bg: #121018;
+  --paper: #121a28;
+  --ink: #e8eef8;
+  --muted: #9aabc4;
+  --terra: #5b9fd4;
+  --terra-soft: #86b8e0;
+  --line: rgba(232, 238, 248, 0.12);
+  --map-bg: #0e1520;
+  --wash: color-mix(in srgb, var(--paper) 82%, white);
+  --wash-strong: color-mix(in srgb, var(--paper) 70%, white);
 }
 
 * {
@@ -50,11 +61,31 @@ body {
   font-family: var(--serif);
   color: var(--ink);
   background:
-    radial-gradient(1200px 500px at 10% -10%, color-mix(in srgb, var(--terra) 18%, transparent), transparent 50%),
+    radial-gradient(
+      1100px 560px at 8% -12%,
+      color-mix(in srgb, var(--terra) 18%, transparent),
+      transparent 56%
+    ),
+    radial-gradient(
+      900px 480px at 100% 0%,
+      color-mix(in srgb, #3d7ea6 16%, transparent),
+      transparent 52%
+    ),
     var(--paper);
 }
 
 button,
-input {
+input,
+select {
   font-family: inherit;
+}
+
+button,
+select,
+.account-chip,
+.pack-card,
+.sheet-pick,
+.kicker,
+.style-bar label {
+  font-family: var(--sans);
 }

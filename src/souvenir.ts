@@ -48,7 +48,7 @@ const RUNTIME = `
 
   function markerHtml(n, active) {
     var cls = "mm-pin is-" + (look.pin || "number") + (active ? " is-active" : "");
-    var style = "background:" + (look.pinColor || "#8b3a2a");
+    var style = "background:" + (look.pinColor || "#1f7a6a");
     if (look.pin === "dot") {
       return '<div class="' + cls + '" style="' + style + '"></div>';
     }
@@ -176,7 +176,7 @@ const RUNTIME = `
   }
 
   function pinRgb(hex) {
-    var raw = String(hex || "#8b3a2a").replace("#", "");
+    var raw = String(hex || "#1f7a6a").replace("#", "");
     if (raw.length === 3) raw = raw[0] + raw[0] + raw[1] + raw[1] + raw[2] + raw[2];
     var n = parseInt(raw, 16);
     if (!isFinite(n)) return { r: 139, g: 58, b: 42 };
@@ -195,7 +195,7 @@ const RUNTIME = `
     var fill = "rgba(" + rgb.r + ", " + rgb.g + ", " + rgb.b + ", " + alpha + ")";
     var lum = (0.2126 * rgb.r + 0.7152 * rgb.g + 0.0722 * rgb.b) / 255;
     el.style.setProperty("--label-fill", fill);
-    el.style.setProperty("--label-ink", lum > 0.62 ? "#2c2416" : "#f4efe6");
+    el.style.setProperty("--label-ink", lum > 0.62 ? "#16302c" : "#eef5f2");
     el.classList.toggle("is-active", age <= 0);
     el.classList.toggle("is-fading", age >= 2);
   }
@@ -253,7 +253,7 @@ const RUNTIME = `
         pathLine.setLatLngs(visLatLngs);
       } else {
         pathLine = L.polyline(visLatLngs, {
-          color: look.pathColor || "#8b3a2a",
+          color: look.pathColor || "#1f7a6a",
           weight: 3,
           opacity: 0.9,
           dashArray: look.path === "dashed" ? "8 8" : undefined
@@ -369,12 +369,12 @@ body {
 }
 .leaflet-container { font-family: inherit; background: var(--map-bg); }
 .leaflet-tooltip.mm-label {
-  --label-fill: rgba(139, 58, 42, 0.72);
-  --label-ink: #f4efe6;
+  --label-fill: rgba(31, 122, 106, 0.72);
+  --label-ink: #eef5f2;
   background: var(--label-fill);
   color: var(--label-ink);
   border: 1px solid var(--label-fill);
-  border-radius: 0;
+  border-radius: 6px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.16);
   font: 600 13px Palatino, Georgia, serif;
   padding: 4px 8px;
@@ -399,6 +399,7 @@ body {
   background: color-mix(in srgb, var(--paper) 92%, transparent);
   border: 1px solid var(--line);
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+  border-radius: 12px;
 }
 .mm-date[hidden] { display: none; }
 .mm-date-title {
@@ -426,6 +427,7 @@ body {
   background: color-mix(in srgb, var(--paper) 92%, transparent);
   border: 1px solid var(--line);
   pointer-events: none;
+  border-radius: 12px;
 }
 .mm-chrome {
   display: grid;
@@ -486,10 +488,11 @@ body {
   font-family: inherit;
   font-size: 14px;
   padding: 8px 12px;
-  border: 1px solid var(--ink);
+  border: 1px solid var(--line);
   background: transparent;
   color: var(--ink);
   cursor: pointer;
+  border-radius: 10px;
 }
 .mm-controls button#mm-play {
   background: var(--terra);
@@ -585,7 +588,7 @@ body {
 .leaflet-popup-content-wrapper, .leaflet-popup-tip {
   background: var(--paper);
   color: var(--ink);
-  border-radius: 0;
+  border-radius: 8px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
 }
 .mm-pop strong { display: block; font-size: 15px; margin-bottom: 4px; }
@@ -599,6 +602,7 @@ body {
   color: var(--paper);
   font-size: 11px;
   font-weight: 700;
+  border-radius: 8px;
 }
 @media (max-width: 640px) {
   .mm-stage { width: 100%; min-height: 180px; }

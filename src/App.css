@@ -38,12 +38,13 @@
   align-items: flex-end;
   gap: 2px;
   padding: 8px 12px;
-  border: 1px solid var(--ink);
-  background: rgba(255, 252, 246, 0.75);
+  border: 1px solid var(--line);
+  background: var(--wash);
   color: inherit;
   cursor: pointer;
-  font-family: inherit;
+  font-family: var(--sans);
   text-align: right;
+  border-radius: var(--radius-sm);
 }
 
 .account-who {
@@ -66,11 +67,12 @@
   z-index: 40;
   width: min(380px, calc(100vw - 32px));
   padding: 16px;
-  border: 1px solid var(--ink);
+  border: 1px solid var(--line);
   background: var(--paper);
-  box-shadow: 0 12px 32px rgba(44, 36, 22, 0.16);
+  box-shadow: var(--shadow);
   display: grid;
   gap: 10px;
+  border-radius: var(--radius);
 }
 
 .account-panel h2 {
@@ -89,9 +91,10 @@
 .account-panel input {
   font-size: 16px;
   padding: 10px 12px;
-  border: 1px solid var(--ink);
-  background: rgba(255, 252, 246, 0.8);
+  border: 1px solid var(--line);
+  background: var(--wash);
   color: var(--ink);
+  border-radius: var(--radius-xs);
 }
 
 .account-balance {
@@ -133,10 +136,11 @@
   align-content: center;
   gap: 4px;
   margin: 0 28px;
-  border: 1px dashed color-mix(in srgb, var(--ink) 35%, transparent);
-  background: color-mix(in srgb, var(--paper) 70%, var(--muted));
+  border: 1px dashed color-mix(in srgb, var(--ink) 22%, transparent);
+  background: var(--wash);
   color: var(--muted);
   text-align: center;
+  border-radius: var(--radius);
 }
 
 .ad-slot-leaderboard {
@@ -174,7 +178,8 @@
   margin: 0 0 16px;
   padding: 14px 16px;
   border: 1px solid var(--line);
-  background: color-mix(in srgb, var(--paper) 88%, var(--ink));
+  background: var(--wash);
+  border-radius: var(--radius);
 }
 
 .credits-lead {
@@ -197,11 +202,12 @@
   display: grid;
   gap: 2px;
   padding: 10px 8px;
-  border: 1px solid var(--ink);
-  background: rgba(255, 252, 246, 0.7);
+  border: 1px solid var(--line);
+  background: var(--wash);
   color: inherit;
-  font-family: inherit;
+  font-family: var(--sans);
   cursor: pointer;
+  border-radius: var(--radius-sm);
 }
 
 .pack-card strong {
@@ -211,6 +217,11 @@
 .pack-card span {
   font-size: 12px;
   color: var(--muted);
+}
+
+.pack-card:hover:not(:disabled) {
+  background: var(--wash-strong);
+  box-shadow: var(--shadow-soft);
 }
 
 .pack-card:disabled {
@@ -225,7 +236,7 @@
   display: grid;
   place-items: center;
   padding: 24px;
-  background: rgba(44, 36, 22, 0.42);
+  background: color-mix(in srgb, var(--ink) 40%, transparent);
 }
 
 .sheet {
@@ -235,9 +246,10 @@
   display: grid;
   gap: 12px;
   padding: 22px 22px 18px;
-  border: 1px solid var(--ink);
+  border: 1px solid var(--line);
   background: var(--paper);
-  box-shadow: 0 16px 40px rgba(44, 36, 22, 0.22);
+  box-shadow: var(--shadow);
+  border-radius: var(--radius);
 }
 
 .sheet h2 {
@@ -313,8 +325,9 @@
 .banner {
   margin: 16px 28px 0;
   padding: 12px 14px;
-  border: 1px solid var(--terra);
-  background: rgba(139, 58, 42, 0.08);
+  border: 1px solid color-mix(in srgb, var(--terra) 45%, transparent);
+  background: color-mix(in srgb, var(--terra) 12%, transparent);
+  border-radius: var(--radius-sm);
 }
 
 .dropzone {
@@ -346,9 +359,10 @@
   gap: 6px;
   min-height: 180px;
   padding: 24px 28px 28px;
-  border: 1px dashed var(--ink);
-  background: rgba(255, 252, 246, 0.7);
+  border: 1px dashed color-mix(in srgb, var(--ink) 28%, transparent);
+  background: var(--wash);
   cursor: pointer;
+  border-radius: var(--radius);
 }
 
 .drop-target input {
@@ -373,7 +387,7 @@
 }
 
 .drop-target:hover {
-  background: #fffdf8;
+  background: var(--wash-strong);
 }
 
 .sheets-form {
@@ -393,9 +407,10 @@
 .sheets-form input {
   font-size: 16px;
   padding: 10px 12px;
-  border: 1px solid var(--ink);
-  background: rgba(255, 252, 246, 0.8);
+  border: 1px solid var(--line);
+  background: var(--wash);
   color: var(--ink);
+  border-radius: var(--radius-xs);
 }
 
 .sheet-list {
@@ -414,11 +429,12 @@
   align-items: baseline;
   text-align: left;
   padding: 14px 16px;
-  border: 1px solid var(--ink);
-  background: rgba(255, 252, 246, 0.8);
+  border: 1px solid var(--line);
+  background: var(--wash);
   cursor: pointer;
   color: inherit;
-  font-family: inherit;
+  font-family: var(--sans);
+  border-radius: var(--radius-sm);
 }
 
 .sheet-pick span {
@@ -453,9 +469,10 @@
 .manual-stop input {
   font-size: 16px;
   padding: 10px 12px;
-  border: 1px solid var(--ink);
-  background: rgba(255, 252, 246, 0.8);
+  border: 1px solid var(--line);
+  background: var(--wash);
   color: var(--ink);
+  border-radius: var(--radius-xs);
 }
 
 .manual-stops {
@@ -514,9 +531,10 @@
 
 .ghost,
 .primary {
-  border: 1px solid var(--ink);
+  border: 1px solid var(--line);
   padding: 9px 14px;
   font-size: 15px;
+  border-radius: var(--radius-sm);
 }
 
 .primary {
@@ -550,12 +568,14 @@
   min-height: 220px;
   margin-inline: auto;
   overflow: hidden;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-soft);
 }
 
 .preview-map {
   height: 100%;
   min-height: 0;
-  background: var(--map-bg, #e4ddd0);
+  background: var(--map-bg);
 }
 
 .map-date-window {
@@ -571,7 +591,8 @@
   pointer-events: none;
   background: color-mix(in srgb, var(--paper) 92%, transparent);
   border: 1px solid var(--line);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+  box-shadow: var(--shadow-soft);
+  border-radius: var(--radius-sm);
 }
 
 .map-date-title {
@@ -607,7 +628,8 @@
   padding: 12px 18px;
   background: color-mix(in srgb, var(--paper) 92%, transparent);
   border: 1px solid var(--line);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  box-shadow: var(--shadow-soft);
+  border-radius: var(--radius-sm);
   text-align: center;
   max-width: min(420px, 90%);
 }
@@ -619,7 +641,7 @@
   align-items: flex-end;
   padding: 12px 24px;
   border-bottom: 1px solid var(--line);
-  background: color-mix(in srgb, var(--paper) 92%, var(--ink));
+  background: var(--wash);
 }
 
 .style-bar .playback {
@@ -655,23 +677,25 @@
 }
 
 .style-bar select {
-  font-family: inherit;
+  font-family: var(--sans);
   font-size: 14px;
   padding: 6px 8px;
-  border: 1px solid var(--ink);
+  border: 1px solid var(--line);
   background: var(--paper);
   color: var(--ink);
   text-transform: none;
   letter-spacing: 0;
+  border-radius: var(--radius-xs);
 }
 
 .style-bar .swatch input {
   width: 40px;
   height: 28px;
   padding: 0;
-  border: 1px solid var(--ink);
+  border: 1px solid var(--line);
   background: none;
   cursor: pointer;
+  border-radius: var(--radius-xs);
 }
 
 .style-bar label {
@@ -740,6 +764,8 @@
 .table-wrap {
   overflow-x: auto;
   border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--wash);
 }
 
 .stop-table caption {
@@ -816,7 +842,7 @@
 }
 
 .stop-table tr.is-problem {
-  background: rgba(139, 58, 42, 0.06);
+  background: color-mix(in srgb, var(--terra) 10%, transparent);
 }
 
 .stop-table tr.is-skipped {
@@ -860,7 +886,7 @@
   font: 700 12px/1 var(--serif);
   text-align: center;
   border: 2px solid var(--paper);
-  box-shadow: 0 1px 4px rgba(44, 36, 22, 0.35);
+  box-shadow: 0 1px 4px color-mix(in srgb, var(--ink) 28%, transparent);
   display: grid;
   place-items: center;
 }
@@ -896,13 +922,13 @@
 }
 
 .leaflet-tooltip.mm-label {
-  --label-fill: rgba(139, 58, 42, 0.72);
-  --label-ink: #f4efe6;
+  --label-fill: rgba(31, 122, 106, 0.72);
+  --label-ink: #eef5f2;
   background: var(--label-fill);
   color: var(--label-ink);
   border: 1px solid var(--label-fill);
-  border-radius: 0;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.16);
+  border-radius: 6px;
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--ink) 16%, transparent);
   font-family: var(--serif);
   font-size: 13px;
   font-weight: 600;
@@ -922,15 +948,15 @@
 
 .leaflet-container {
   font-family: var(--serif);
-  background: var(--map-bg, #e4ddd0);
+  background: var(--map-bg);
 }
 
 .leaflet-popup-content-wrapper,
 .leaflet-popup-tip {
   background: var(--paper);
   color: var(--ink);
-  border-radius: 0;
-  box-shadow: 0 8px 24px rgba(44, 36, 22, 0.18);
+  border-radius: var(--radius-xs);
+  box-shadow: var(--shadow-soft);
 }
 
 .leaflet-popup-content p {
