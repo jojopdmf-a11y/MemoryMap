@@ -326,8 +326,12 @@
   max-width: 22em;
 }
 
+.app.is-landing .topbar {
+  justify-content: flex-end;
+}
+
 .app.is-landing .topbar-brand {
-  visibility: hidden;
+  display: none;
 }
 
 .landing-stage {
@@ -403,6 +407,7 @@
   font-size: clamp(40px, 8vw, 76px);
   font-weight: 600;
   letter-spacing: 0.2em;
+  padding-inline-start: 0.2em;
   text-transform: uppercase;
   color: var(--terra);
   line-height: 0.92;
@@ -414,6 +419,7 @@
   font-size: clamp(15px, 2.2vw, 18px);
   font-style: italic;
   letter-spacing: 0.085em;
+  padding-inline-start: 0.085em;
   color: var(--flare);
   line-height: 1.15;
 }
@@ -535,6 +541,10 @@
   margin-bottom: 2px;
 }
 
+.sheets-form .hint {
+  text-align: center;
+}
+
 .sheets-url {
   display: block;
 }
@@ -597,6 +607,15 @@
   margin-left: auto;
   margin-right: auto;
   max-width: 34em;
+}
+
+.app.is-landing .manual-label,
+.app.is-landing .manual-stop label {
+  text-align: center;
+}
+
+.app.is-landing .manual-actions {
+  justify-content: center;
 }
 
 .manual-label,
