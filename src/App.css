@@ -409,13 +409,13 @@
 }
 
 .brand-hero .tagline {
-  margin: 0.28em 0 0;
+  margin: 0.06em 0 0;
   max-width: none;
-  font-size: clamp(14px, 2.1vw, 17px);
+  font-size: clamp(15px, 2.2vw, 18px);
   font-style: italic;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.085em;
   color: var(--flare);
-  line-height: 1.2;
+  line-height: 1.15;
 }
 
 .brand-lockup::after {
