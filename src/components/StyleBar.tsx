@@ -1,6 +1,7 @@
 import type { Look } from '../look'
 import {
   MAP_OPTIONS,
+  MARKER_COLORS,
   PATH_OPTIONS,
   PIN_OPTIONS,
   SPEED_OPTIONS,
@@ -125,22 +126,54 @@ export function StyleBar({
           ))}
         </select>
       </label>
-      <label className="swatch">
-        Pin
-        <input
-          type="color"
-          value={look.pinColor}
-          onChange={(e) => onChange({ pinColor: e.target.value })}
-        />
-      </label>
-      <label className="swatch">
-        Line
-        <input
-          type="color"
-          value={look.pathColor}
-          onChange={(e) => onChange({ pathColor: e.target.value })}
-        />
-      </label>
+      <ColorBoxes
+        label="Pin"
+        value={look.pinColor}
+        onPick={(pinColor) => onChange({ pinColor })}
+      />
+      <ColorBoxes
+        label="Line"
+        value={look.pathColor}
+        onPick={(pathColor) => onChange({ pathColor })}
+      />
+    </div>
+  )
+}
+
+function ColorBoxes({
+  label,
+  value,
+  onPick,
+}: {
+  label: string
+  value: string
+  onPick: (color: string) => void
+}) {
+  const current = value.toLowerCase()
+  const extras = MARKER_COLORS.some((color) => color.toLowerCase() === current)
+    ? []
+    : [value]
+
+  return (
+    <div className="swatch-field">
+      <span>{label}</span>
+      <div className="swatch-row" role="radiogroup" aria-label={label}>
+        {[...MARKER_COLORS, ...extras].map((color) => {
+          const on = color.toLowerCase() === current
+          return (
+            <button
+              key={color}
+              type="button"
+              className={on ? 'swatch-dot is-on' : 'swatch-dot'}
+              style={{ background: color }}
+              aria-label={`${label} ${color}`}
+              aria-checked={on}
+              role="radio"
+              onClick={() => onPick(color)}
+            />
+          )
+        })}
+      </div>
     </div>
   )
 }

@@ -688,14 +688,36 @@
   border-radius: var(--radius-xs);
 }
 
-.style-bar .swatch input {
-  width: 40px;
-  height: 28px;
+.style-bar .swatch-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.style-bar .swatch-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  max-width: 168px;
+}
+
+.swatch-dot {
+  width: 18px;
+  height: 18px;
   padding: 0;
-  border: 1px solid var(--line);
-  background: none;
+  border: 1px solid color-mix(in srgb, var(--ink) 22%, transparent);
+  border-radius: 5px;
   cursor: pointer;
-  border-radius: var(--radius-xs);
+}
+
+.swatch-dot.is-on {
+  box-shadow:
+    0 0 0 2px var(--paper),
+    0 0 0 4px var(--ink);
 }
 
 .style-bar label {

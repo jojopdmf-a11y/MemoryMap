@@ -41,6 +41,42 @@ html[data-theme='dusk'] {
   --wash-strong: color-mix(in srgb, var(--paper) 70%, white);
 }
 
+html[data-theme='blush'] {
+  --paper: #f7eef1;
+  --ink: #3d2a32;
+  --muted: #8a6d76;
+  --terra: #c45b7a;
+  --terra-soft: #d4788c;
+  --line: rgba(61, 42, 50, 0.1);
+  --map-bg: #eadde1;
+  --wash: color-mix(in srgb, var(--paper) 72%, white);
+  --wash-strong: color-mix(in srgb, var(--paper) 55%, white);
+}
+
+html[data-theme='lilac'] {
+  --paper: #f3eef8;
+  --ink: #2e2440;
+  --muted: #7a6e8c;
+  --terra: #8b6bb5;
+  --terra-soft: #b57bb3;
+  --line: rgba(46, 36, 64, 0.1);
+  --map-bg: #e4dceb;
+  --wash: color-mix(in srgb, var(--paper) 72%, white);
+  --wash-strong: color-mix(in srgb, var(--paper) 55%, white);
+}
+
+html[data-theme='pearl'] {
+  --paper: #f7f1ea;
+  --ink: #3a2e28;
+  --muted: #8a7a70;
+  --terra: #c48a7a;
+  --terra-soft: #d4a898;
+  --line: rgba(58, 46, 40, 0.1);
+  --map-bg: #ebe3d8;
+  --wash: color-mix(in srgb, var(--paper) 72%, white);
+  --wash-strong: color-mix(in srgb, var(--paper) 55%, white);
+}
+
 * {
   box-sizing: border-box;
 }

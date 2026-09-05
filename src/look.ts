@@ -1,7 +1,7 @@
 export type MapId = 'streets' | 'paper' | 'night' | 'satellite' | 'terrain'
 export type PinId = 'number' | 'pin' | 'dot'
 export type PathId = 'solid' | 'dashed' | 'none'
-export type ThemeId = 'cream' | 'ink' | 'dusk'
+export type ThemeId = 'cream' | 'ink' | 'dusk' | 'blush' | 'lilac' | 'pearl'
 
 export type CardField = 'title' | 'date' | 'place' | 'notes'
 
@@ -70,6 +70,30 @@ export const THEME_VARS: Record<ThemeId, ThemeVars> = {
     line: 'rgba(232, 238, 248, 0.12)',
     mapBg: '#0e1520',
   },
+  blush: {
+    paper: '#f7eef1',
+    ink: '#3d2a32',
+    muted: '#8a6d76',
+    terra: '#c45b7a',
+    line: 'rgba(61, 42, 50, 0.1)',
+    mapBg: '#eadde1',
+  },
+  lilac: {
+    paper: '#f3eef8',
+    ink: '#2e2440',
+    muted: '#7a6e8c',
+    terra: '#8b6bb5',
+    line: 'rgba(46, 36, 64, 0.1)',
+    mapBg: '#e4dceb',
+  },
+  pearl: {
+    paper: '#f7f1ea',
+    ink: '#3a2e28',
+    muted: '#8a7a70',
+    terra: '#c48a7a',
+    line: 'rgba(58, 46, 40, 0.1)',
+    mapBg: '#ebe3d8',
+  },
 }
 
 export const MAP_OPTIONS: Array<{ id: MapId; label: string }> = [
@@ -104,7 +128,25 @@ export const THEME_OPTIONS: Array<{ id: ThemeId; label: string }> = [
   { id: 'cream', label: 'Mist' },
   { id: 'ink', label: 'Harbor' },
   { id: 'dusk', label: 'Tide' },
+  { id: 'blush', label: 'Rose' },
+  { id: 'lilac', label: 'Lilac' },
+  { id: 'pearl', label: 'Pearl' },
 ]
+
+export const MARKER_COLORS = [
+  '#1f7a6a',
+  '#2a6f8f',
+  '#3d6b4f',
+  '#5b9fd4',
+  '#c45b7a',
+  '#d4788c',
+  '#8b6bb5',
+  '#c97b5a',
+  '#c4a35a',
+  '#8b3a2a',
+  '#2c2416',
+  '#eef5f2',
+] as const
 
 /** Keep a stop label up through the next two arrivals, then fade it. */
 export const LABEL_HOLD_AFTER = 2
