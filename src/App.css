@@ -639,6 +639,7 @@
   font-size: 16px;
   width: 100%;
   min-width: 0;
+  max-width: 100%;
   padding: 10px 12px;
   border: 1px solid var(--line);
   background: var(--wash);
@@ -646,9 +647,14 @@
   border-radius: var(--radius-xs);
 }
 
+.manual-stop input[type='date'] {
+  min-width: 0;
+}
+
 .manual-stops {
   display: grid;
   gap: 12px;
+  min-width: 0;
 }
 
 .manual-stop {
@@ -1271,5 +1277,11 @@
   .ad-slot-inline {
     margin-left: 0;
     margin-right: 0;
+  }
+}
+
+@media (max-width: 560px) {
+  .manual-stop {
+    grid-template-columns: minmax(0, 1fr);
   }
 }
