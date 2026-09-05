@@ -63,6 +63,23 @@ export default function App() {
     stopsRef.current = stops
   }, [stops])
 
+  const workspaceOpen = Boolean(stops || sheetChoices)
+  useEffect(() => {
+    const jump = () => {
+      const active = document.activeElement
+      if (active instanceof HTMLElement) active.blur()
+      window.scrollTo(0, 0)
+      document.documentElement.scrollTop = 0
+      document.body.scrollTop = 0
+    }
+    jump()
+    const frame = window.requestAnimationFrame(() => {
+      jump()
+      window.requestAnimationFrame(jump)
+    })
+    return () => window.cancelAnimationFrame(frame)
+  }, [workspaceOpen])
+
   const updateStop = useCallback((id: string, patch: Partial<Stop>) => {
     setStops((current) =>
       current
@@ -292,29 +309,40 @@ export default function App() {
 
       {stops && (
         <main className="workspace">
-          <section className="map-panel">
-            <PreviewMap stops={stops} look={look} revealed={revealed} />
-            {revealed > 0 && plottedStops[revealed - 1] && (
-              <aside className="map-date-window" aria-live="polite">
-                <strong className="map-date-title">
-                  {title.trim() || 'Untitled trip'}
-                </strong>
-                <span className="map-date-kicker">Date</span>
-                <strong className="map-date-value">
-                  {displayDate(
-                    plottedStops[revealed - 1].date,
-                    plottedStops[revealed - 1].dateRaw,
-                  ) || 'Date unknown'}
-                </strong>
-              </aside>
-            )}
-            {ready && revealed === 0 && (
-              <p className="map-cue">Press Play tour to watch the route appear</p>
-            )}
-            {busy && (
-              <p className="map-cue is-busy">Looking up places… centering the map as they land.</p>
-            )}
-          </section>
+          <div className="map-stage">
+            <aside className="map-guide" aria-label="What to do next">
+              <p className="map-guide-kicker">What to do</p>
+              <ul>
+                <li>Press Play tour to watch the route appear.</li>
+                <li>Change the look in the bar under the map.</li>
+                <li>Fix or skip any stop that didn’t land.</li>
+                <li>Download when the trip looks right.</li>
+              </ul>
+            </aside>
+            <section className="map-panel">
+              <PreviewMap stops={stops} look={look} revealed={revealed} />
+              {revealed > 0 && plottedStops[revealed - 1] && (
+                <aside className="map-date-window" aria-live="polite">
+                  <strong className="map-date-title">
+                    {title.trim() || 'Untitled trip'}
+                  </strong>
+                  <span className="map-date-kicker">Date</span>
+                  <strong className="map-date-value">
+                    {displayDate(
+                      plottedStops[revealed - 1].date,
+                      plottedStops[revealed - 1].dateRaw,
+                    ) || 'Date unknown'}
+                  </strong>
+                </aside>
+              )}
+              {ready && revealed === 0 && (
+                <p className="map-cue">Press Play tour to watch the route appear</p>
+              )}
+              {busy && (
+                <p className="map-cue is-busy">Looking up places… centering the map as they land.</p>
+              )}
+            </section>
+          </div>
           <StyleBar
             look={look}
             playing={playing}
