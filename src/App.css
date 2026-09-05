@@ -326,10 +326,6 @@
   max-width: 22em;
 }
 
-.app.is-landing {
-  overflow-x: clip;
-}
-
 .app.is-landing .topbar-brand {
   visibility: hidden;
 }
