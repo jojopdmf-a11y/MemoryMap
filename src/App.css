@@ -48,6 +48,10 @@
 
 .account-who {
   font-size: 15px;
+  max-width: 16em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .account-credits {
@@ -60,7 +64,7 @@
   right: 0;
   top: calc(100% + 8px);
   z-index: 40;
-  width: min(340px, calc(100vw - 32px));
+  width: min(380px, calc(100vw - 32px));
   padding: 16px;
   border: 1px solid var(--ink);
   background: var(--paper);
@@ -197,7 +201,7 @@
   background: rgba(255, 252, 246, 0.7);
   color: inherit;
   font-family: inherit;
-  cursor: default;
+  cursor: pointer;
 }
 
 .pack-card strong {
@@ -211,6 +215,93 @@
 
 .pack-card:disabled {
   opacity: 0.72;
+  cursor: default;
+}
+
+.sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(44, 36, 22, 0.42);
+}
+
+.sheet {
+  width: min(440px, 100%);
+  max-height: min(86vh, 720px);
+  overflow: auto;
+  display: grid;
+  gap: 12px;
+  padding: 22px 22px 18px;
+  border: 1px solid var(--ink);
+  background: var(--paper);
+  box-shadow: 0 16px 40px rgba(44, 36, 22, 0.22);
+}
+
+.sheet h2 {
+  margin: 0;
+  font-size: 26px;
+}
+
+.sheet-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.sheet-dismiss {
+  justify-self: start;
+}
+
+.sheet-error {
+  margin: 0;
+}
+
+.signin-form,
+.signin-email {
+  display: grid;
+  gap: 10px;
+}
+
+.signin-link-wrap {
+  word-break: break-all;
+}
+
+.history-block {
+  display: grid;
+  gap: 8px;
+}
+
+.history-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+  max-height: 220px;
+  overflow: auto;
+}
+
+.history-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: center;
+  padding: 8px 0;
+  border-top: 1px solid var(--line);
+}
+
+.history-list strong {
+  display: block;
+  font-size: 14px;
+}
+
+.history-list span {
+  font-size: 13px;
+  color: var(--muted);
 }
 
 .tagline {

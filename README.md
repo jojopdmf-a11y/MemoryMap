@@ -30,3 +30,9 @@ npm run dev
 ```
 
 Then open the local URL Vite prints, try the sample trip, and download a map.
+
+## Accounts and downloads
+
+Preview and styling stay free and anonymous. Sign in (email link or Google) before you buy credits. A new souvenir costs 1 credit and saves the trip recipe on the account. Download the same map again for free. Change the trip or styling and the next file spends another credit.
+
+Until a merchant of record is connected, buying a pack only adds credits in this browser (`localStorage`). Set `VITE_CHECKOUT_BASE_URL` for live checkout and `VITE_GOOGLE_CLIENT_ID` for Google sign-in.
