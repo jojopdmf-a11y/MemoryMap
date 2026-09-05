@@ -254,7 +254,7 @@
   justify-content: center;
   gap: 6px;
   min-height: 180px;
-  padding: 24px;
+  padding: 24px 28px 28px;
   border: 1px dashed var(--ink);
   background: rgba(255, 252, 246, 0.7);
   cursor: pointer;
@@ -270,6 +270,15 @@
 
 .drop-target span {
   color: var(--muted);
+}
+
+.drop-format {
+  margin: 10px 0 0;
+  max-width: 34em;
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--muted);
+  text-align: center;
 }
 
 .drop-target:hover {

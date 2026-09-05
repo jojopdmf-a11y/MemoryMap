@@ -62,6 +62,11 @@ export function DropZone({
         />
         <strong>{importing ? 'Reading spreadsheet…' : 'Drop a spreadsheet here'}</strong>
         <span>CSV or Excel · Numbers files need an Excel/CSV export</span>
+        <p className="drop-format">
+          First row is the headers. Include a date and a place — or city, state,
+          and country. Title and notes are optional. Latitude and longitude are
+          optional too; we can look up the names.
+        </p>
       </label>
       <form
         className="sheets-form"
