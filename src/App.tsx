@@ -21,6 +21,7 @@ import {
   type IngestResult,
   type SheetChoice,
 } from './source'
+import { buildSouvenirHtml } from './souvenir'
 import { exportableStops, souvenirFilename } from './trip'
 import { StyleBar } from './components/StyleBar'
 import { DEFAULT_FIELDS, DEFAULT_LOOK, type CardField, type Look } from './look'
@@ -205,16 +206,23 @@ export default function App() {
     })
   }
 
-  async function download() {
+  function download() {
     if (!ready) return
-    const tripTitle = title.trim() || 'Untitled trip'
-    const { buildSouvenirHtml } = await import('./souvenir')
-    const html = buildSouvenirHtml(tripTitle, plotted, {
-      ...DEFAULT_LOOK,
-      ...look,
-      fields: { ...DEFAULT_FIELDS, ...look.fields },
-    })
-    downloadText(html, souvenirFilename(tripTitle), 'text/html;charset=utf-8')
+    try {
+      const tripTitle = title.trim() || 'Untitled trip'
+      const html = buildSouvenirHtml(tripTitle, plotted, {
+        ...DEFAULT_LOOK,
+        ...look,
+        fields: { ...DEFAULT_FIELDS, ...look.fields },
+      })
+      downloadText(html, souvenirFilename(tripTitle), 'text/html;charset=utf-8')
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : 'Could not download the souvenir file.',
+      )
+    }
   }
 
   return (
