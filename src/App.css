@@ -326,8 +326,61 @@
   max-width: 22em;
 }
 
+.app.is-landing {
+  overflow-x: clip;
+}
+
 .app.is-landing .topbar-brand {
   visibility: hidden;
+}
+
+.landing-stage {
+  position: relative;
+}
+
+.landing-stage > :not(.landing-map-wash) {
+  position: relative;
+  z-index: 1;
+}
+
+.landing-map-wash {
+  position: absolute;
+  inset: -22vh calc(50% - 50vw) 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.landing-map {
+  position: absolute;
+  left: 50%;
+  top: 4%;
+  width: min(1360px, 124vw);
+  aspect-ratio: 1200 / 620;
+  transform: translateX(-50%);
+  background: color-mix(in srgb, var(--terra) 62%, var(--ink));
+  opacity: 0.2;
+  -webkit-mask: url('/world-ghost.svg') center / contain no-repeat;
+  mask: url('/world-ghost.svg') center / contain no-repeat;
+}
+
+.landing-map-wash::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(
+      ellipse 70% 46% at 50% 18%,
+      color-mix(in srgb, var(--paper) 58%, transparent),
+      transparent 72%
+    ),
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--paper) 42%, transparent) 0%,
+      transparent 16%,
+      transparent 78%,
+      var(--paper) 100%
+    );
 }
 
 .brand-hero {

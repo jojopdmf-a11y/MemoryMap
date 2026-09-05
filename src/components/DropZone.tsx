@@ -44,64 +44,69 @@ export function DropZone({
         takeFile(e.dataTransfer.files[0])
       }}
     >
-      <header className="brand-hero">
-        <p className="brand-mark">MemoryMap</p>
-        <p className="tagline">
-          Visualize Your Voyages, Treasure Your Travels.
-        </p>
-        <h1>
-          Plot a trip from a spreadsheet or type in the locations yourself.
-        </h1>
-        <p className="lede">
-          Drop a file, paste a Google Sheets link, or enter the stops. We draw
-          the route, then pack the map into a single HTML file.
-        </p>
-      </header>
-      <div className="trip-start">
-        <label className="drop-target">
-        <input
-          type="file"
-          accept=".csv,.tsv,.xlsx,.xls,.ods,text/csv,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-          disabled={importing}
-          onChange={(e) => {
-            takeFile(e.target.files?.[0])
-            e.target.value = ''
-          }}
-        />
-        <strong>{importing ? 'Reading spreadsheet…' : 'Drop a spreadsheet here'}</strong>
-        <span>CSV or Excel · Numbers files need an Excel/CSV export</span>
-        <p className="drop-format">
-          First row is the headers. Include a date and a place — or city, state,
-          and country. Title and notes are optional. Latitude and longitude are
-          optional too; we can look up the names.
-        </p>
-      </label>
-      <form
-        className="sheets-form"
-        onSubmit={(e) => {
-          e.preventDefault()
-          if (url.trim()) onSheetsUrl(url.trim())
-        }}
-      >
-        <label>
-          Google Sheets link
-          <input
-            type="url"
-            value={url}
-            disabled={importing}
-            placeholder="https://docs.google.com/spreadsheets/d/…"
-            onChange={(e) => setUrl(e.target.value)}
-          />
-        </label>
-        <button type="submit" className="primary" disabled={importing || !url.trim()}>
-          Load sheet
-        </button>
-        <p className="hint">
-          Share as “Anyone with the link can view”, or download Excel and drop
-          it. For a specific tab, open that tab before copying the link.
-        </p>
-      </form>
-        <ManualTripForm importing={importing} onSubmit={onManual} />
+      <div className="landing-stage">
+        <div className="landing-map-wash" aria-hidden="true">
+          <div className="landing-map" />
+        </div>
+        <header className="brand-hero">
+          <p className="brand-mark">MemoryMap</p>
+          <p className="tagline">
+            Visualize Your Voyages, Treasure Your Travels.
+          </p>
+          <h1>
+            Plot a trip from a spreadsheet or type in the locations yourself.
+          </h1>
+          <p className="lede">
+            Drop a file, paste a Google Sheets link, or enter the stops. We draw
+            the route, then pack the map into a single HTML file.
+          </p>
+        </header>
+        <div className="trip-start">
+          <label className="drop-target">
+            <input
+              type="file"
+              accept=".csv,.tsv,.xlsx,.xls,.ods,text/csv,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+              disabled={importing}
+              onChange={(e) => {
+                takeFile(e.target.files?.[0])
+                e.target.value = ''
+              }}
+            />
+            <strong>{importing ? 'Reading spreadsheet…' : 'Drop a spreadsheet here'}</strong>
+            <span>CSV or Excel · Numbers files need an Excel/CSV export</span>
+            <p className="drop-format">
+              First row is the headers. Include a date and a place — or city, state,
+              and country. Title and notes are optional. Latitude and longitude are
+              optional too; we can look up the names.
+            </p>
+          </label>
+          <form
+            className="sheets-form"
+            onSubmit={(e) => {
+              e.preventDefault()
+              if (url.trim()) onSheetsUrl(url.trim())
+            }}
+          >
+            <label>
+              Google Sheets link
+              <input
+                type="url"
+                value={url}
+                disabled={importing}
+                placeholder="https://docs.google.com/spreadsheets/d/…"
+                onChange={(e) => setUrl(e.target.value)}
+              />
+            </label>
+            <button type="submit" className="primary" disabled={importing || !url.trim()}>
+              Load sheet
+            </button>
+            <p className="hint">
+              Share as “Anyone with the link can view”, or download Excel and drop
+              it. For a specific tab, open that tab before copying the link.
+            </p>
+          </form>
+          <ManualTripForm importing={importing} onSubmit={onManual} />
+        </div>
       </div>
       <AdSlot variant="inline" />
       <p className="drop-actions">
