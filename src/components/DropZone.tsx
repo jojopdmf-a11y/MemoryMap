@@ -44,13 +44,21 @@ export function DropZone({
         takeFile(e.dataTransfer.files[0])
       }}
     >
-      <p className="kicker">MemoryMap</p>
-      <h1>Plot a trip from a spreadsheet</h1>
-      <p className="lede">
-        Type the stops, drop a CSV or Excel file, or paste a Google Sheets
-        link. We will draw the route, then pack the map into a single HTML file.
-      </p>
-      <label className="drop-target">
+      <header className="brand-hero">
+        <p className="brand-mark">MemoryMap</p>
+        <p className="tagline">
+          Visualize Your Voyages, Treasure Your Travels.
+        </p>
+        <h1>
+          Plot a trip from a spreadsheet or type in the locations yourself.
+        </h1>
+        <p className="lede">
+          Drop a file, paste a Google Sheets link, or enter the stops. We draw
+          the route, then pack the map into a single HTML file.
+        </p>
+      </header>
+      <div className="trip-start">
+        <label className="drop-target">
         <input
           type="file"
           accept=".csv,.tsv,.xlsx,.xls,.ods,text/csv,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
@@ -93,7 +101,8 @@ export function DropZone({
           it. For a specific tab, open that tab before copying the link.
         </p>
       </form>
-      <ManualTripForm importing={importing} onSubmit={onManual} />
+        <ManualTripForm importing={importing} onSubmit={onManual} />
+      </div>
       <AdSlot variant="inline" />
       <p className="drop-actions">
         <button type="button" className="linkish" onClick={onSample}>

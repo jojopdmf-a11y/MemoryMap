@@ -242,9 +242,9 @@ export default function App() {
   }
 
   return (
-    <div className="app">
+    <div className={stops || sheetChoices ? 'app' : 'app is-landing'}>
       <header className="topbar">
-        <div>
+        <div className="topbar-brand">
           <p className="kicker">MemoryMap</p>
           <p className="tagline">Visualize Your Voyages, Treasure Your Travels.</p>
         </div>
