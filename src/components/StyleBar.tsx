@@ -1,12 +1,13 @@
+import { useState } from 'react'
 import type { Look } from '../look'
 import {
   MAP_OPTIONS,
-  MARKER_COLORS,
   PATH_OPTIONS,
   PIN_OPTIONS,
   SPEED_OPTIONS,
   THEME_OPTIONS,
 } from '../look'
+import { ColorWell } from './ColorWell'
 
 type Props = {
   look: Look
@@ -31,6 +32,8 @@ export function StyleBar({
   onReset,
   onScrub,
 }: Props) {
+  const [colorWell, setColorWell] = useState<'pin' | 'line' | null>(null)
+
   return (
     <div className="style-bar">
       <div className="playback">
@@ -126,54 +129,30 @@ export function StyleBar({
           ))}
         </select>
       </label>
-      <ColorBoxes
+      <ColorWell
         label="Pin"
         value={look.pinColor}
+        open={colorWell === 'pin'}
+        onOpen={() => setColorWell('pin')}
+        onClose={() => setColorWell(null)}
         onPick={(pinColor) => onChange({ pinColor })}
       />
-      <ColorBoxes
+      <ColorWell
         label="Line"
+        align="end"
         value={look.pathColor}
-        onPick={(pathColor) => onChange({ pathColor })}
+        allowNone
+        open={colorWell === 'line'}
+        onOpen={() => setColorWell('line')}
+        onClose={() => setColorWell(null)}
+        onPick={(pathColor) =>
+          onChange({
+            pathColor,
+            path: look.path === 'none' ? 'solid' : look.path,
+          })
+        }
+        onNone={() => onChange({ path: 'none' })}
       />
-    </div>
-  )
-}
-
-function ColorBoxes({
-  label,
-  value,
-  onPick,
-}: {
-  label: string
-  value: string
-  onPick: (color: string) => void
-}) {
-  const current = value.toLowerCase()
-  const extras = MARKER_COLORS.some((color) => color.toLowerCase() === current)
-    ? []
-    : [value]
-
-  return (
-    <div className="swatch-field">
-      <span>{label}</span>
-      <div className="swatch-row" role="radiogroup" aria-label={label}>
-        {[...MARKER_COLORS, ...extras].map((color) => {
-          const on = color.toLowerCase() === current
-          return (
-            <button
-              key={color}
-              type="button"
-              className={on ? 'swatch-dot is-on' : 'swatch-dot'}
-              style={{ background: color }}
-              aria-label={`${label} ${color}`}
-              aria-checked={on}
-              role="radio"
-              onClick={() => onPick(color)}
-            />
-          )
-        })}
-      </div>
     </div>
   )
 }

@@ -133,20 +133,57 @@ export const THEME_OPTIONS: Array<{ id: ThemeId; label: string }> = [
   { id: 'pearl', label: 'Pearl' },
 ]
 
-export const MARKER_COLORS = [
-  '#1f7a6a',
-  '#2a6f8f',
-  '#3d6b4f',
-  '#5b9fd4',
-  '#c45b7a',
-  '#d4788c',
-  '#8b6bb5',
-  '#c97b5a',
-  '#c4a35a',
-  '#8b3a2a',
-  '#2c2416',
-  '#eef5f2',
+export const PALETTE_BASIC = [
+  '#ff3b30',
+  '#ff9500',
+  '#ffcc00',
+  '#34c759',
+  '#32ade6',
+  '#007aff',
+  '#5856d6',
+  '#af52de',
+  '#a2845e',
+  '#ffffff',
+  '#8e8e93',
+  '#1c1c1e',
 ] as const
+
+export const PALETTE_GRAY = [
+  '#ffffff',
+  '#f2f2f7',
+  '#e5e5ea',
+  '#d1d1d6',
+  '#c7c7cc',
+  '#aeaeb2',
+  '#8e8e93',
+  '#636366',
+  '#48484a',
+  '#3a3a3c',
+  '#2c2c2e',
+  '#1c1c1e',
+] as const
+
+const PALETTE_HUES = [220, 255, 280, 310, 340, 0, 18, 34, 48, 80, 130, 175]
+const PALETTE_LIGHTS = [16, 24, 32, 41, 50, 59, 68, 77, 85, 92]
+const PALETTE_SATS = [58, 66, 72, 74, 70, 62, 52, 40, 28, 18]
+
+function hslToHex(h: number, s: number, l: number): string {
+  const sat = s / 100
+  const light = l / 100
+  const a = sat * Math.min(light, 1 - light)
+  const f = (n: number) => {
+    const k = (n + h / 30) % 12
+    const color = light - a * Math.max(Math.min(k - 3, 9 - k, 1), -1)
+    return Math.round(255 * color)
+      .toString(16)
+      .padStart(2, '0')
+  }
+  return `#${f(0)}${f(8)}${f(4)}`
+}
+
+export const PALETTE_GRID: string[][] = PALETTE_LIGHTS.map((light, row) =>
+  PALETTE_HUES.map((hue) => hslToHex(hue, PALETTE_SATS[row] ?? 50, light)),
+)
 
 /** Keep a stop label up through the next two arrivals, then fade it. */
 export const LABEL_HOLD_AFTER = 2
