@@ -350,7 +350,7 @@
 .landing-map {
   position: absolute;
   inset: 0;
-  background: color-mix(in srgb, var(--terra) 68%, var(--ink));
+  background: color-mix(in srgb, var(--terra) 58%, var(--flare));
   opacity: 0.22;
   -webkit-mask: url('/world-ghost.svg') 50% 6% / cover no-repeat;
   mask: url('/world-ghost.svg') 50% 6% / cover no-repeat;
@@ -362,8 +362,13 @@
   inset: 0;
   background:
     radial-gradient(
+      ellipse 48% 28% at 50% 10%,
+      color-mix(in srgb, var(--flare) 16%, transparent),
+      transparent 70%
+    ),
+    radial-gradient(
       ellipse 62% 34% at 50% 14%,
-      color-mix(in srgb, var(--paper) 42%, transparent),
+      color-mix(in srgb, var(--paper) 38%, transparent),
       transparent 74%
     ),
     linear-gradient(
@@ -384,7 +389,13 @@
 
 .brand-hero {
   text-align: center;
-  margin: 0 0 32px;
+  margin: 0 0 28px;
+}
+
+.brand-lockup {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .brand-mark {
@@ -394,23 +405,25 @@
   letter-spacing: 0.2em;
   text-transform: uppercase;
   color: var(--terra);
-  line-height: 1.05;
+  line-height: 0.92;
 }
 
 .brand-hero .tagline {
-  margin: 12px auto 0;
-  max-width: 24em;
-  font-size: 17px;
+  margin: 0.28em 0 0;
+  max-width: none;
+  font-size: clamp(14px, 2.1vw, 17px);
+  font-style: italic;
+  letter-spacing: 0.04em;
+  color: var(--flare);
+  line-height: 1.2;
 }
 
-.brand-hero h1 {
-  margin: 28px 0 12px;
-  font-size: clamp(22px, 3.6vw, 34px);
-  font-weight: 600;
-  letter-spacing: -0.02em;
-  line-height: 1.25;
-  text-transform: none;
-  color: var(--ink);
+.brand-lockup::after {
+  content: '';
+  width: 3.4rem;
+  height: 1px;
+  margin: 14px 0 0;
+  background: color-mix(in srgb, var(--flare) 58%, transparent);
 }
 
 .trip-start {
@@ -448,8 +461,12 @@
 }
 
 .brand-hero .lede {
-  margin: 0 auto;
-  max-width: 34em;
+  margin: 18px auto 0;
+  max-width: 26em;
+  font-size: clamp(19px, 2.5vw, 23px);
+  font-weight: 600;
+  line-height: 1.4;
+  color: color-mix(in srgb, var(--ink) 86%, var(--flare));
 }
 
 .drop-target {
@@ -494,7 +511,7 @@
 .sheets-form {
   display: grid;
   gap: 10px;
-  margin-top: 22px;
+  margin-top: 28px;
 }
 
 .sheets-form label {
@@ -503,6 +520,23 @@
   gap: 6px;
   font-size: 13px;
   color: var(--muted);
+}
+
+.entry-heading {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.25;
+  text-align: center;
+  color: var(--ink);
+}
+
+.sheets-form .entry-heading {
+  margin-bottom: 2px;
+}
+
+.sheets-url {
+  display: block;
 }
 
 .sheets-form input {
@@ -551,10 +585,18 @@
   border-top: 1px solid var(--line);
 }
 
+.manual-head {
+  text-align: center;
+}
+
 .manual-head h2 {
   margin: 0 0 6px;
-  font-size: 18px;
-  font-weight: 600;
+}
+
+.manual-head .hint {
+  margin-left: auto;
+  margin-right: auto;
+  max-width: 34em;
 }
 
 .manual-label,

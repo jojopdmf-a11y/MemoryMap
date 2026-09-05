@@ -49,13 +49,12 @@ export function DropZone({
           <div className="landing-map" />
         </div>
         <header className="brand-hero">
-          <p className="brand-mark">MemoryMap</p>
-          <p className="tagline">
-            Visualize Your Voyages, Treasure Your Travels.
-          </p>
-          <h1>
-            Plot a trip from a spreadsheet or type in the locations yourself.
-          </h1>
+          <div className="brand-lockup">
+            <h1 className="brand-mark">MemoryMap</h1>
+            <p className="tagline">
+              Visualize Your Voyages, Treasure Your Travels.
+            </p>
+          </div>
           <p className="lede">
             Drop a file, paste a Google Sheets link, or enter the stops. We draw
             the route, then pack the map into a single HTML file.
@@ -87,12 +86,13 @@ export function DropZone({
               if (url.trim()) onSheetsUrl(url.trim())
             }}
           >
-            <label>
-              Google Sheets link
+            <p className="entry-heading">Paste a Google Sheets link here</p>
+            <label className="sheets-url">
               <input
                 type="url"
                 value={url}
                 disabled={importing}
+                aria-label="Google Sheets link"
                 placeholder="https://docs.google.com/spreadsheets/d/…"
                 onChange={(e) => setUrl(e.target.value)}
               />

@@ -46,7 +46,7 @@ export function ManualTripForm({ importing, onSubmit }: Props) {
       }}
     >
       <div className="manual-head">
-        <h2>Type the locations</h2>
+        <h2 className="entry-heading">Type the locations here</h2>
         <p className="hint">
           Same trip — name the tour or cruise, then add each stop. We look up
           the places either way.

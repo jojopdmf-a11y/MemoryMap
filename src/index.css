@@ -4,6 +4,7 @@
   --muted: #5b706c;
   --terra: #1f7a6a;
   --terra-soft: #4aa896;
+  --flare: #a67232;
   --line: rgba(22, 48, 44, 0.1);
   --map-bg: #d7e6e0;
   --wash: color-mix(in srgb, var(--paper) 72%, white);
@@ -23,6 +24,7 @@ html[data-theme='ink'] {
   --muted: #9bb5af;
   --terra: #5ec4b0;
   --terra-soft: #86d4c4;
+  --flare: #e0b15a;
   --line: rgba(230, 242, 238, 0.12);
   --map-bg: #0c1918;
   --wash: color-mix(in srgb, var(--paper) 82%, white);
@@ -35,6 +37,7 @@ html[data-theme='dusk'] {
   --muted: #9aabc4;
   --terra: #5b9fd4;
   --terra-soft: #86b8e0;
+  --flare: #d4a05a;
   --line: rgba(232, 238, 248, 0.12);
   --map-bg: #0e1520;
   --wash: color-mix(in srgb, var(--paper) 82%, white);
@@ -47,6 +50,7 @@ html[data-theme='blush'] {
   --muted: #8a6d76;
   --terra: #c45b7a;
   --terra-soft: #d4788c;
+  --flare: #c4844a;
   --line: rgba(61, 42, 50, 0.1);
   --map-bg: #eadde1;
   --wash: color-mix(in srgb, var(--paper) 72%, white);
@@ -59,6 +63,7 @@ html[data-theme='lilac'] {
   --muted: #7a6e8c;
   --terra: #8b6bb5;
   --terra-soft: #b57bb3;
+  --flare: #b88950;
   --line: rgba(46, 36, 64, 0.1);
   --map-bg: #e4dceb;
   --wash: color-mix(in srgb, var(--paper) 72%, white);
@@ -71,6 +76,7 @@ html[data-theme='pearl'] {
   --muted: #8a7a70;
   --terra: #c48a7a;
   --terra-soft: #d4a898;
+  --flare: #b07a40;
   --line: rgba(58, 46, 40, 0.1);
   --map-bg: #ebe3d8;
   --wash: color-mix(in srgb, var(--paper) 72%, white);
