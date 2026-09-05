@@ -336,6 +336,7 @@
 
 .landing-stage {
   position: relative;
+  min-width: 0;
 }
 
 .landing-stage > :not(.landing-map-wash) {
@@ -419,7 +420,7 @@
   font-size: clamp(15px, 2.2vw, 18px);
   font-style: italic;
   letter-spacing: 0.085em;
-  padding-inline-start: 0.085em;
+  padding-inline-start: 0.22em;
   color: var(--flare);
   line-height: 1.15;
 }
@@ -435,6 +436,7 @@
 .trip-start {
   display: grid;
   gap: 0;
+  min-width: 0;
 }
 
 .banner {
@@ -447,8 +449,10 @@
 
 .dropzone {
   max-width: 760px;
+  width: 100%;
   margin: 8vh auto;
   padding: 0 24px 48px;
+  min-width: 0;
 }
 
 .dropzone > h1 {
@@ -551,6 +555,8 @@
 
 .sheets-form input {
   font-size: 16px;
+  width: 100%;
+  min-width: 0;
   padding: 10px 12px;
   border: 1px solid var(--line);
   background: var(--wash);
@@ -593,6 +599,7 @@
   margin-top: 22px;
   padding-top: 22px;
   border-top: 1px solid var(--line);
+  min-width: 0;
 }
 
 .manual-head {
@@ -630,6 +637,8 @@
 .manual-label input,
 .manual-stop input {
   font-size: 16px;
+  width: 100%;
+  min-width: 0;
   padding: 10px 12px;
   border: 1px solid var(--line);
   background: var(--wash);
@@ -644,9 +653,10 @@
 
 .manual-stop {
   display: grid;
-  grid-template-columns: 1fr 1.3fr 1fr 1fr auto;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr) minmax(0, 1fr) minmax(0, 1fr) auto;
   gap: 8px;
   align-items: end;
+  min-width: 0;
 }
 
 .manual-actions {
@@ -1241,12 +1251,12 @@
   }
 
   .manual-stop {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   }
 
   .manual-stop .remove-stop {
     grid-column: 1 / -1;
-    justify-self: start;
+    justify-self: center;
   }
 
   .pack-row {
