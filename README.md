@@ -35,34 +35,26 @@ Then open the local URL Vite prints, try the sample trip, and download a map. Do
 
 This is a public preview. Mapping and the souvenir file are free. Accounts and paid credits are not for sale yet. There is no sign-in and no credit pack on the site.
 
-Leave checkout and Google env vars unset for the preview launch.
+## How the live site updates
 
-## Deploy (memorymap.world)
+The live site is [memorymap.world](https://memorymap.world). Cloudflare is already connected to this GitHub repo.
+
+**To update the website:** change the code, commit, and push to `main`. Cloudflare builds and publishes that commit. That’s it.
+
+You do not need Wrangler on your laptop, and you do not need to reattach the domain. Watch the GitHub check named **Workers Builds: memorymap** — when it is green, the new version is live.
+
+## Deploy (only if you are setting this up again)
 
 The app is a static Vite build. Leave checkout and Google env vars unset for the preview launch.
 
 ```bash
 npm ci
 npm run build
-```
-
-Output is `dist`. Cloudflare’s current Git import creates a Worker (not classic Pages). Use:
-
-- **Project name:** `memorymap`
-- **Build command:** `npm run build`
-- **Deploy command:** `npx wrangler deploy`
-- **Path:** `/`
-- Let Cloudflare **create a new API token** (that is a Cloudflare token, not a GitHub token)
-- Leave environment variables empty
-
-`wrangler.toml` points Wrangler at `dist`. Node 22 is in `.node-version`.
-
-Or deploy from a machine that is logged into Cloudflare:
-
-```bash
 npx wrangler deploy
 ```
 
-`memorymap.world` is an apex domain, so it has to be a Cloudflare zone. Add the site in Cloudflare, switch the Porkbun nameservers to the two Cloudflare nameservers they show you, then attach `memorymap.world` and `www.memorymap.world` on the Worker’s Domains tab. Add the domain in Cloudflare *before* pointing DNS, or the host returns a 522.
+`wrangler.toml` points Wrangler at `dist`. Node 22 is in `.node-version`. The Worker name is `memorymap`. Custom domains `memorymap.world` and `www.memorymap.world` are already attached.
+
+If Git deploy ever breaks, reconnect the repo in Cloudflare: Workers & Pages → `memorymap` → Settings → Builds.
 
 After nameservers move off Porkbun, set up Cloudflare Email Routing if you want `hello@memorymap.world` forwarded. Porkbun forwarding will not keep working on Cloudflare DNS unless you copy the MX records.
