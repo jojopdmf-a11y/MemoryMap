@@ -36,3 +36,28 @@ Then open the local URL Vite prints, try the sample trip, and download a map.
 Preview and styling stay free and anonymous. Sign in (email link or Google) before you buy credits. A new souvenir costs 1 credit and saves the trip recipe on the account. Download the same map again for free. Change the trip or styling and the next file spends another credit.
 
 Until a merchant of record is connected, buying a pack only adds credits in this browser (`localStorage`). Set `VITE_CHECKOUT_BASE_URL` for live checkout and `VITE_GOOGLE_CLIENT_ID` for Google sign-in.
+
+## Deploy (memorymap.world)
+
+The app is a static Vite build. Leave checkout and Google env vars unset for the preview launch.
+
+```bash
+npm ci
+npm run build
+```
+
+Output is `dist`. Cloudflare Pages settings:
+
+- **Build command:** `npm run build`
+- **Build output directory:** `dist`
+- **Node version:** `22` (also in `.node-version`)
+
+Connect the GitHub mirror so each push to `main` publishes. Or upload `dist` once with:
+
+```bash
+npx wrangler pages deploy dist --project-name memorymap
+```
+
+`memorymap.world` is an apex domain, so it has to be a Cloudflare zone. Add the site in Cloudflare, switch the Porkbun nameservers to the two Cloudflare nameservers they show you, then attach `memorymap.world` and `www.memorymap.world` as custom domains on the Pages project. Add the domain in the Pages dashboard *before* pointing DNS, or the host returns a 522.
+
+After nameservers move off Porkbun, set up Cloudflare Email Routing if you want `hello@memorymap.world` forwarded. Porkbun forwarding will not keep working on Cloudflare DNS unless you copy the MX records.
