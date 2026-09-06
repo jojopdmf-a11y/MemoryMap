@@ -313,10 +313,12 @@ export default function App() {
             <aside className="map-guide" aria-label="What to do next">
               <p className="map-guide-kicker">What to do</p>
               <ul>
-                <li>Press Play tour to watch the route appear.</li>
-                <li>Change the look in the bar under the map.</li>
-                <li>Fix or skip any stop that didn’t land.</li>
-                <li>Download when the trip looks right.</li>
+                <li>Look over your locations in the list below.</li>
+                <li>Fix or skip any that have errors.</li>
+                <li>Use the column check boxes to choose what is displayed.</li>
+                <li>Press ‘Play Tour’ to watch the route appear.</li>
+                <li>Change the look of the map at any time using the options below the map.</li>
+                <li>Download once you have finalized your map.</li>
               </ul>
             </aside>
             <section className="map-panel">
