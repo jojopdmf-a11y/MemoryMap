@@ -46,16 +46,21 @@ npm ci
 npm run build
 ```
 
-Output is `dist`. Cloudflare Pages settings:
+Output is `dist`. Cloudflare’s current Git import creates a Worker (not classic Pages). Use:
 
+- **Project name:** `memorymap`
 - **Build command:** `npm run build`
-- **Build output directory:** `dist`
-- **Node version:** `22` (also in `.node-version`)
+- **Deploy command:** `npx wrangler deploy`
+- **Path:** `/`
+- Let Cloudflare **create a new API token** (that is a Cloudflare token, not a GitHub token)
+- Leave environment variables empty
 
-Connect the GitHub mirror so each push to `main` publishes. Or upload `dist` once with:
+`wrangler.toml` points Wrangler at `dist`. Node 22 is in `.node-version`.
+
+Or deploy from a machine that is logged into Cloudflare:
 
 ```bash
-npx wrangler pages deploy dist --project-name memorymap
+npx wrangler deploy
 ```
 
 `memorymap.world` is an apex domain, so it has to be a Cloudflare zone. Add the site in Cloudflare, switch the Porkbun nameservers to the two Cloudflare nameservers they show you, then attach `memorymap.world` and `www.memorymap.world` as custom domains on the Pages project. Add the domain in the Pages dashboard *before* pointing DNS, or the host returns a 522.
