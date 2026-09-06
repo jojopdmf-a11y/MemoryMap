@@ -331,6 +331,30 @@
   max-width: 22em;
 }
 
+.preview-banner {
+  position: sticky;
+  top: 0;
+  z-index: 70;
+  padding: 10px 20px;
+  border-bottom: 1px solid color-mix(in srgb, var(--terra) 35%, transparent);
+  background: color-mix(in srgb, var(--terra) 16%, var(--paper));
+  font-family: var(--sans);
+  font-size: 13px;
+  line-height: 1.45;
+  text-align: center;
+}
+
+.preview-banner p {
+  margin: 0 auto;
+  max-width: 52em;
+}
+
+.preview-banner a {
+  color: var(--terra);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
 .app.is-landing .topbar {
   justify-content: flex-end;
 }
@@ -400,6 +424,10 @@
 .brand-hero {
   text-align: center;
   margin: 0 0 28px;
+}
+
+.brand-hero .kicker {
+  margin: 0 0 10px;
 }
 
 .brand-lockup {
@@ -1423,8 +1451,12 @@
     grid-template-columns: minmax(0, 1fr);
   }
 
+  .preview-banner,
   .site-foot,
   .legal {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
     padding-left: 16px;
     padding-right: 16px;
   }

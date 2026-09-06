@@ -1,13 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import {
-  consumeSignInFromUrl,
-  findLibraryMatch,
-  useAccount,
-} from './accountStore'
-import { AccountMenu } from './components/AccountMenu'
 import { AdSlot } from './components/AdSlot'
 import { CreditsDock } from './components/CreditsDock'
-import { DownloadSheet } from './components/DownloadSheet'
 import { DropZone, SheetPicker } from './components/DropZone'
 import { PreviewMap } from './components/PreviewMap'
 import { StopTable } from './components/StopTable'
@@ -27,25 +20,18 @@ import {
   type IngestResult,
   type SheetChoice,
 } from './source'
-import { normalizeRecipe, recipeFingerprint } from './recipe'
-import { exportableStops } from './trip'
+import { exportableStops, souvenirFilename } from './trip'
 import { SiteFooter } from './components/SiteFooter'
 import { StyleBar } from './components/StyleBar'
 import { DEFAULT_FIELDS, DEFAULT_LOOK, type CardField, type Look } from './look'
+import { buildSouvenirHtml } from './souvenir'
 import type { Stop } from './types'
 import './App.css'
 
 export default function App() {
   const [stops, setStops] = useState<Stop[] | null>(null)
   const [title, setTitle] = useState('')
-  const [error, setError] = useState<string | null>(() => {
-    try {
-      consumeSignInFromUrl()
-      return null
-    } catch (err) {
-      return err instanceof Error ? err.message : 'That sign-in link failed.'
-    }
-  })
+  const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
   const [importing, setImporting] = useState(false)
   const [sheetChoices, setSheetChoices] = useState<{
@@ -55,10 +41,8 @@ export default function App() {
   const [look, setLook] = useState<Look>(DEFAULT_LOOK)
   const [revealed, setRevealed] = useState(0)
   const [playing, setPlaying] = useState(false)
-  const [sheet, setSheet] = useState<'download' | 'buy' | null>(null)
   const geoGen = useRef(0)
   const stopsRef = useRef<Stop[] | null>(null)
-  const { account } = useAccount()
 
   useEffect(() => {
     stopsRef.current = stops
@@ -239,42 +223,42 @@ export default function App() {
     })
   }
 
-  const recipe = ready
-    ? normalizeRecipe({
-        title: title.trim() || 'Untitled trip',
-        stops: plotted,
-        look: {
-          ...DEFAULT_LOOK,
-          ...look,
-          fields: { ...DEFAULT_FIELDS, ...look.fields },
-        },
+  function downloadMap() {
+    if (!ready) return
+    try {
+      const tripTitle = title.trim() || 'Untitled trip'
+      const html = buildSouvenirHtml(tripTitle, plotted, {
+        ...DEFAULT_LOOK,
+        ...look,
+        fields: { ...DEFAULT_FIELDS, ...look.fields },
       })
-    : null
-  const owned = recipe
-    ? Boolean(findLibraryMatch(recipeFingerprint(recipe)))
-    : false
-
-  function requestDownload() {
-    if (!ready || !recipe) return
-    setSheet('download')
+      downloadText(html, souvenirFilename(tripTitle), 'text/html;charset=utf-8')
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : 'Could not download the souvenir file.',
+      )
+    }
   }
 
   return (
     <div className={stops || sheetChoices ? 'app' : 'app is-landing'}>
-      <header className="topbar">
-        <div className="topbar-brand">
-          <p className="kicker">MemoryMap</p>
-          <p className="tagline">Visualize Your Voyages, Treasure Your Travels.</p>
-        </div>
-        <div className="topbar-tools">
-          {stops && (
-            <button type="button" className="ghost" onClick={reset}>
-              New file
-            </button>
-          )}
-          <AccountMenu onBuyCredits={() => setSheet('buy')} />
-        </div>
-      </header>
+      {workspaceOpen && (
+        <header className="topbar">
+          <div className="topbar-brand">
+            <p className="kicker">MemoryMap</p>
+            <p className="tagline">Visualize Your Voyages, Treasure Your Travels.</p>
+          </div>
+          <div className="topbar-tools">
+            {stops && (
+              <button type="button" className="ghost" onClick={reset}>
+                New file
+              </button>
+            )}
+          </div>
+        </header>
+      )}
       <AdSlot variant="leaderboard" />
 
       {error && (
@@ -369,21 +353,13 @@ export default function App() {
             </div>
             <CreditsDock
               canDownload={ready}
-              alreadyOwned={owned}
-              onBuy={() => setSheet('buy')}
-              onDownload={requestDownload}
+              onDownload={downloadMap}
               hint={
                 busy
                   ? 'Looking up places…'
                   : !ready
                     ? 'Skip or fix stops without coordinates to download.'
-                    : owned
-                      ? 'This styling is already on your account. Download again is free.'
-                      : !account
-                        ? `${plotted.length} stop${plotted.length === 1 ? '' : 's'} ready. Sign in to download.`
-                        : account.credits < 1
-                          ? 'Buy a pack, then confirm to download.'
-                          : `${plotted.length} stop${plotted.length === 1 ? '' : 's'} ready · 1 credit.`
+                    : `${plotted.length} stop${plotted.length === 1 ? '' : 's'} ready. Download is free.`
               }
             />
             <StopTable
@@ -417,12 +393,6 @@ export default function App() {
       )}
       <AdSlot variant="footer" />
       <SiteFooter />
-      <DownloadSheet
-        open={sheet !== null}
-        intent={sheet ?? 'download'}
-        recipe={recipe}
-        onClose={() => setSheet(null)}
-      />
     </div>
   )
 }

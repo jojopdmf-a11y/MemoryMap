@@ -50,14 +50,16 @@ export function DropZone({
         </div>
         <header className="brand-hero">
           <div className="brand-lockup">
+            <p className="kicker">Public preview</p>
             <h1 className="brand-mark">MemoryMap</h1>
             <p className="tagline">
               Visualize Your Voyages, Treasure Your Travels.
             </p>
           </div>
           <p className="lede">
-            Drop a file, paste a Google Sheets link, or enter the stops. We draw
-            the route, then pack the map into a single HTML file.
+            This is a public preview. Drop a file, paste a Google Sheets link, or
+            enter the stops. Mapping and the souvenir file are free — no sign-in
+            and no credit pack.
           </p>
         </header>
         <div className="trip-start">

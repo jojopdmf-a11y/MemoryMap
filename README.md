@@ -1,6 +1,6 @@
 # MemoryMap
 
-Type the stops, drop a CSV of places and dates, an Excel workbook, or a Google Sheets link. Preview the route, then download a single HTML file that plays the trip on a map.
+Type the stops, drop a CSV of places and dates, an Excel workbook, or a Google Sheets link. This public preview maps the route, then lets you download a single HTML file for free.
 
 The downloaded file has Leaflet, styles, and stop data baked in. It only needs the internet for map tiles.
 
@@ -29,13 +29,13 @@ npm install
 npm run dev
 ```
 
-Then open the local URL Vite prints, try the sample trip, and download a map.
+Then open the local URL Vite prints, try the sample trip, and download a map. Download is free in this public preview.
 
-## Accounts and downloads
+## Public preview
 
-Preview and styling stay free and anonymous. Sign in (email link or Google) before you buy credits. A new souvenir costs 1 credit and saves the trip recipe on the account. Download the same map again for free. Change the trip or styling and the next file spends another credit.
+This is a public preview. Mapping and the souvenir file are free. Accounts and paid credits are not for sale yet. There is no sign-in and no credit pack on the site.
 
-Until a merchant of record is connected, buying a pack only adds credits in this browser (`localStorage`). Set `VITE_CHECKOUT_BASE_URL` for live checkout and `VITE_GOOGLE_CLIENT_ID` for Google sign-in.
+Leave checkout and Google env vars unset for the preview launch.
 
 ## Deploy (memorymap.world)
 

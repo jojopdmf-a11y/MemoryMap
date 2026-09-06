@@ -13,28 +13,26 @@ export function PrivacyPage() {
         </div>
       </header>
       <main className="legal">
-        <p className="legal-kicker">Legal</p>
+        <p className="legal-kicker">Public preview</p>
         <h1>Privacy</h1>
         <p>
-          {SITE_NAME} turns a list of places into a map you can preview and
-          download. This page describes what happens to that information today.
+          {SITE_NAME} is a public preview. It turns a list of places into a map
+          you can preview, then download as a souvenir file for free. Accounts
+          and paid credits are not for sale yet. This page describes what happens
+          to that information today.
         </p>
 
         <h2>What stays on your computer</h2>
         <p>
           The trip you type, drop, or load from a spreadsheet is processed in
-          your browser. Sign-in, credits, and the recipes of maps you have
-          already paid for are stored in this browser only (
-          <code>localStorage</code>). Clearing the browser, switching computers,
-          or using a private window removes them.
+          your browser. Nothing from that trip is stored on our servers. Clearing
+          the browser, switching computers, or using a private window removes it.
         </p>
 
         <h2>What we see</h2>
         <p>
-          If you enter an email to sign in, that address is saved in this
-          browser so the app can show your credits. We do not yet send sign-in
-          mail from our servers. Card checkout is not live, so we do not collect
-          payment details.
+          This public preview does not ask you to sign in, and it does not sell
+          credits. We do not collect payment details.
         </p>
         <p>
           If you write to{' '}
@@ -53,9 +51,9 @@ export function PrivacyPage() {
 
         <h2>The file you download</h2>
         <p>
-          A souvenir is a single HTML file on your computer. It contains the
-          trip you plotted. It is not stored on our servers. The file still
-          needs the internet for map tiles.
+          Download is free in this public preview. A souvenir is a single HTML
+          file on your computer. It contains the trip you plotted. It is not
+          stored on our servers. The file still needs the internet for map tiles.
         </p>
 
         <h2>Advertising</h2>
