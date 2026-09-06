@@ -131,6 +131,7 @@ export function StyleBar({
       </label>
       <ColorWell
         label="Pin"
+        align="end"
         value={look.pinColor}
         open={colorWell === 'pin'}
         onOpen={() => setColorWell('pin')}
