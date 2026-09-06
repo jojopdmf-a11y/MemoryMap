@@ -335,6 +335,7 @@
   position: sticky;
   top: 0;
   z-index: 70;
+  flex-shrink: 0;
   padding: 10px 20px;
   border-bottom: 1px solid color-mix(in srgb, var(--terra) 35%, transparent);
   background: color-mix(in srgb, var(--terra) 16%, var(--paper));
@@ -1454,9 +1455,6 @@
   .preview-banner,
   .site-foot,
   .legal {
-    padding-left: 16px;
-    padding-right: 16px;
-  }
     padding-left: 16px;
     padding-right: 16px;
   }
