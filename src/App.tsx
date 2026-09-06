@@ -318,7 +318,7 @@ export default function App() {
                 <li>Use the column check boxes to choose what is displayed.</li>
                 <li>Press ‘Play Tour’ to watch the route appear.</li>
                 <li>Change the look of the map at any time using the options below the map.</li>
-                <li>Download once you have finalized your map.</li>
+                <li>Download once you are finished.</li>
               </ul>
             </aside>
             <section className="map-panel">
