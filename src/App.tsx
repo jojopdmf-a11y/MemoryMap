@@ -29,6 +29,7 @@ import {
 } from './source'
 import { normalizeRecipe, recipeFingerprint } from './recipe'
 import { exportableStops } from './trip'
+import { SiteFooter } from './components/SiteFooter'
 import { StyleBar } from './components/StyleBar'
 import { DEFAULT_FIELDS, DEFAULT_LOOK, type CardField, type Look } from './look'
 import type { Stop } from './types'
@@ -415,6 +416,7 @@ export default function App() {
         </main>
       )}
       <AdSlot variant="footer" />
+      <SiteFooter />
       <DownloadSheet
         open={sheet !== null}
         intent={sheet ?? 'download'}
