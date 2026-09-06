@@ -63,6 +63,6 @@ Or deploy from a machine that is logged into Cloudflare:
 npx wrangler deploy
 ```
 
-`memorymap.world` is an apex domain, so it has to be a Cloudflare zone. Add the site in Cloudflare, switch the Porkbun nameservers to the two Cloudflare nameservers they show you, then attach `memorymap.world` and `www.memorymap.world` as custom domains on the Pages project. Add the domain in the Pages dashboard *before* pointing DNS, or the host returns a 522.
+`memorymap.world` is an apex domain, so it has to be a Cloudflare zone. Add the site in Cloudflare, switch the Porkbun nameservers to the two Cloudflare nameservers they show you, then attach `memorymap.world` and `www.memorymap.world` on the Worker’s Domains tab. Add the domain in Cloudflare *before* pointing DNS, or the host returns a 522.
 
 After nameservers move off Porkbun, set up Cloudflare Email Routing if you want `hello@memorymap.world` forwarded. Porkbun forwarding will not keep working on Cloudflare DNS unless you copy the MX records.
