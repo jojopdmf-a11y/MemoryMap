@@ -225,6 +225,35 @@ export function findLibraryMatch(fingerprint: string): LibraryItem | null {
   return account.library.find((item) => item.fingerprint === fingerprint) ?? null
 }
 
+export function recordBrowserDownload(
+  recipe: SouvenirRecipe,
+  filename: string,
+): LibraryItem | null {
+  const account = snapshot.account
+  if (!account) return null
+  const normalized = normalizeRecipe(recipe)
+  const fingerprint = recipeFingerprint(normalized)
+  const existing = account.library.find((item) => item.fingerprint === fingerprint)
+  if (existing) return completeFreeRedownload(existing.id)
+
+  const item: LibraryItem = {
+    id: uid('map'),
+    title: normalized.title,
+    filename,
+    fingerprint,
+    recipe: normalized,
+    createdAt: nowIso(),
+    lastDownloadedAt: nowIso(),
+    downloadCount: 1,
+  }
+  replaceAccount({
+    ...account,
+    library: [item, ...account.library],
+  })
+  emit()
+  return item
+}
+
 export function recordPaidDownload(
   recipe: SouvenirRecipe,
   filename: string,

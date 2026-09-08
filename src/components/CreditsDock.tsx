@@ -8,7 +8,8 @@ export function CreditsDock({ canDownload, hint, onDownload }: Props) {
   return (
     <div className="credits-dock">
       <p className="credits-lead">
-        Download is free in this public preview. No sign-in and no credit pack.
+        Download is free in this public preview. Sign in to keep a list in this
+        browser so you can download a map again.
       </p>
       <div className="panel-actions">
         <button

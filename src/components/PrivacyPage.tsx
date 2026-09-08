@@ -39,7 +39,7 @@ export function PrivacyPage() {
           do not create accounts by hand. Email sign-in sends a one-time link
           to the address you type. Google shares your email with us when you
           continue with Google. This public preview keeps the signed-in session
-          in this browser.
+          and maps you download while signed in in this browser.
         </p>
 
         <h2>What we see</h2>

@@ -25,6 +25,7 @@ import { SiteFooter } from './components/SiteFooter'
 import { StyleBar } from './components/StyleBar'
 import { DEFAULT_FIELDS, DEFAULT_LOOK, type CardField, type Look } from './look'
 import { buildSouvenirHtml } from './souvenir'
+import { recordBrowserDownload } from './accountStore'
 import type { Stop } from './types'
 import './App.css'
 
@@ -237,12 +238,18 @@ export default function App() {
     if (!ready) return
     try {
       const tripTitle = title.trim() || 'Untitled trip'
-      const html = buildSouvenirHtml(tripTitle, plotted, {
+      const recipeLook = {
         ...DEFAULT_LOOK,
         ...look,
         fields: { ...DEFAULT_FIELDS, ...look.fields },
-      })
-      downloadText(html, souvenirFilename(tripTitle), 'text/html;charset=utf-8')
+      }
+      const html = buildSouvenirHtml(tripTitle, plotted, recipeLook)
+      const filename = souvenirFilename(tripTitle)
+      downloadText(html, filename, 'text/html;charset=utf-8')
+      recordBrowserDownload(
+        { title: tripTitle, stops: plotted, look: recipeLook },
+        filename,
+      )
     } catch (err) {
       setError(
         err instanceof Error
