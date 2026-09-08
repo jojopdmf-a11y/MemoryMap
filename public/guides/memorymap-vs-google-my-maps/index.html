@@ -1,0 +1,344 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MemoryMap vs Google My Maps for a Trip List · MemoryMap</title>
+    <meta
+      name="description"
+      content="Compare Google My Maps and MemoryMap for spreadsheet trip itineraries — import-heavy custom maps vs list→map."
+    />
+    <link
+      rel="canonical"
+      href="https://www.memorymap.world/guides/memorymap-vs-google-my-maps/"
+    />
+    <meta property="og:type" content="article" />
+    <meta property="og:site_name" content="MemoryMap" />
+    <meta
+      property="og:title"
+      content="MemoryMap vs Google My Maps for a Trip List"
+    />
+    <meta
+      property="og:description"
+      content="Compare Google My Maps and MemoryMap for spreadsheet trip itineraries — import-heavy custom maps vs list→map."
+    />
+    <meta
+      property="og:url"
+      content="https://www.memorymap.world/guides/memorymap-vs-google-my-maps/"
+    />
+    <meta name="theme-color" content="#eef5f2" />
+    <link rel="stylesheet" href="/guides/guides.css" />
+  </head>
+  <body>
+    <article class="wrap">
+      <nav class="site-nav" aria-label="Site">
+        <a href="https://www.memorymap.world/">MemoryMap</a>
+        <span class="sep" aria-hidden="true">/</span>
+        <a href="/guides/">Guides</a>
+      </nav>
+
+      <h1>MemoryMap vs Google My Maps for a Trip List</h1>
+
+      <p>
+        Same job on paper: get places from a spreadsheet onto a map. Different
+        default path once the data is a
+        <strong>dated trip itinerary</strong>.
+      </p>
+      <p>
+        Google My Maps is a strong free custom pin mapper inside Google’s world
+        — layers, styling, share, embed. MemoryMap is built for
+        <strong>list → map</strong> on trip stops: drop a CSV/Excel, paste a
+        Sheets link, or type date + place, then see the itinerary. This page is
+        a fair choose-when-to-use-which guide for travelers who already tried
+        (or are about to try) My Maps for a Google My Maps trip itinerary — not
+        a dunk on Google.
+      </p>
+
+      <h2>Same job on paper, different default path</h2>
+      <p>
+        Both tools can put places on a map. My Maps starts as a
+        <strong>general custom map builder</strong>: create a map, add a layer,
+        import or place pins, style, share. MemoryMap starts as a
+        <strong>trip list in → trip map out</strong> tool: the homepage expects
+        a voyage-shaped file or typed stops.
+      </p>
+      <p>
+        If your spreadsheet is a vacation stop list (cruise ports, rail cities,
+        road-trip overnights with dates), the question is less “which product is
+        #1?” and more “which path matches the next ten minutes of my life?”
+      </p>
+
+      <h2>What My Maps does well</h2>
+      <p>
+        <a href="https://www.google.com/maps/about/mymaps/">Google My Maps</a>
+        is genuinely good at:
+      </p>
+      <ul>
+        <li>Free custom maps tied to a Google account</li>
+        <li>
+          Drawing points and shapes, searching places, personalizing icons and
+          colors
+        </li>
+        <li>
+          Importing from spreadsheets and other file types
+          (<a href="https://support.google.com/mymaps/answer/3024836"
+            >Import map features from a file</a
+          >
+          in Google’s My Maps Help)
+        </li>
+        <li>
+          Sharing, collaborating, embedding, and organizing maps with Drive
+        </li>
+        <li>Viewing custom maps alongside Google Maps on mobile</li>
+      </ul>
+      <p>
+        Stay on My Maps when you want a polished Google custom map, deep layer
+        styling, or a classroom / event / one-off pin collection — and you are
+        fine walking through create → layer → import → column pick → style.
+      </p>
+      <p>
+        Google’s help is the source of truth for file types, row caps, and size
+        limits. Those numbers change; check the current
+        <a href="https://support.google.com/mymaps/answer/3024836"
+          >My Maps import help</a
+        >
+        rather than trusting a blog’s old screenshot. As of this draft’s read of
+        that page, Google documents support for CSV, TSV, KML/KMZ, GPX, XLSX,
+        and Google Sheets (among others), expects a header row for non-photo
+        imports, and asks for a location column such as lat/lng, addresses, or
+        place names — and it states not to import files with more than 2,000
+        rows. Re-check Google’s page before you plan around any cap.
+      </p>
+
+      <h2>Where trip lists get awkward in My Maps</h2>
+      <p>
+        My Maps <em>can</em> map a trip from a spreadsheet. The friction is the
+        <strong>step count and the mental model</strong>:
+      </p>
+      <ol>
+        <li>Export or pick the file / Sheet</li>
+        <li>Sign in and create (or open) a map</li>
+        <li>Add a layer</li>
+        <li>Import</li>
+        <li>Choose which columns are location and title</li>
+        <li>Style pins and clean up what didn’t match</li>
+      </ol>
+      <p>
+        That flow is normal for a general pin mapper. It is not built around
+        <strong>date + city/state (or place)</strong> as a first-class trip
+        itinerary path. Dates often become just another data column you style
+        yourself. Re-import or merge options exist in My Maps Help when the
+        sheet changes — useful, but still an import-centric loop, not “paste the
+        trip link and plot.”
+      </p>
+      <p>
+        None of that makes My Maps “bad.” It makes it a
+        <strong>custom map workshop</strong>. Travelers who only wanted to
+        <em>see the sailing or the road-trip line</em> sometimes bounce because
+        the workshop is bigger than the job.
+      </p>
+
+      <h2>What MemoryMap does instead</h2>
+      <p>
+        <a href="https://www.memorymap.world">MemoryMap</a> optimizes for the
+        trip-list moment:
+      </p>
+      <ul>
+        <li>
+          <strong>Drop</strong> CSV or Excel (Numbers users: export to
+          Excel/CSV first)
+        </li>
+        <li>
+          <strong>Paste</strong> a Google Sheets link shared as “Anyone with the
+          link can view” (open the right tab before copying the link), or
+          download Excel and drop it
+        </li>
+        <li>
+          <strong>Type</strong> stops: trip name, then date + place (or city /
+          state / country). Title and notes optional; lat/lng optional — names
+          can be looked up
+        </li>
+        <li>
+          <strong>Try a sample</strong> on the homepage (Caribbean cruise,
+          European rail, L.A.–Nashville road trip) before you bring a real file
+        </li>
+      </ul>
+      <p class="honesty">
+        <strong>Honesty (public preview — site stance):</strong> This is a
+        public preview. Mapping and the souvenir file are free. Sign-in is
+        optional. Paid credits are not for sale yet. Contact
+        <a href="mailto:hello@memorymap.world">hello@memorymap.world</a>. Do
+        not invent required accounts, trials, or a credits checkout — the
+        preview does not sell paid credits and does not collect payment details
+        for them.
+      </p>
+      <p>
+        On the preview, the trip you type, drop, or load is processed in your
+        browser; clearing the browser, switching computers, or using a private
+        window removes it. A souvenir download is a single HTML file on your
+        computer (map tiles still need the internet).
+      </p>
+      <p>
+        <strong>What MemoryMap is not:</strong> a full My Maps replacement, a
+        deep layer/CMS styler inside Google’s ecosystem, or a route optimizer.
+        If you need heavy icon libraries, multi-layer Google embeds, or
+        shortest-drive reordering, pick the tool built for that.
+      </p>
+      <p>
+        This article does <strong>not</strong> claim MemoryMap exports into My
+        Maps. Only use that path if the product later supports it.
+      </p>
+
+      <h2>Comparison table</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Need</th>
+              <th>Google My Maps</th>
+              <th>MemoryMap</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>General custom pin map</td>
+              <td>Strong</td>
+              <td>Not the focus</td>
+            </tr>
+            <tr>
+              <td>Trip list (date + place) → map</td>
+              <td>Possible via import</td>
+              <td>Default path</td>
+            </tr>
+            <tr>
+              <td>Paste Google Sheets link for a trip</td>
+              <td>Import / Drive flow</td>
+              <td>Paste-link field</td>
+            </tr>
+            <tr>
+              <td>Deep layer styling / Google ecosystem</td>
+              <td>Strong</td>
+              <td>Lighter</td>
+            </tr>
+            <tr>
+              <td>Souvenir file from your trip list</td>
+              <td>DIY</td>
+              <td>Preview product intent</td>
+            </tr>
+            <tr>
+              <td>Route optimization</td>
+              <td>No</td>
+              <td>No</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        Neither tool replaces a delivery-style route optimizer. Visualization of
+        a planned itinerary is a different job from recalculating drive order.
+      </p>
+
+      <h2>Pick one in 30 seconds</h2>
+      <p>
+        <strong>Stay on My Maps if</strong> you want a heavily styled Google
+        custom map, collaboration inside Drive, or embed-ready layers — and you
+        do not mind the import/column-mapping setup.
+      </p>
+      <p>
+        <strong>Use MemoryMap if</strong> the input is already a trip itinerary
+        (dates and places in a sheet or typed list) and you want the shortest
+        path to seeing it on a map, with the public preview’s free mapping and
+        souvenir file.
+      </p>
+      <p>
+        <strong>Use both if</strong> that helps: MemoryMap to see the trip
+        <em>now</em> from the list you already keep; My Maps later if you need a
+        polished Google share/embed map and are willing to import.
+      </p>
+
+      <h2>FAQ</h2>
+      <h3>Can My Maps map a trip from a spreadsheet?</h3>
+      <p>
+        Yes. My Maps can import spreadsheet-style data (see
+        <a href="https://support.google.com/mymaps/answer/3024836"
+          >Google’s import help</a
+        >). Expect create map → layer → import → choose location columns →
+        style. It works; it is multi-step.
+      </p>
+      <h3>What’s the step count difference?</h3>
+      <p>
+        My Maps: workshop path (map + layer + import + column mapping + style).
+        MemoryMap: drop file, paste Sheets link, or type stops, then plot. Exact
+        clicks vary; the difference is default path, not a fake stopwatch score.
+      </p>
+      <h3>When should I stay on My Maps?</h3>
+      <p>
+        When Google ecosystem features matter more than trip-first input: deep
+        styling, Drive collaboration, embed, mobile “Your Places” custom maps.
+      </p>
+      <h3>Does MemoryMap export to My Maps?</h3>
+      <p>
+        Do not assume that. This article does not claim an export bridge unless
+        the live product says so.
+      </p>
+      <h3>Is MemoryMap free right now?</h3>
+      <p>
+        On the public preview: mapping and the souvenir file are free, sign-in
+        is optional, and paid credits are not for sale yet.
+        <a href="mailto:hello@memorymap.world">hello@memorymap.world</a>.
+      </p>
+      <h3>Where do I check My Maps limits?</h3>
+      <p>
+        Always
+        <a href="https://support.google.com/mymaps/answer/3024836"
+          >Google’s current My Maps Help</a
+        >
+        (and related My Maps help articles) — not third-party blogs that may
+        cite outdated pin or layer caps.
+      </p>
+      <h3>Answer-ready summary</h3>
+      <p>
+        <strong
+          >Should I use Google My Maps or MemoryMap for a trip spreadsheet?</strong
+        >
+        Use Google My Maps when you want a general custom Google map and are
+        fine importing a CSV or Sheet through My Maps’ import flow. Use
+        MemoryMap when your data is already a trip stop list (dates and places)
+        and you want to drop a file, paste a Sheets link, or type stops to see
+        the itinerary on a map quickly. Neither replaces a route optimizer. On
+        MemoryMap’s public preview, mapping and the souvenir file are free,
+        sign-in is optional, and paid credits are not for sale yet.
+      </p>
+
+      <div class="cta">
+        <p>
+          If the next ten minutes are “see this trip list on a map,” open the
+          <a href="https://www.memorymap.world/">MemoryMap homepage</a>
+          and drop the spreadsheet, paste a viewable Sheets link, or try a
+          sample.
+        </p>
+      </div>
+
+      <footer class="site-foot">
+        <p>
+          <a href="/guides/">All guides</a>
+          ·
+          <a href="/guides/plot-trip-stops-from-spreadsheet/"
+            >Spreadsheet to map</a
+          >
+          ·
+          <a href="/guides/map-trip-from-google-sheet/">Google Sheet</a>
+          ·
+          <a href="/guides/cruise-itinerary-from-port-list/"
+            >Cruise port list</a
+          >
+          ·
+          <a href="/guides/road-trip-map-from-city-list/">Road trip cities</a>
+          ·
+          <a href="/privacy">Privacy</a>
+        </p>
+      </footer>
+    </article>
+  </body>
+</html>
