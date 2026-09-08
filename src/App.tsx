@@ -13,7 +13,6 @@ import {
   titleFromFilename,
 } from './csv'
 import { geocodePlace } from './geocode'
-import { SAMPLE_CSV, SAMPLE_FILENAME } from './sample'
 import {
   ingestFile,
   ingestGoogleSheetsUrl,
@@ -113,7 +112,7 @@ export default function App() {
     }
   }
 
-  function loadFromText(text: string, filename: string) {
+  function loadFromText(text: string, filename: string, tripTitle?: string) {
     const result = parseCsv(text)
     geoGen.current += 1
     const generation = geoGen.current
@@ -124,7 +123,7 @@ export default function App() {
       return
     }
     setError(null)
-    setTitle(titleFromFilename(filename))
+    setTitle(tripTitle?.trim() || titleFromFilename(filename))
     setStops(result.stops)
     setRevealed(0)
     setPlaying(false)
@@ -285,10 +284,7 @@ export default function App() {
           onFile={onFile}
           onSheetsUrl={onSheetsUrl}
           onManual={(csv, label) => loadFromText(csv, label)}
-          onSample={() => loadFromText(SAMPLE_CSV, SAMPLE_FILENAME)}
-          onDownloadSample={() =>
-            downloadText(SAMPLE_CSV, SAMPLE_FILENAME, 'text/csv;charset=utf-8')
-          }
+          onSample={(csv, filename, title) => loadFromText(csv, filename, title)}
         />
       )}
 

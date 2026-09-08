@@ -20,7 +20,7 @@ A Google Sheet must be shared as “Anyone with the link can view,” or downloa
 
 On the landing page you can also type a trip label plus date, city, state, and country for each stop. The app turns that into the same CSV the rest of the flow uses.
 
-See `public/sample-trip.csv` for a mixed example.
+See `public/caribbean-cruise.csv`, `public/european-train.csv`, and `public/la-to-nashville.csv` for mixed examples.
 
 ## Run
 
@@ -29,7 +29,7 @@ npm install
 npm run dev
 ```
 
-Then open the local URL Vite prints, try the sample trip, and download a map. Download is free in this public preview.
+Then open the local URL Vite prints, try a sample trip, and download a map. Download is free in this public preview.
 
 ## Public preview
 

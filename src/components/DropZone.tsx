@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { SAMPLE_TRIPS } from '../sample'
 import type { SheetChoice } from '../source'
 import { AdSlot } from './AdSlot'
 import { ManualTripForm } from './ManualTripForm'
@@ -8,8 +9,7 @@ type Props = {
   onFile: (file: File) => void
   onSheetsUrl: (url: string) => void
   onManual: (csv: string, label: string) => void
-  onSample: () => void
-  onDownloadSample: () => void
+  onSample: (csv: string, filename: string, title: string) => void
 }
 
 export function DropZone({
@@ -18,7 +18,6 @@ export function DropZone({
   onSheetsUrl,
   onManual,
   onSample,
-  onDownloadSample,
 }: Props) {
   const [url, setUrl] = useState('')
 
@@ -109,17 +108,32 @@ export function DropZone({
           </form>
           <ManualTripForm importing={importing} onSubmit={onManual} />
         </div>
+        <section className="sample-trips" aria-labelledby="sample-trips-heading">
+          <p className="kicker">Try a trip</p>
+          <h2 id="sample-trips-heading">No spreadsheet handy? Try a sample.</h2>
+          <p className="sample-trips-lead">
+            Play with a cruise, a train, or a road trip — same map as your own
+            file.
+          </p>
+          <ul className="sample-trip-grid">
+            {SAMPLE_TRIPS.map((trip) => (
+              <li key={trip.id}>
+                <button
+                  type="button"
+                  className="sample-trip-card"
+                  disabled={importing}
+                  onClick={() => onSample(trip.csv, trip.filename, trip.title)}
+                >
+                  <span className="sample-trip-try">Try</span>
+                  <strong>{trip.title}</strong>
+                  <span>{trip.blurb}</span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </section>
       </div>
       <AdSlot variant="inline" />
-      <p className="drop-actions">
-        <button type="button" className="linkish" onClick={onSample}>
-          Try a sample trip
-        </button>
-        <span aria-hidden="true">·</span>
-        <button type="button" className="linkish" onClick={onDownloadSample}>
-          Download sample CSV
-        </button>
-      </p>
     </section>
   )
 }
