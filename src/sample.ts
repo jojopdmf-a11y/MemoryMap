@@ -1,7 +1,6 @@
 export type SampleTrip = {
   id: 'caribbean' | 'europe' | 'nashville'
   title: string
-  blurb: string
   filename: string
   csv: string
 }
@@ -9,8 +8,7 @@ export type SampleTrip = {
 export const SAMPLE_TRIPS: SampleTrip[] = [
   {
     id: 'caribbean',
-    title: 'Caribbean cruise',
-    blurb: 'Miami home port plus four ports of call',
+    title: 'Caribbean Cruise',
     filename: 'caribbean-cruise.csv',
     csv: `title,date,place,lat,lng,notes
 Home port,2025-01-12,Miami FL,25.7617,-80.1918,Embarkation day
@@ -22,8 +20,7 @@ Falmouth,2025-01-17,Falmouth Jamaica,,,North coast
   },
   {
     id: 'europe',
-    title: 'European train',
-    blurb: 'Six cities across five countries',
+    title: 'European Rail Vacation',
     filename: 'european-train.csv',
     csv: `title,date,place,lat,lng,notes
 Paris,2025-06-02,Paris France,48.8566,2.3522,Gare du Nord
@@ -36,8 +33,7 @@ Prague,2025-06-12,Prague Czechia,,,Old Town
   },
   {
     id: 'nashville',
-    title: 'LA to Nashville',
-    blurb: 'Los Angeles to Nashville with three stops along the way',
+    title: 'L.A. to Nashville Road Trip',
     filename: 'la-to-nashville.csv',
     csv: `title,date,place,lat,lng,notes
 Los Angeles,2025-09-01,Los Angeles CA,34.0522,-118.2437,Start west

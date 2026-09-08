@@ -126,7 +126,6 @@ export function DropZone({
                 >
                   <span className="sample-trip-try">Try</span>
                   <strong>{trip.title}</strong>
-                  <span>{trip.blurb}</span>
                 </button>
               </li>
             ))}
