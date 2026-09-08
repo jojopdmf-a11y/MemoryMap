@@ -1,0 +1,157 @@
+:root {
+  --paper: #eef5f2;
+  --ink: #16302c;
+  --terra: #1f7a6a;
+  --muted: #5b706c;
+  --line: rgba(22, 48, 44, 0.1);
+  --serif: Palatino, 'Palatino Linotype', 'Iowan Old Style', Georgia, serif;
+  --sans: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 1.05rem;
+  line-height: 1.65;
+}
+
+a {
+  color: var(--terra);
+}
+
+a:hover {
+  text-decoration-thickness: 2px;
+}
+
+.wrap {
+  width: min(42rem, calc(100% - 2.4rem));
+  margin: 0 auto;
+  padding: 1.6rem 0 3.5rem;
+}
+
+.site-nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.45rem 0.7rem;
+  margin-bottom: 2rem;
+  font-size: 0.92rem;
+}
+
+.site-nav a {
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.site-nav a:hover {
+  text-decoration: underline;
+}
+
+.site-nav .sep {
+  color: var(--muted);
+}
+
+.lede {
+  color: var(--muted);
+  margin: 0 0 0.85rem;
+  font-size: 0.95rem;
+}
+
+h1 {
+  font-family: var(--serif);
+  font-size: clamp(1.85rem, 4vw, 2.35rem);
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  margin: 0 0 1.1rem;
+}
+
+h2 {
+  font-family: var(--serif);
+  font-size: 1.35rem;
+  font-weight: 600;
+  line-height: 1.3;
+  margin: 2.1rem 0 0.7rem;
+}
+
+p,
+ol,
+ul {
+  margin: 0 0 1rem;
+}
+
+li + li {
+  margin-top: 0.45rem;
+}
+
+.guide-list {
+  list-style: none;
+  padding: 0;
+  margin: 1.4rem 0 1.8rem;
+}
+
+.guide-list li {
+  margin: 0 0 1.1rem;
+  padding: 1rem 1.1rem;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--paper) 70%, white);
+}
+
+.guide-list a {
+  font-weight: 650;
+  text-decoration: none;
+}
+
+.guide-list a:hover {
+  text-decoration: underline;
+}
+
+.guide-list p {
+  margin: 0.35rem 0 0;
+  color: var(--muted);
+  font-size: 0.98rem;
+}
+
+.cta {
+  margin: 2.2rem 0 0;
+  padding: 1.15rem 1.2rem;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--terra) 8%, var(--paper));
+}
+
+.cta p {
+  margin: 0;
+}
+
+.honesty {
+  margin: 1.4rem 0;
+  padding: 0.95rem 1.05rem;
+  border-left: 3px solid var(--terra);
+  color: var(--muted);
+  font-size: 0.98rem;
+}
+
+.site-foot {
+  margin-top: 2.6rem;
+  padding-top: 1.1rem;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+.site-foot p {
+  margin: 0;
+}
