@@ -536,7 +536,8 @@
 }
 
 .app.is-landing .dropzone {
-  padding-top: 56px;
+  margin-top: 0;
+  padding-top: 64px;
 }
 
 .dropzone > h1 {

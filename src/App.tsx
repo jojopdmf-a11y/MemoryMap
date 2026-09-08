@@ -276,7 +276,7 @@ export default function App() {
           <AccountMenu />
         </div>
       </header>
-      <AdSlot variant="leaderboard" />
+      {(stops || sheetChoices) && <AdSlot variant="leaderboard" />}
 
       {error && (
         <div className="banner" role="alert">
