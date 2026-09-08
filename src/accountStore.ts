@@ -1,4 +1,5 @@
 import { useSyncExternalStore } from 'react'
+import { redeemMagicToken } from './authApi'
 import { type CreditPack } from './commerce'
 import {
   normalizeRecipe,
@@ -7,7 +8,6 @@ import {
 } from './recipe'
 
 const STORE_KEY = 'memorymap.accounts.v1'
-const LINK_TTL_MS = 30 * 60 * 1000
 
 export type Purchase = {
   id: string
@@ -52,15 +52,13 @@ type Persisted = {
 
 export type AccountSnapshot = {
   account: AccountRecord | null
-  pendingEmail: string | null
-  pendingToken: string | null
+  notice: string | null
 }
 
 const listeners = new Set<() => void>()
 
 let persisted = readStore()
-let pendingEmail: string | null = null
-let pendingToken: string | null = null
+let notice: string | null = null
 let snapshot = makeSnapshot()
 
 function nowIso(): string {
@@ -103,13 +101,18 @@ function makeSnapshot(): AccountSnapshot {
   const account =
     persisted.accounts.find((item) => item.id === persisted.sessionAccountId) ??
     null
-  return { account, pendingEmail, pendingToken }
+  return { account, notice }
 }
 
-function emit() {
-  writeStore()
+function emit(persist = true) {
+  if (persist) writeStore()
   snapshot = makeSnapshot()
   for (const listener of listeners) listener()
+}
+
+export function setAccountNotice(message: string | null) {
+  notice = message
+  emit(false)
 }
 
 function subscribe(listener: () => void): () => void {
@@ -150,90 +153,37 @@ function replaceAccount(next: AccountRecord) {
   }
 }
 
-export function requestMagicLink(email: string): { token: string; email: string } {
-  const normalized = normalizeEmail(email)
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalized)) {
-    throw new Error('Enter a valid email address.')
-  }
-  const token = uid('link')
-  const pending: PendingLink = {
-    email: normalized,
-    token,
-    createdAt: nowIso(),
-  }
-  persisted = {
-    ...persisted,
-    pendingLinks: [
-      ...persisted.pendingLinks.filter((item) => item.email !== normalized),
-      pending,
-    ],
-  }
-  pendingEmail = normalized
-  pendingToken = token
-  emit()
-  return { token, email: normalized }
-}
-
-export function magicLinkHref(token: string): string {
+export async function consumeSignInFromUrl(): Promise<boolean> {
   const url = new URL(window.location.href)
-  url.searchParams.set('signin', token)
-  return url.toString()
-}
-
-export function redeemMagicLink(token: string): AccountRecord {
-  const pending = persisted.pendingLinks.find((item) => item.token === token)
-  if (!pending) {
-    throw new Error('That sign-in link is not valid. Ask for a new one.')
-  }
-  if (Date.now() - Date.parse(pending.createdAt) > LINK_TTL_MS) {
-    persisted = {
-      ...persisted,
-      pendingLinks: persisted.pendingLinks.filter((item) => item.token !== token),
-    }
-    emit()
-    throw new Error('That sign-in link expired. Ask for a new one.')
-  }
-  const account = upsertAccount(pending.email)
-  persisted = {
-    ...persisted,
-    sessionAccountId: account.id,
-    pendingLinks: persisted.pendingLinks.filter((item) => item.token !== token),
-  }
-  pendingEmail = null
-  pendingToken = null
-  emit()
-  return account
-}
-
-export function consumeSignInFromUrl(): boolean {
-  const token = new URLSearchParams(window.location.search).get('signin')
+  const token = url.searchParams.get('signin')
   if (!token) return false
-  redeemMagicLink(token)
-  const url = new URL(window.location.href)
   url.searchParams.delete('signin')
   window.history.replaceState({}, '', `${url.pathname}${url.search}${url.hash}`)
-  return true
+  try {
+    const email = await redeemMagicToken(token)
+    signInWithEmail(email)
+    notice = `Signed in as ${email}.`
+    emit(false)
+    return true
+  } catch (err) {
+    notice =
+      err instanceof Error ? err.message : 'That sign-in link is not valid.'
+    emit(false)
+    return false
+  }
 }
 
 export function signInWithEmail(email: string): AccountRecord {
   const account = upsertAccount(email)
   persisted = { ...persisted, sessionAccountId: account.id }
-  pendingEmail = null
-  pendingToken = null
+  notice = null
   emit()
   return account
 }
 
 export function signOut() {
   persisted = { ...persisted, sessionAccountId: null }
-  pendingEmail = null
-  pendingToken = null
-  emit()
-}
-
-export function cancelPendingLink() {
-  pendingEmail = null
-  pendingToken = null
+  notice = null
   emit()
 }
 

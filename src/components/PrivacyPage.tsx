@@ -1,4 +1,5 @@
 import { CONTACT_EMAIL, CONTACT_MAILTO, SITE_NAME } from '../site'
+import { AccountMenu } from './AccountMenu'
 import { SiteFooter } from './SiteFooter'
 
 export function PrivacyPage() {
@@ -11,15 +12,18 @@ export function PrivacyPage() {
           </p>
           <p className="tagline">Visualize Your Voyages, Treasure Your Travels.</p>
         </div>
+        <div className="topbar-tools">
+          <AccountMenu />
+        </div>
       </header>
       <main className="legal">
         <p className="legal-kicker">Public preview</p>
         <h1>Privacy</h1>
         <p>
           {SITE_NAME} is a public preview. It turns a list of places into a map
-          you can preview, then download as a souvenir file for free. Accounts
-          and paid credits are not for sale yet. This page describes what happens
-          to that information today.
+          you can preview, then download as a souvenir file for free. Sign-in
+          is optional. Paid credits are not for sale yet. This page describes
+          what happens to that information today.
         </p>
 
         <h2>What stays on your computer</h2>
@@ -29,10 +33,19 @@ export function PrivacyPage() {
           the browser, switching computers, or using a private window removes it.
         </p>
 
+        <h2>Sign-in</h2>
+        <p>
+          You can create an account yourself with an email link or Google. We
+          do not create accounts by hand. Email sign-in sends a one-time link
+          to the address you type. Google shares your email with us when you
+          continue with Google. This public preview keeps the signed-in session
+          in this browser.
+        </p>
+
         <h2>What we see</h2>
         <p>
-          This public preview does not ask you to sign in, and it does not sell
-          credits. We do not collect payment details.
+          This public preview does not sell credits. We do not collect payment
+          details.
         </p>
         <p>
           If you write to{' '}
@@ -67,9 +80,10 @@ export function PrivacyPage() {
           Questions about this page or your data:{' '}
           <a href={CONTACT_MAILTO}>{CONTACT_EMAIL}</a>.
         </p>
-        <p className="legal-updated">Updated September 6, 2026.</p>
+        <p className="legal-updated">Updated September 8, 2026.</p>
       </main>
       <SiteFooter />
     </div>
   )
 }
+

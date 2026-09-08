@@ -1,11 +1,6 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { loadAuthConfig, requestMagicLink } from '../authApi'
 import { googleClientId } from '../commerce'
-import {
-  magicLinkHref,
-  requestMagicLink,
-  redeemMagicLink,
-  useAccount,
-} from '../accountStore'
 import { continueWithGoogle } from '../googleAuth'
 
 type Props = {
@@ -14,29 +9,31 @@ type Props = {
 }
 
 export function SignInForm({ lead, onSignedIn }: Props) {
-  const { pendingEmail, pendingToken } = useAccount()
-  const [email, setEmail] = useState(pendingEmail ?? '')
+  const [email, setEmail] = useState('')
+  const [sentTo, setSentTo] = useState<string | null>(null)
+  const [previewLink, setPreviewLink] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
-  const googleReady = Boolean(googleClientId())
+  const [googleId, setGoogleId] = useState(() => googleClientId())
+  const googleReady = Boolean(googleId)
 
-  function sendLink() {
+  useEffect(() => {
+    void loadAuthConfig().then((config) => {
+      if (config.googleClientId) setGoogleId(config.googleClientId)
+    })
+  }, [])
+
+  async function sendLink() {
+    setBusy(true)
     setError(null)
     try {
-      requestMagicLink(email)
+      const result = await requestMagicLink(email)
+      setSentTo(result.email)
+      setPreviewLink(result.previewLink ?? null)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not start sign-in.')
-    }
-  }
-
-  function openLink() {
-    if (!pendingToken) return
-    setError(null)
-    try {
-      redeemMagicLink(pendingToken)
-      onSignedIn?.()
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'That sign-in link failed.')
+    } finally {
+      setBusy(false)
     }
   }
 
@@ -44,7 +41,7 @@ export function SignInForm({ lead, onSignedIn }: Props) {
     setBusy(true)
     setError(null)
     try {
-      await continueWithGoogle()
+      await continueWithGoogle(googleId)
       onSignedIn?.()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Google sign-in failed.')
@@ -56,26 +53,36 @@ export function SignInForm({ lead, onSignedIn }: Props) {
   return (
     <div className="signin-form">
       {lead && <p className="hint">{lead}</p>}
-      {pendingToken && pendingEmail ? (
+      {sentTo ? (
         <>
           <p className="hint">
-            A sign-in link is ready for <strong>{pendingEmail}</strong>. When
-            email is connected we will send it. Until then, use the same link
-            here.
+            If mail can reach <strong>{sentTo}</strong>, the sign-in link is on
+            its way. It expires in 30 minutes.
           </p>
-          <button type="button" className="primary" onClick={openLink}>
-            Open sign-in link
+          {previewLink && (
+            <p className="hint signin-link-wrap">
+              This computer is showing the link because email sending is not
+              connected yet.{' '}
+              <a href={previewLink}>Open sign-in link</a>
+            </p>
+          )}
+          <button
+            type="button"
+            className="ghost"
+            onClick={() => {
+              setSentTo(null)
+              setPreviewLink(null)
+            }}
+          >
+            Use a different email
           </button>
-          <p className="hint signin-link-wrap">
-            <a href={magicLinkHref(pendingToken)}>Or open this link</a>
-          </p>
         </>
       ) : (
         <form
           className="signin-email"
           onSubmit={(e) => {
             e.preventDefault()
-            sendLink()
+            void sendLink()
           }}
         >
           <label>
@@ -86,24 +93,31 @@ export function SignInForm({ lead, onSignedIn }: Props) {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@example.com"
+              disabled={busy}
             />
           </label>
-          <button type="submit" className="primary" disabled={!email.trim()}>
-            Email me a link
+          <button
+            type="submit"
+            className="primary"
+            disabled={busy || !email.trim()}
+          >
+            {busy ? 'Sending…' : 'Email me a link'}
           </button>
         </form>
       )}
+      <p className="signin-or">or</p>
       <button
         type="button"
         className="ghost"
-        disabled={!googleReady || busy}
+        disabled={busy}
         onClick={() => void google()}
       >
         Continue with Google
       </button>
       {!googleReady && (
         <p className="hint">
-          Google sign-in waits on a client ID. Email links work now.
+          Google sign-in needs a one-time client ID. Until that’s added, use
+          email.
         </p>
       )}
       {error && (

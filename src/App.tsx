@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { AdSlot } from './components/AdSlot'
+import { AccountMenu } from './components/AccountMenu'
 import { CreditsDock } from './components/CreditsDock'
 import { DropZone, SheetPicker } from './components/DropZone'
 import { PreviewMap } from './components/PreviewMap'
@@ -253,21 +254,20 @@ export default function App() {
 
   return (
     <div className={stops || sheetChoices ? 'app' : 'app is-landing'}>
-      {workspaceOpen && (
-        <header className="topbar">
-          <div className="topbar-brand">
-            <p className="kicker">MemoryMap</p>
-            <p className="tagline">Visualize Your Voyages, Treasure Your Travels.</p>
-          </div>
-          <div className="topbar-tools">
-            {stops && (
-              <button type="button" className="ghost" onClick={reset}>
-                New file
-              </button>
-            )}
-          </div>
-        </header>
-      )}
+      <header className="topbar">
+        <div className="topbar-brand">
+          <p className="kicker">MemoryMap</p>
+          <p className="tagline">Visualize Your Voyages, Treasure Your Travels.</p>
+        </div>
+        <div className="topbar-tools">
+          {stops && (
+            <button type="button" className="ghost" onClick={reset}>
+              New file
+            </button>
+          )}
+          <AccountMenu />
+        </div>
+      </header>
       <AdSlot variant="leaderboard" />
 
       {error && (

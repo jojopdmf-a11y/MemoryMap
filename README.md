@@ -4,6 +4,8 @@ Type the stops, drop a CSV of places and dates, an Excel workbook, or a Google S
 
 The downloaded file has Leaflet, styles, and stop data baked in. It only needs the internet for map tiles.
 
+Sign-in is optional. Anyone can create their own account with an email link or Google. Paid credits are not for sale yet.
+
 ## CSV columns
 
 Flexible, case-insensitive headers:
@@ -29,11 +31,39 @@ npm install
 npm run dev
 ```
 
-Then open the local URL Vite prints, try a sample trip, and download a map. Download is free in this public preview.
+Then open the local URL Vite prints, try a sample trip, and download a map. Download is free in this public preview. Locally, **Email me a link** shows the link on the page so you can test without sending mail.
+
+## Sign-in setup (one time)
+
+People sign themselves in. You do not create users. Two accounts you open once, then the site uses them for everyone.
+
+### Email links (Resend)
+
+1. Create a [Resend](https://resend.com) account.
+2. Verify the domain `memorymap.world`.
+3. In Cloudflare → Workers → `memorymap` → Settings → Variables and Secrets, add:
+   - `AUTH_SECRET` — a long random string, marked secret
+   - `RESEND_API_KEY` — your Resend API key, marked secret
+   - `RESEND_FROM` — `MemoryMap <hello@memorymap.world>` after the domain is verified
+
+Until Resend is connected, the live **Email me a link** button will say email isn’t connected yet.
+
+### Google
+
+1. In [Google Cloud Console](https://console.cloud.google.com/apis/credentials) create an OAuth client ID of type **Web application**.
+2. Authorized JavaScript origins:
+   - `https://memorymap.world`
+   - `https://www.memorymap.world`
+   - `http://localhost:43123`
+   - `http://127.0.0.1:43123`
+3. Copy the client ID.
+4. In Cloudflare → Workers → `memorymap` → Settings → Variables and Secrets, add `GOOGLE_CLIENT_ID` as a plain text variable (same value). No rebuild is required for this one.
+
+Until that client ID is set, **Continue with Google** explains that email still works.
 
 ## Public preview
 
-This is a public preview. Mapping and the souvenir file are free. Accounts and paid credits are not for sale yet. There is no sign-in and no credit pack on the site.
+This is a public preview. Mapping and the souvenir file are free. Sign-in is optional. Paid credits are not for sale yet.
 
 ## How the live site updates
 
@@ -45,15 +75,13 @@ You do not need Wrangler on your laptop, and you do not need to reattach the dom
 
 ## Deploy (only if you are setting this up again)
 
-The app is a static Vite build. Leave checkout and Google env vars unset for the preview launch.
-
 ```bash
 npm ci
 npm run build
 npx wrangler deploy
 ```
 
-`wrangler.toml` points Wrangler at `dist`. Node 22 is in `.node-version`. The Worker name is `memorymap`. Custom domains `memorymap.world` and `www.memorymap.world` are already attached.
+`wrangler.toml` points Wrangler at `dist` and the Worker at `worker.ts`. Node 22 is in `.node-version`. The Worker name is `memorymap`. Custom domains `memorymap.world` and `www.memorymap.world` are already attached.
 
 If Git deploy ever breaks, reconnect the repo in Cloudflare: Workers & Pages → `memorymap` → Settings → Builds.
 

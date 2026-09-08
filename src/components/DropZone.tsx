@@ -57,8 +57,8 @@ export function DropZone({
           </div>
           <p className="lede">
             This is a public preview. Drop a file, paste a Google Sheets link, or
-            enter the stops. Mapping and the souvenir file are free — no sign-in
-            and no credit pack.
+            enter the stops. Mapping and the souvenir file are free. Sign-in is
+            optional. Paid credits are not for sale yet.
           </p>
         </header>
         <div className="trip-start">

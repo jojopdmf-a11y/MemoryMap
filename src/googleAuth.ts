@@ -1,3 +1,4 @@
+import { redeemGoogleAccessToken } from './authApi'
 import { googleClientId } from './commerce'
 import { signInWithEmail } from './accountStore'
 
@@ -40,17 +41,13 @@ function loadGoogleScript(): Promise<void> {
   return scriptPromise
 }
 
-export async function continueWithGoogle(): Promise<void> {
-  const clientId = googleClientId()
-  if (!clientId) {
-    throw new Error('Google sign-in is not configured yet.')
-  }
+async function requestGoogleAccessToken(clientId: string): Promise<string> {
   await loadGoogleScript()
   const api = window.google?.accounts?.oauth2
   if (!api) {
     throw new Error('Google sign-in is not available in this browser.')
   }
-  await new Promise<void>((resolve, reject) => {
+  return new Promise((resolve, reject) => {
     const client = api.initTokenClient({
       client_id: clientId,
       scope: 'openid email profile',
@@ -59,23 +56,21 @@ export async function continueWithGoogle(): Promise<void> {
           reject(new Error('Google sign-in was cancelled.'))
           return
         }
-        void fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
-          headers: { Authorization: `Bearer ${response.access_token}` },
-        })
-          .then((res) => {
-            if (!res.ok) throw new Error('Google did not return a profile.')
-            return res.json() as Promise<{ email?: string }>
-          })
-          .then((profile) => {
-            if (!profile.email) throw new Error('Google did not share an email.')
-            signInWithEmail(profile.email)
-            resolve()
-          })
-          .catch((err) => {
-            reject(err instanceof Error ? err : new Error('Google sign-in failed.'))
-          })
+        resolve(response.access_token)
       },
     })
     client.requestAccessToken()
   })
+}
+
+export async function continueWithGoogle(clientId?: string): Promise<void> {
+  const id = (clientId ?? googleClientId()).trim()
+  if (!id) {
+    throw new Error(
+      'Google sign-in needs a one-time client ID. Until that’s added, use email.',
+    )
+  }
+  const accessToken = await requestGoogleAccessToken(id)
+  const email = await redeemGoogleAccessToken(accessToken)
+  signInWithEmail(email)
 }
