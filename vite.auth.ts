@@ -1,6 +1,7 @@
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import type { Plugin } from 'vite'
 import { handleAuth, type AuthEnv } from './worker/auth.ts'
+import { handleFeedback } from './worker/feedback.ts'
 
 function localAuthEnv(): AuthEnv {
   return {
@@ -47,13 +48,15 @@ async function pipe(
   res: ServerResponse,
   next: () => void,
 ) {
-  if (!req.url?.startsWith('/api/auth/')) {
+  if (!req.url?.startsWith('/api/')) {
     next()
     return
   }
   try {
     const request = await toRequest(req)
-    const response = await handleAuth(request, localAuthEnv())
+    const env = localAuthEnv()
+    const response =
+      (await handleAuth(request, env)) ?? (await handleFeedback(request, env))
     if (!response) {
       next()
       return
@@ -66,7 +69,7 @@ async function pipe(
   } catch {
     res.statusCode = 500
     res.setHeader('Content-Type', 'application/json; charset=utf-8')
-    res.end(JSON.stringify({ error: 'Sign-in is not available right now.' }))
+    res.end(JSON.stringify({ error: 'Could not complete that request.' }))
   }
 }
 

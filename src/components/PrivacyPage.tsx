@@ -42,6 +42,15 @@ export function PrivacyPage() {
           and maps you download while signed in in this browser.
         </p>
 
+        <h2>Feedback</h2>
+        <p>
+          On the map page you can send a note with Feedback or suggestions. That
+          message is emailed to{' '}
+          <a href={CONTACT_MAILTO}>{CONTACT_EMAIL}</a>. If you include an email
+          address, we may use it to reply. You can also write that address
+          directly.
+        </p>
+
         <h2>What we see</h2>
         <p>
           This public preview does not sell credits. We do not collect payment

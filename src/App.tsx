@@ -3,6 +3,7 @@ import { AdSlot } from './components/AdSlot'
 import { AccountMenu } from './components/AccountMenu'
 import { CreditsDock } from './components/CreditsDock'
 import { DropZone, SheetPicker } from './components/DropZone'
+import { FeedbackNote } from './components/FeedbackNote'
 import { PreviewMap } from './components/PreviewMap'
 import { StopTable } from './components/StopTable'
 import { downloadText } from './download'
@@ -342,6 +343,7 @@ export default function App() {
                 <p className="map-cue is-busy">Looking up places… centering the map as they land.</p>
               )}
             </section>
+            <FeedbackNote />
           </div>
           <StyleBar
             look={look}
