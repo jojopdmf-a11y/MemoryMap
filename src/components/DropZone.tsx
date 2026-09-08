@@ -109,7 +109,6 @@ export function DropZone({
           <ManualTripForm importing={importing} onSubmit={onManual} />
         </div>
         <section className="sample-trips" aria-labelledby="sample-trips-heading">
-          <p className="kicker">Try a trip</p>
           <h2 id="sample-trips-heading">No spreadsheet handy? Try a sample.</h2>
           <p className="sample-trips-lead">
             Play with a cruise, a train, or a road trip — same map as your own
