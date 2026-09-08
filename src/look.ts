@@ -8,8 +8,8 @@ export type CardField = 'title' | 'date' | 'place' | 'notes'
 export type CardFields = Record<CardField, boolean>
 
 export const DEFAULT_FIELDS: CardFields = {
-  title: true,
-  date: true,
+  title: false,
+  date: false,
   place: true,
   notes: true,
 }

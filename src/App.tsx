@@ -52,16 +52,22 @@ export default function App() {
     const jump = () => {
       const active = document.activeElement
       if (active instanceof HTMLElement) active.blur()
+      const root = document.getElementById('root')
       window.scrollTo(0, 0)
       document.documentElement.scrollTop = 0
       document.body.scrollTop = 0
+      if (root) root.scrollTop = 0
     }
     jump()
     const frame = window.requestAnimationFrame(() => {
       jump()
       window.requestAnimationFrame(jump)
     })
-    return () => window.cancelAnimationFrame(frame)
+    const later = window.setTimeout(jump, 50)
+    return () => {
+      window.cancelAnimationFrame(frame)
+      window.clearTimeout(later)
+    }
   }, [workspaceOpen])
 
   const updateStop = useCallback((id: string, patch: Partial<Stop>) => {
@@ -127,6 +133,10 @@ export default function App() {
     setStops(result.stops)
     setRevealed(0)
     setPlaying(false)
+    setLook((current) => ({
+      ...current,
+      fields: { ...DEFAULT_FIELDS },
+    }))
     void geocodeAll(result.stops, generation)
   }
 
