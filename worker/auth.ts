@@ -127,8 +127,8 @@ async function sendResend(
   if (!res.ok) {
     const detail = await res.text()
     throw new Error(
-      /domain|not verified|from/i.test(detail)
-        ? 'Could not send email until the MemoryMap sending domain is verified.'
+      /verify a domain|domain is not verified/i.test(detail)
+        ? 'Until memorymap.world is verified in Resend, we can only email the address on that Resend account.'
         : 'Could not send the sign-in email.',
     )
   }
