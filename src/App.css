@@ -36,6 +36,11 @@
   background: color-mix(in srgb, var(--paper) 96%, white);
 }
 
+.app:has(.account-panel) .map-feedback {
+  visibility: hidden;
+  pointer-events: none;
+}
+
 .topbar-tools {
   display: flex;
   flex-wrap: wrap;
