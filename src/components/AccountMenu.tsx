@@ -8,6 +8,7 @@ import {
 } from '../accountStore'
 import { downloadText } from '../download'
 import { buildSouvenirHtml } from '../souvenir'
+import { claimChrome, onChromeClaim } from '../chrome'
 import { SignInForm } from './SignInForm'
 
 export function AccountMenu() {
@@ -17,8 +18,11 @@ export function AccountMenu() {
   const rootRef = useRef<HTMLDivElement>(null)
   const panelId = useId()
 
+  useEffect(() => onChromeClaim('account', () => setOpen(false)), [])
+
   useEffect(() => {
     if (!open) return
+    claimChrome('account')
     function onDoc(event: MouseEvent) {
       if (!rootRef.current?.contains(event.target as Node)) setOpen(false)
     }
@@ -55,7 +59,13 @@ export function AccountMenu() {
         className="account-chip"
         aria-expanded={open}
         aria-controls={panelId}
-        onClick={() => setOpen((current) => !current)}
+        onClick={() =>
+          setOpen((current) => {
+            const next = !current
+            if (next) claimChrome('account')
+            return next
+          })
+        }
       >
         <span className="account-who">{account ? account.email : 'Sign in'}</span>
         <span className="account-credits">

@@ -1,5 +1,6 @@
 import { useEffect, useId, useRef, useState } from 'react'
 import { useAccount } from '../accountStore'
+import { claimChrome, onChromeClaim } from '../chrome'
 import { CONTACT_EMAIL, CONTACT_MAILTO } from '../site'
 
 export function FeedbackNote() {
@@ -13,6 +14,8 @@ export function FeedbackNote() {
   const rootRef = useRef<HTMLDivElement>(null)
   const panelId = useId()
 
+  useEffect(() => onChromeClaim('feedback', () => setOpen(false)), [])
+
   useEffect(() => {
     if (!open) return
     if (!email && account?.email) setEmail(account.email)
@@ -20,6 +23,7 @@ export function FeedbackNote() {
 
   useEffect(() => {
     if (!open) return
+    claimChrome('feedback')
     function onDoc(event: MouseEvent) {
       if (!rootRef.current?.contains(event.target as Node)) setOpen(false)
     }
@@ -65,16 +69,33 @@ export function FeedbackNote() {
     <div className="map-feedback" ref={rootRef}>
       <button
         type="button"
-        className="ghost map-feedback-btn"
+        className="map-feedback-btn"
         aria-expanded={open}
         aria-controls={panelId}
         onClick={() => {
-          setOpen((current) => !current)
+          setOpen((current) => {
+            const next = !current
+            if (next) claimChrome('feedback')
+            return next
+          })
           setSent(false)
           setError(null)
         }}
       >
-        Feedback or suggestions
+        <svg
+          className="map-feedback-icon"
+          viewBox="0 0 20 20"
+          aria-hidden="true"
+        >
+          <path
+            fill="currentColor"
+            d="M3.5 4.75A1.75 1.75 0 0 1 5.25 3h9.5A1.75 1.75 0 0 1 16.5 4.75v6.5A1.75 1.75 0 0 1 14.75 13H8.06l-3.22 2.42A.75.75 0 0 1 3.5 14.85V4.75Z"
+          />
+        </svg>
+        <span className="map-feedback-copy">
+          <strong>Feedback</strong>
+          <em>Ideas or bugs</em>
+        </span>
       </button>
       {open && (
         <div
