@@ -92,17 +92,14 @@ export function FeedbackNote() {
             d="M3.5 4.75A1.75 1.75 0 0 1 5.25 3h9.5A1.75 1.75 0 0 1 16.5 4.75v6.5A1.75 1.75 0 0 1 14.75 13H8.06l-3.22 2.42A.75.75 0 0 1 3.5 14.85V4.75Z"
           />
         </svg>
-        <span className="map-feedback-copy">
-          <strong>Feedback</strong>
-          <em>Ideas or bugs</em>
-        </span>
+        <span className="map-feedback-copy">Feedback or Suggestion?</span>
       </button>
       {open && (
         <div
           className="map-feedback-panel"
           id={panelId}
           role="dialog"
-          aria-label="Feedback or suggestions"
+          aria-label="Feedback or Suggestion?"
         >
           {sent ? (
             <>

@@ -115,7 +115,7 @@ export function AccountMenu() {
                           className="ghost"
                           onClick={() => downloadAgain(item.id)}
                         >
-                          Again
+                          Download Again
                         </button>
                       </li>
                     ))}
