@@ -1,5 +1,10 @@
 import { useEffect, useId, useRef, useState } from 'react'
-import { suggestPlaces, type GeocodeHit } from '../geocode'
+import {
+  hitMatchesQuery,
+  streamSuggestions,
+  type GeocodeHit,
+  type SuggestBias,
+} from '../geocode'
 
 type Props = {
   value: string
@@ -9,6 +14,8 @@ type Props = {
   placeholder?: string
   disabled?: boolean
   ariaLabel?: string
+  hint?: string
+  bias?: SuggestBias
 }
 
 export function PlaceSuggest({
@@ -19,6 +26,8 @@ export function PlaceSuggest({
   placeholder,
   disabled,
   ariaLabel,
+  hint,
+  bias,
 }: Props) {
   const listId = useId()
   const inputRef = useRef<HTMLInputElement>(null)
@@ -29,29 +38,47 @@ export function PlaceSuggest({
   const [loading, setLoading] = useState(false)
   const [active, setActive] = useState(0)
 
+  const query = value.trim()
+  const biasKey =
+    bias && Number.isFinite(bias.lat) && Number.isFinite(bias.lng)
+      ? `${bias.lat.toFixed(2)},${bias.lng.toFixed(2)}`
+      : ''
+
   useEffect(() => {
-    const query = value.trim()
-    if (disabled || query.length < 3) return
+    if (disabled || pickedRef.current) return
+    if (query.length < 2) return
     const ac = new AbortController()
     const timer = window.setTimeout(() => {
       setLoading(true)
-      void suggestPlaces(query, ac.signal)
-        .then((next) => {
+      const parsed = biasKey.split(',')
+      const nextBias =
+        parsed.length === 2 && Number.isFinite(Number(parsed[0])) && Number.isFinite(Number(parsed[1]))
+          ? { lat: Number(parsed[0]), lng: Number(parsed[1]) }
+          : undefined
+      void streamSuggestions(query, {
+        hint,
+        bias: nextBias,
+        signal: ac.signal,
+        onHits: (next) => {
           if (ac.signal.aborted) return
           setHits(next)
           setActive(0)
-        })
-        .finally(() => {
-          if (!ac.signal.aborted) setLoading(false)
-        })
-    }, 300)
+          setLoading(false)
+        },
+      }).finally(() => {
+        if (!ac.signal.aborted) setLoading(false)
+      })
+    }, 150)
     return () => {
       ac.abort()
       window.clearTimeout(timer)
     }
-  }, [value, disabled])
+  }, [query, hint, biasKey, disabled])
 
-  const show = open && !disabled && value.trim().length >= 3 && (loading || hits.length > 0)
+  const listed =
+    query.length < 2 ? [] : hits.filter((hit) => hitMatchesQuery(hit, query))
+  const show =
+    open && !disabled && query.length >= 2 && (loading || listed.length > 0)
 
   useEffect(() => {
     if (!show) return
@@ -60,11 +87,11 @@ export function PlaceSuggest({
       const list = listRef.current
       if (!input || !list) return
       const box = input.getBoundingClientRect()
-      const width = Math.min(Math.max(box.width, 280), Math.max(16, window.innerWidth - 16))
+      const width = Math.min(Math.max(box.width, 320), Math.max(16, window.innerWidth - 16))
       list.style.left = `${Math.min(box.left, window.innerWidth - width - 8)}px`
       list.style.width = `${width}px`
       const spaceBelow = window.innerHeight - box.bottom
-      if (spaceBelow < 200 && box.top > spaceBelow) {
+      if (spaceBelow < 220 && box.top > spaceBelow) {
         list.style.top = 'auto'
         list.style.bottom = `${window.innerHeight - box.top + 4}px`
       } else {
@@ -86,6 +113,7 @@ export function PlaceSuggest({
     onPick(hit)
     setOpen(false)
     setHits([])
+    setLoading(false)
   }
 
   return (
@@ -96,12 +124,13 @@ export function PlaceSuggest({
         disabled={disabled}
         placeholder={placeholder}
         autoComplete="off"
+        spellCheck={false}
         aria-label={ariaLabel}
         role="combobox"
         aria-autocomplete="list"
         aria-expanded={show}
         aria-controls={listId}
-        aria-activedescendant={show && hits[active] ? `${listId}-${active}` : undefined}
+        aria-activedescendant={show && listed[active] ? `${listId}-${active}` : undefined}
         onChange={(e) => {
           pickedRef.current = false
           onChange(e.target.value)
@@ -119,16 +148,18 @@ export function PlaceSuggest({
           }, 120)
         }}
         onKeyDown={(e) => {
+          if (e.key === 'Enter' && open && query.length >= 2) {
+            e.preventDefault()
+            if (listed[active]) pick(listed[active])
+            return
+          }
           if (!show) return
           if (e.key === 'ArrowDown') {
             e.preventDefault()
-            setActive((n) => Math.min(n + 1, Math.max(0, hits.length - 1)))
+            setActive((n) => Math.min(n + 1, Math.max(0, listed.length - 1)))
           } else if (e.key === 'ArrowUp') {
             e.preventDefault()
             setActive((n) => Math.max(n - 1, 0))
-          } else if (e.key === 'Enter' && hits[active]) {
-            e.preventDefault()
-            pick(hits[active])
           } else if (e.key === 'Escape') {
             e.preventDefault()
             setOpen(false)
@@ -137,12 +168,12 @@ export function PlaceSuggest({
       />
       {show && (
         <ul ref={listRef} id={listId} className="place-suggest-list" role="listbox">
-          {loading && hits.length === 0 && (
+          {loading && listed.length === 0 && (
             <li className="place-suggest-status" role="presentation">
               Looking up places…
             </li>
           )}
-          {hits.map((hit, index) => (
+          {listed.map((hit, index) => (
             <li
               key={`${hit.lat},${hit.lng},${hit.label}`}
               id={`${listId}-${index}`}
@@ -153,7 +184,12 @@ export function PlaceSuggest({
               onMouseEnter={() => setActive(index)}
               onClick={() => pick(hit)}
             >
-              {hit.label}
+              <span className="place-suggest-name">{hit.name}</span>
+              {(hit.state || hit.country) && (
+                <span className="place-suggest-meta">
+                  {[hit.state, hit.country].filter(Boolean).join(', ')}
+                </span>
+              )}
             </li>
           ))}
         </ul>

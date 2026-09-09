@@ -1145,7 +1145,7 @@
 
 .place-suggest-list {
   position: fixed;
-  z-index: 900;
+  z-index: 1200;
   margin: 0;
   padding: 4px;
   list-style: none;
@@ -1159,11 +1159,23 @@
 }
 
 .place-suggest-list li {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
   padding: 8px 10px;
   border-radius: var(--radius-xs);
   cursor: pointer;
   font-size: 14px;
   line-height: 1.35;
+}
+
+.place-suggest-name {
+  font-weight: 600;
+}
+
+.place-suggest-meta {
+  font-size: 12px;
+  color: var(--muted);
 }
 
 .place-suggest-list li.is-active,

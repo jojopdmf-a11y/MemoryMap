@@ -5,11 +5,18 @@ import {
   manualStopsToCsv,
   type ManualStopDraft,
 } from '../csv'
+import type { SuggestBias } from '../geocode'
 import { PlaceSuggest } from './PlaceSuggest'
 
 type Props = {
   importing: boolean
   onSubmit: (csv: string, label: string) => void
+}
+
+function firstBias(rows: ManualStopDraft[]): SuggestBias | undefined {
+  const hit = rows.find((row) => row.lat != null && row.lng != null)
+  if (hit?.lat == null || hit.lng == null) return undefined
+  return { lat: hit.lat, lng: hit.lng }
 }
 
 export function ManualTripForm({ importing, onSubmit }: Props) {
@@ -81,12 +88,16 @@ export function ManualTripForm({ importing, onSubmit }: Props) {
                 disabled={importing}
                 placeholder="City or street address"
                 ariaLabel={`Place for stop ${index + 1}`}
+                hint={[row.state, row.country].filter((part) => part.trim()).join(', ')}
+                bias={firstBias(rows)}
                 onChange={(city) =>
                   updateRow(index, { city, lat: null, lng: null })
                 }
                 onPick={(hit) =>
                   updateRow(index, {
-                    city: hit.label,
+                    city: hit.kind === 'city' ? hit.name : hit.name || hit.label,
+                    state: hit.state?.trim() || row.state,
+                    country: hit.country?.trim() || row.country,
                     lat: hit.lat,
                     lng: hit.lng,
                   })

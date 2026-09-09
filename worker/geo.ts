@@ -5,7 +5,15 @@ const MAX_LEGS = 40
 const MAX_SUGGEST = 80
 const SIMPLIFY = 0.000025
 
-type SuggestHit = { lat: number; lng: number; label: string }
+type SuggestHit = {
+  lat: number
+  lng: number
+  label: string
+  name: string
+  state?: string
+  country?: string
+  kind: 'city' | 'street' | 'house' | 'other'
+}
 
 const memory = new Map<string, { exp: number; body: string }>()
 
@@ -84,18 +92,42 @@ type PhotonFeature = {
     street?: string
     housenumber?: string
     city?: string
+    district?: string
+    county?: string
     state?: string
     country?: string
+    type?: string
   }
 }
 
-function photonLabel(props: PhotonFeature['properties'], fallback: string): string {
-  if (!props) return fallback
+function photonKind(type: string | undefined): SuggestHit['kind'] {
+  if (type === 'city' || type === 'locality' || type === 'district') return 'city'
+  if (type === 'street') return 'street'
+  if (type === 'house') return 'house'
+  return 'other'
+}
+
+function photonLabel(props: PhotonFeature['properties'], fallback: string): {
+  label: string
+  name: string
+  state?: string
+  country?: string
+  kind: SuggestHit['kind']
+} {
+  if (!props) return { label: fallback, name: fallback, kind: 'other' }
   const street = [props.housenumber, props.street].filter(Boolean).join(' ').trim()
-  const bits = [street || props.name, props.city, props.state, props.country].filter(
+  const name = street || props.name || fallback
+  const city = props.city || props.district || props.county
+  const bits = [name, city && city !== name ? city : '', props.state, props.country].filter(
     Boolean,
   )
-  return bits.join(', ') || fallback
+  return {
+    label: bits.join(', ') || fallback,
+    name,
+    state: props.state,
+    country: props.country,
+    kind: photonKind(props.type),
+  }
 }
 
 function simplify(points: [number, number][], epsilon: number): [number, number][] {
@@ -169,32 +201,59 @@ export async function handleGeo(request: Request): Promise<Response | null> {
     if (request.method === 'OPTIONS') return new Response(null, { status: 204 })
     if (request.method !== 'GET') return json({ error: 'Not found.' }, 404)
     const q = url.searchParams.get('q')?.trim() ?? ''
-    if (q.length < 3 || q.length > MAX_SUGGEST) return json({ hits: [] })
-    return cachedJson(`suggest:${q.toLowerCase()}`, 300, async () => {
-      const photon = new URL(PHOTON)
-      photon.searchParams.set('q', q)
-      photon.searchParams.set('limit', '6')
-      photon.searchParams.set('lang', 'en')
-      const res = await fetch(photon, {
-        headers: { 'User-Agent': UA, Accept: 'application/json' },
-        signal: AbortSignal.timeout(8000),
-      })
-      if (!res.ok) return { hits: [] }
-      const data = (await res.json()) as { features?: PhotonFeature[] }
-      const hits: SuggestHit[] = []
-      for (const feat of data.features ?? []) {
-        const pair = feat.geometry?.coordinates
-        if (!pair || pair.length < 2) continue
-        const lng = pair[0]
-        const lat = pair[1]
-        if (!Number.isFinite(lat) || !Number.isFinite(lng)) continue
-        hits.push({
-          lat: round5(lat),
-          lng: round5(lng),
-          label: photonLabel(feat.properties, q),
+    if (q.length < 2 || q.length > MAX_SUGGEST) return json({ hits: [] })
+    const lat = Number.parseFloat(url.searchParams.get('lat') ?? '')
+    const lng = Number.parseFloat(url.searchParams.get('lng') ?? '')
+    const bias =
+      Number.isFinite(lat) && Number.isFinite(lng) ? `${round5(lat)},${round5(lng)}` : ''
+    const address = /\d/.test(q)
+    return cachedJson(`suggest:${q.toLowerCase()}:${bias}:${address ? 'a' : 'c'}`, 180, async () => {
+      try {
+        const photon = new URL(PHOTON)
+        photon.searchParams.set('q', q)
+        photon.searchParams.set('limit', '10')
+        photon.searchParams.set('lang', 'en')
+        if (!address) {
+          photon.searchParams.append('layer', 'city')
+          photon.searchParams.append('layer', 'locality')
+          photon.searchParams.append('layer', 'district')
+        }
+        if (bias) {
+          photon.searchParams.set('lat', String(lat))
+          photon.searchParams.set('lon', String(lng))
+        }
+        const res = await fetch(photon, {
+          headers: { 'User-Agent': UA, Accept: 'application/json' },
+          signal: AbortSignal.timeout(2500),
         })
+        if (!res.ok) return { hits: [] }
+        const data = (await res.json()) as { features?: PhotonFeature[] }
+        const hits: SuggestHit[] = []
+        const seen = new Set<string>()
+        for (const feat of data.features ?? []) {
+          const pair = feat.geometry?.coordinates
+          if (!pair || pair.length < 2) continue
+          const hitLng = pair[0]
+          const hitLat = pair[1]
+          if (!Number.isFinite(hitLat) || !Number.isFinite(hitLng)) continue
+          const parsed = photonLabel(feat.properties, q)
+          const key = `${parsed.name.toLowerCase()}|${round5(hitLat)}|${round5(hitLng)}`
+          if (seen.has(key)) continue
+          seen.add(key)
+          hits.push({
+            lat: round5(hitLat),
+            lng: round5(hitLng),
+            label: parsed.label,
+            name: parsed.name,
+            state: parsed.state,
+            country: parsed.country,
+            kind: parsed.kind,
+          })
+        }
+        return { hits }
+      } catch {
+        return { hits: [] }
       }
-      return { hits }
     })
   }
 
