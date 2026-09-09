@@ -356,8 +356,10 @@ body {
   position: relative;
   width: min(100%, calc(75vh * 16 / 10));
   aspect-ratio: 16 / 10;
-  margin: 0 auto;
+  margin: 24px auto 0;
   min-height: 220px;
+  overflow: hidden;
+  border-radius: 16px;
 }
 #map {
   position: absolute;
@@ -605,7 +607,7 @@ body {
   border-radius: 8px;
 }
 @media (max-width: 640px) {
-  .mm-stage { width: 100%; min-height: 180px; }
+  .mm-stage { width: calc(100% - 24px); min-height: 180px; margin-top: 16px; }
   .mm-chrome { grid-template-columns: 1fr; }
 }
   </style>
