@@ -1,4 +1,5 @@
 import { useEffect, useId, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import {
   hitMatchesQuery,
   streamSuggestions,
@@ -75,8 +76,9 @@ export function PlaceSuggest({
     }
   }, [query, hint, biasKey, disabled])
 
-  const listed =
-    query.length < 2 ? [] : hits.filter((hit) => hitMatchesQuery(hit, query))
+  const listed = loading
+    ? hits.filter((hit) => hitMatchesQuery(hit, query))
+    : hits
   const show =
     open && !disabled && query.length >= 2 && (loading || listed.length > 0)
 
@@ -100,9 +102,11 @@ export function PlaceSuggest({
       }
     }
     place()
+    const frame = window.requestAnimationFrame(place)
     window.addEventListener('resize', place)
     window.addEventListener('scroll', place, true)
     return () => {
+      window.cancelAnimationFrame(frame)
       window.removeEventListener('resize', place)
       window.removeEventListener('scroll', place, true)
     }
@@ -167,36 +171,38 @@ export function PlaceSuggest({
           }
         }}
       />
-      {show && (
-        <ul ref={listRef} id={listId} className="place-suggest-list" role="listbox">
-          {loading && listed.length === 0 && (
-            <li className="place-suggest-status" role="presentation">
-              Looking up places…
-            </li>
-          )}
-          {listed.map((hit, index) => (
-            <li
-              key={`${hit.lat},${hit.lng},${hit.label}`}
-              id={`${listId}-${index}`}
-              role="option"
-              aria-selected={index === active}
-              className={index === active ? 'is-active' : undefined}
-              onMouseDown={(e) => {
-                e.preventDefault()
-                pick(hit)
-              }}
-              onMouseEnter={() => setActive(index)}
-            >
-              <span className="place-suggest-name">{hit.name}</span>
-              {(hit.state || hit.country) && (
-                <span className="place-suggest-meta">
-                  {[hit.state, hit.country].filter(Boolean).join(', ')}
-                </span>
-              )}
-            </li>
-          ))}
-        </ul>
-      )}
+      {show &&
+        createPortal(
+          <ul ref={listRef} id={listId} className="place-suggest-list" role="listbox">
+            {loading && listed.length === 0 && (
+              <li className="place-suggest-status" role="presentation">
+                Looking up places…
+              </li>
+            )}
+            {listed.map((hit, index) => (
+              <li
+                key={`${hit.lat},${hit.lng},${hit.label}`}
+                id={`${listId}-${index}`}
+                role="option"
+                aria-selected={index === active}
+                className={index === active ? 'is-active' : undefined}
+                onMouseDown={(e) => {
+                  e.preventDefault()
+                  pick(hit)
+                }}
+                onMouseEnter={() => setActive(index)}
+              >
+                <span className="place-suggest-name">{hit.name}</span>
+                {(hit.state || hit.country) && (
+                  <span className="place-suggest-meta">
+                    {[hit.state, hit.country].filter(Boolean).join(', ')}
+                  </span>
+                )}
+              </li>
+            ))}
+          </ul>,
+          document.body,
+        )}
     </div>
   )
 }
