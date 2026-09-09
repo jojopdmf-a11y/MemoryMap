@@ -387,8 +387,12 @@ export default function App() {
                   </strong>
                 </aside>
               )}
-              {ready && revealed === 0 && (
-                <p className="map-cue">Press Play tour to watch the route appear</p>
+              {ready && revealed === 0 && !tracing && (
+                <p className={look.followRoads ? 'map-cue is-trace' : 'map-cue'}>
+                  {look.followRoads
+                    ? 'The drive is on the map. Press Play tour to watch the stops appear.'
+                    : 'Press Play tour to watch the route appear'}
+                </p>
               )}
               {busy && (
                 <p className="map-cue is-busy">Looking up places… centering the map as they land.</p>
