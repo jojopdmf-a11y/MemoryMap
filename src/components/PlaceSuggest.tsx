@@ -47,8 +47,8 @@ export function PlaceSuggest({
   useEffect(() => {
     if (disabled || pickedRef.current) return
     if (query.length < 2) return
-    setActive(0)
     const ac = new AbortController()
+    const delay = /\d/.test(query) ? 320 : 150
     const timer = window.setTimeout(() => {
       setLoading(true)
       const parsed = biasKey.split(',')
@@ -68,7 +68,7 @@ export function PlaceSuggest({
       }).finally(() => {
         if (!ac.signal.aborted) setLoading(false)
       })
-    }, 150)
+    }, delay)
     return () => {
       ac.abort()
       window.clearTimeout(timer)
@@ -133,6 +133,7 @@ export function PlaceSuggest({
         aria-activedescendant={show && listed[active] ? `${listId}-${active}` : undefined}
         onChange={(e) => {
           pickedRef.current = false
+          setActive(0)
           onChange(e.target.value)
           setOpen(true)
         }}

@@ -64,10 +64,10 @@ export function PrivacyPage() {
 
         <h2>Lookups and map tiles</h2>
         <p>
-          When you type a place, we ask Photon (Komoot) for address suggestions.
-          City names may also go to Open-Meteo or OpenStreetMap Nominatim. The
-          map preview and the downloaded souvenir load map tiles from Esri or
-          OpenTopoMap.
+          When you type a place, city names go to Open-Meteo and Photon
+          (Komoot). Street addresses also go to OpenStreetMap Nominatim so
+          house numbers like “6828 W Cougar Ave” can resolve. The map preview
+          and the downloaded souvenir load map tiles from Esri or OpenTopoMap.
         </p>
         <p>
           Turning on Road trip sends the stop coordinates to the public OSRM

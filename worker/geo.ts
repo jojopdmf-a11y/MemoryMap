@@ -1,5 +1,8 @@
+import { expandStreetQuery, looksLikeStreetAddress } from '../src/streetNames.ts'
+
 const UA = 'MemoryMap/1.0 (https://memorymap.world; hello@memorymap.world)'
 const PHOTON = 'https://photon.komoot.io/api/'
+const NOMINATIM = 'https://nominatim.openstreetmap.org/search'
 const OSRM = 'https://router.project-osrm.org/route/v1/driving'
 const MAX_LEGS = 40
 const MAX_SUGGEST = 80
@@ -195,6 +198,137 @@ async function osrmLeg(
   return simplify(latlngs, SIMPLIFY)
 }
 
+let lastNominatimAt = 0
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms))
+}
+
+async function photonHits(
+  q: string,
+  address: boolean,
+  lat: number,
+  lng: number,
+  bias: string,
+): Promise<SuggestHit[]> {
+  const photon = new URL(PHOTON)
+  photon.searchParams.set('q', q)
+  photon.searchParams.set('limit', '10')
+  photon.searchParams.set('lang', 'en')
+  if (!address) {
+    photon.searchParams.append('layer', 'city')
+    photon.searchParams.append('layer', 'locality')
+    photon.searchParams.append('layer', 'district')
+  } else {
+    photon.searchParams.append('layer', 'house')
+    photon.searchParams.append('layer', 'street')
+  }
+  if (bias) {
+    photon.searchParams.set('lat', String(lat))
+    photon.searchParams.set('lon', String(lng))
+  }
+  const res = await fetch(photon, {
+    headers: { 'User-Agent': UA, Accept: 'application/json' },
+    signal: AbortSignal.timeout(2500),
+  })
+  if (!res.ok) return []
+  const data = (await res.json()) as { features?: PhotonFeature[] }
+  const hits: SuggestHit[] = []
+  const seen = new Set<string>()
+  for (const feat of data.features ?? []) {
+    const pair = feat.geometry?.coordinates
+    if (!pair || pair.length < 2) continue
+    const hitLng = pair[0]
+    const hitLat = pair[1]
+    if (!Number.isFinite(hitLat) || !Number.isFinite(hitLng)) continue
+    const parsed = photonLabel(feat.properties, q)
+    const key = `${parsed.name.toLowerCase()}|${round5(hitLat)}|${round5(hitLng)}`
+    if (seen.has(key)) continue
+    seen.add(key)
+    hits.push({
+      lat: round5(hitLat),
+      lng: round5(hitLng),
+      label: parsed.label,
+      name: parsed.name,
+      state: parsed.state,
+      country: parsed.country,
+      kind: parsed.kind,
+    })
+  }
+  return hits
+}
+
+type NominatimHit = {
+  lat: string
+  lon: string
+  display_name?: string
+  address?: {
+    house_number?: string
+    road?: string
+    city?: string
+    town?: string
+    village?: string
+    suburb?: string
+    county?: string
+    state?: string
+    country?: string
+  }
+}
+
+async function nominatimHits(q: string): Promise<SuggestHit[]> {
+  const wait = 1100 - (Date.now() - lastNominatimAt)
+  if (wait > 400) return []
+  if (wait > 0) await sleep(wait)
+  lastNominatimAt = Date.now()
+  const url = new URL(NOMINATIM)
+  url.searchParams.set('q', q)
+  url.searchParams.set('format', 'jsonv2')
+  url.searchParams.set('addressdetails', '1')
+  url.searchParams.set('limit', '5')
+  const res = await fetch(url, {
+    headers: { 'User-Agent': UA, Accept: 'application/json' },
+    signal: AbortSignal.timeout(4000),
+  })
+  if (!res.ok) return []
+  const data = (await res.json()) as NominatimHit[]
+  const hits: SuggestHit[] = []
+  for (const row of data) {
+    const lat = Number.parseFloat(row.lat)
+    const lng = Number.parseFloat(row.lon)
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) continue
+    const addr = row.address ?? {}
+    const street = [addr.house_number, addr.road].filter(Boolean).join(' ').trim()
+    const city = addr.city || addr.town || addr.village || addr.suburb || addr.county
+    const name = street || row.display_name || q
+    const label = [name, city && city !== name ? city : '', addr.state, addr.country]
+      .filter(Boolean)
+      .join(', ')
+    hits.push({
+      lat: round5(lat),
+      lng: round5(lng),
+      name,
+      label: label || row.display_name || q,
+      state: addr.state,
+      country: addr.country,
+      kind: addr.house_number ? 'house' : addr.road ? 'street' : 'other',
+    })
+  }
+  return hits
+}
+
+function mergeHits(groups: SuggestHit[][]): SuggestHit[] {
+  const seen = new Set<string>()
+  const out: SuggestHit[] = []
+  for (const group of groups) {
+    for (const hit of group) {
+      const key = `${hit.name.toLowerCase()}|${round5(hit.lat)}|${round5(hit.lng)}`
+      if (seen.has(key)) continue
+      seen.add(key)
+      out.push(hit)
+    }
+  }
+  return out
+}
 export async function handleGeo(request: Request): Promise<Response | null> {
   const url = new URL(request.url)
   if (url.pathname === '/api/suggest') {
@@ -207,54 +341,25 @@ export async function handleGeo(request: Request): Promise<Response | null> {
     const bias =
       Number.isFinite(lat) && Number.isFinite(lng) ? `${round5(lat)},${round5(lng)}` : ''
     const address = /\d/.test(q)
-    return cachedJson(`suggest:${q.toLowerCase()}:${bias}:${address ? 'a' : 'c'}`, 180, async () => {
-      try {
-        const photon = new URL(PHOTON)
-        photon.searchParams.set('q', q)
-        photon.searchParams.set('limit', '10')
-        photon.searchParams.set('lang', 'en')
-        if (!address) {
-          photon.searchParams.append('layer', 'city')
-          photon.searchParams.append('layer', 'locality')
-          photon.searchParams.append('layer', 'district')
+    const expanded = expandStreetQuery(q)
+    return cachedJson(
+      `suggest:${q.toLowerCase()}:${expanded.toLowerCase()}:${bias}:${address ? 'a' : 'c'}`,
+      180,
+      async () => {
+        try {
+          const photonQuery = expanded
+          const [fromPhoton, fromNominatim] = await Promise.all([
+            photonHits(photonQuery, address, lat, lng, bias),
+            address && looksLikeStreetAddress(q)
+              ? nominatimHits(expanded)
+              : Promise.resolve([]),
+          ])
+          return { hits: mergeHits([fromNominatim, fromPhoton]) }
+        } catch {
+          return { hits: [] }
         }
-        if (bias) {
-          photon.searchParams.set('lat', String(lat))
-          photon.searchParams.set('lon', String(lng))
-        }
-        const res = await fetch(photon, {
-          headers: { 'User-Agent': UA, Accept: 'application/json' },
-          signal: AbortSignal.timeout(2500),
-        })
-        if (!res.ok) return { hits: [] }
-        const data = (await res.json()) as { features?: PhotonFeature[] }
-        const hits: SuggestHit[] = []
-        const seen = new Set<string>()
-        for (const feat of data.features ?? []) {
-          const pair = feat.geometry?.coordinates
-          if (!pair || pair.length < 2) continue
-          const hitLng = pair[0]
-          const hitLat = pair[1]
-          if (!Number.isFinite(hitLat) || !Number.isFinite(hitLng)) continue
-          const parsed = photonLabel(feat.properties, q)
-          const key = `${parsed.name.toLowerCase()}|${round5(hitLat)}|${round5(hitLng)}`
-          if (seen.has(key)) continue
-          seen.add(key)
-          hits.push({
-            lat: round5(hitLat),
-            lng: round5(hitLng),
-            label: parsed.label,
-            name: parsed.name,
-            state: parsed.state,
-            country: parsed.country,
-            kind: parsed.kind,
-          })
-        }
-        return { hits }
-      } catch {
-        return { hits: [] }
-      }
-    })
+      },
+    )
   }
 
   if (url.pathname !== '/api/route') return null

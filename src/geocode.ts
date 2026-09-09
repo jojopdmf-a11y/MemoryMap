@@ -1,3 +1,5 @@
+import { foldPlace, expandStreetQuery } from './streetNames'
+
 export type GeocodeHit = {
   lat: number
   lng: number
@@ -29,32 +31,38 @@ function cacheKey(query: string, hint: string, bias?: SuggestBias): string {
 }
 
 function looksLikeQuery(hit: GeocodeHit, query: string): boolean {
-  const q = query.trim().toLowerCase()
+  const q = foldPlace(query)
   if (!q) return true
-  const bits = [hit.name, hit.state, hit.country, hit.label]
-    .filter(Boolean)
-    .join(' ')
-    .toLowerCase()
-  return bits.includes(q) || q.split(/\s+/).every((part) => bits.includes(part))
+  const bits = foldPlace(
+    [hit.name, hit.state, hit.country, hit.label].filter(Boolean).join(' '),
+  )
+  if (bits.includes(q)) return true
+  const parts = q.split(/\s+/).filter(Boolean)
+  const streetParts = parts.filter((part) => !/^\d+$/.test(part) && part.length > 1)
+  if (streetParts.length >= 2 && streetParts.every((part) => bits.includes(part))) return true
+  return parts.every((part) => bits.includes(part))
 }
 
 function rankHits(query: string, hint: string, hits: GeocodeHit[]): GeocodeHit[] {
-  const q = query.trim().toLowerCase()
+  const q = foldPlace(query)
   const hintBits = hint
     .toLowerCase()
     .split(/[,\s]+/)
     .filter((part) => part.length > 1)
   const scored = hits.map((hit) => {
-    const name = hit.name.toLowerCase()
-    const label = hit.label.toLowerCase()
+    const name = foldPlace(hit.name)
+    const label = foldPlace(hit.label)
     let score = 0
     if (name === q) score += 18
     if (name.startsWith(q)) score += 28
     else if (name.split(/\s+/).some((word) => word.startsWith(q))) score += 16
     else if (label.includes(q)) score += 6
     if (hit.kind === 'city') score += 12
+    if (hit.kind === 'house' && looksLikeAddress(query)) score += 24
     if (hit.kind === 'house' && !looksLikeAddress(query)) score -= 20
     if (hit.kind === 'street' && !looksLikeAddress(query)) score -= 8
+    const houseNo = query.trim().match(/^\d+/)?.[0]
+    if (houseNo && (hit.name.startsWith(houseNo) || hit.label.includes(houseNo))) score += 40
     const pop = hit.population ?? 0
     score += Math.log10(pop + 1) * 14
     for (const bit of hintBits) {
@@ -161,7 +169,7 @@ export async function streamSuggestions(
     opts.onHits(batch.slice(0, 8))
   }
 
-  const photonQuery = [q, hint].filter(Boolean).join(', ')
+  const photonQuery = expandStreetQuery([q, hint].filter(Boolean).join(', '))
   const jobs: Promise<void>[] = []
   if (!looksLikeAddress(q)) {
     jobs.push(
