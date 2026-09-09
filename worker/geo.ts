@@ -1,4 +1,4 @@
-import { expandStreetQuery, looksLikeStreetAddress } from '../src/streetNames.ts'
+import { expandStreetQuery, foldPlace, looksLikeStreetAddress } from '../src/streetNames.ts'
 
 const UA = 'MemoryMap/1.0 (https://memorymap.world; hello@memorymap.world)'
 const PHOTON = 'https://photon.komoot.io/api/'
@@ -354,7 +354,18 @@ export async function handleGeo(request: Request): Promise<Response | null> {
               ? nominatimHits(expanded)
               : Promise.resolve([]),
           ])
-          return { hits: mergeHits([fromNominatim, fromPhoton]) }
+          const merged = mergeHits([fromNominatim, fromPhoton])
+          const folded = foldPlace(photonQuery)
+          const parts = folded.split(/\s+/).filter((part) => part.length > 1 && !/^\d+$/.test(part))
+          const hits =
+            parts.length < 2
+              ? merged
+              : merged.filter((hit) => {
+                  const bits = foldPlace(`${hit.name} ${hit.label}`)
+                  const matched = parts.filter((part) => bits.includes(part))
+                  return matched.length >= Math.min(2, parts.length)
+                })
+          return { hits }
         } catch {
           return { hits: [] }
         }
