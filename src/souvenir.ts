@@ -333,6 +333,60 @@ const RUNTIME = `
     });
   }
 
+  var keepUrl = hosted || ((location.protocol === "https:" || location.protocol === "http:")
+    ? location.href.split("#")[0]
+    : "");
+  var shareBtn = document.getElementById("mm-share");
+  var copyBtn = document.getElementById("mm-copy");
+  var saveBtn = document.getElementById("mm-save");
+  var keepHint = document.getElementById("mm-keep-hint");
+  if (keepHint && keepUrl) keepHint.hidden = false;
+  if (shareBtn) {
+    if (!keepUrl || !navigator.share) shareBtn.hidden = true;
+    else {
+      shareBtn.addEventListener("click", function () {
+        navigator.share({
+          title: trip.title || "MemoryMap",
+          text: trip.title || "MemoryMap",
+          url: keepUrl
+        }).catch(function () {});
+      });
+    }
+  }
+  if (copyBtn) {
+    if (!keepUrl) copyBtn.hidden = true;
+    else {
+      copyBtn.addEventListener("click", function () {
+        function done() {
+          copyBtn.textContent = "Copied";
+          window.setTimeout(function () { copyBtn.textContent = "Copy link"; }, 1600);
+        }
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(keepUrl).then(done).catch(function () {
+            window.prompt("Copy this map link", keepUrl);
+          });
+        } else {
+          window.prompt("Copy this map link", keepUrl);
+        }
+      });
+    }
+  }
+  if (saveBtn) {
+    saveBtn.addEventListener("click", function () {
+      var slug = String(trip.title || "trip").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "trip";
+      var blob = new Blob(["<!DOCTYPE html>\\n" + document.documentElement.outerHTML], { type: "text/html;charset=utf-8" });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement("a");
+      a.href = url;
+      a.download = "MemoryMap-" + slug + ".html";
+      a.rel = "noopener";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
+    });
+  }
+
   draw(0);
 })();
 `
@@ -588,6 +642,8 @@ body {
   font-size: 11px;
   color: var(--muted);
 }
+.mm-keep-hint { padding-top: 0; }
+.mm-keep-hint[hidden] { display: none; }
 .mm-pin-wrap { background: none !important; border: none !important; }
 .mm-pin {
   width: 28px;
@@ -677,10 +733,14 @@ body {
         <span id="mm-scrub-label">0 / ${stops.length}</span>
         <input id="mm-scrub" type="range" min="0" max="${stops.length}" value="0" aria-label="Scrub through the route" />
       </label>
+      <button type="button" id="mm-share">Share</button>
+      <button type="button" id="mm-copy">Copy link</button>
+      <button type="button" id="mm-save">Save file</button>
     </div>
   </header>
   <ol class="mm-list" id="mm-list"></ol>
   <p class="mm-credit">A MemoryMap souvenir · tiles need the internet</p>
+  <p class="mm-credit mm-keep-hint" id="mm-keep-hint" hidden>On a phone or tablet, tap Share or Copy link and bookmark this page. A file in Downloads often will not play.</p>
   <script type="application/json" id="memorymap-trip">${payload}</script>
   <script>${leafletJs}</script>
   <script>${RUNTIME}</script>

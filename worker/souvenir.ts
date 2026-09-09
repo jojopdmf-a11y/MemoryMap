@@ -12,7 +12,7 @@ export type SouvenirEnv = {
 }
 
 const MAX_BYTES = 1_200_000
-const TTL_SECONDS = 60 * 60 * 24 * 30
+const TTL_SECONDS = 60 * 60 * 24 * 365
 const ID_RE = /^[0-9a-f]{32}$/
 
 function json(data: unknown, status = 200): Response {
