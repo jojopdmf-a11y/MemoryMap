@@ -96,8 +96,8 @@ export function ManualTripForm({ importing, onSubmit }: Props) {
                 onPick={(hit) =>
                   updateRow(index, {
                     city: hit.kind === 'city' ? hit.name : hit.name || hit.label,
-                    state: hit.state?.trim() || row.state,
-                    country: hit.country?.trim() || row.country,
+                    state: hit.state?.trim() ?? '',
+                    country: hit.country?.trim() ?? '',
                     lat: hit.lat,
                     lng: hit.lng,
                   })

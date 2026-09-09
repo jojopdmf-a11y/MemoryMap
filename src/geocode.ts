@@ -69,15 +69,15 @@ function rankHits(query: string, hint: string, hits: GeocodeHit[]): GeocodeHit[]
 }
 
 function dedupe(hits: GeocodeHit[]): GeocodeHit[] {
-  const seen = new Set<string>()
-  const out: GeocodeHit[] = []
+  const seen = new Map<string, GeocodeHit>()
   for (const hit of hits) {
-    const key = `${hit.name.toLowerCase()}|${(hit.state ?? '').toLowerCase()}|${hit.lat.toFixed(3)},${hit.lng.toFixed(3)}`
-    if (seen.has(key)) continue
-    seen.add(key)
-    out.push(hit)
+    const key = `${hit.name.toLowerCase()}|${(hit.state ?? '').toLowerCase()}|${hit.lat.toFixed(2)},${hit.lng.toFixed(2)}`
+    const existing = seen.get(key)
+    if (!existing || (hit.population ?? 0) > (existing.population ?? 0) || (!existing.state && hit.state)) {
+      seen.set(key, hit)
+    }
   }
-  return out
+  return [...seen.values()]
 }
 
 async function suggestOpenMeteo(place: string, signal?: AbortSignal): Promise<GeocodeHit[]> {

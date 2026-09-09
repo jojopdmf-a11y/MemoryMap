@@ -47,6 +47,7 @@ export function PlaceSuggest({
   useEffect(() => {
     if (disabled || pickedRef.current) return
     if (query.length < 2) return
+    setActive(0)
     const ac = new AbortController()
     const timer = window.setTimeout(() => {
       setLoading(true)
@@ -62,7 +63,6 @@ export function PlaceSuggest({
         onHits: (next) => {
           if (ac.signal.aborted) return
           setHits(next)
-          setActive(0)
           setLoading(false)
         },
       }).finally(() => {
@@ -180,9 +180,11 @@ export function PlaceSuggest({
               role="option"
               aria-selected={index === active}
               className={index === active ? 'is-active' : undefined}
-              onMouseDown={(e) => e.preventDefault()}
+              onMouseDown={(e) => {
+                e.preventDefault()
+                pick(hit)
+              }}
               onMouseEnter={() => setActive(index)}
-              onClick={() => pick(hit)}
             >
               <span className="place-suggest-name">{hit.name}</span>
               {(hit.state || hit.country) && (
