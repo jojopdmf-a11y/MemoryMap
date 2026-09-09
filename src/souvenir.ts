@@ -30,7 +30,7 @@ const RUNTIME = `
   }
   var layerOpts = { attribution: tiles.attribution || "", maxZoom: 19 };
   if (tiles.subdomains) layerOpts.subdomains = tiles.subdomains;
-  // Streets uses Carto so this still works from file:// (OSM tiles require a Referer).
+  // Streets uses Esri so this still works from file:// (OSM tiles require a Referer).
   L.tileLayer(tiles.url, layerOpts).addTo(map);
 
   var layer = L.layerGroup().addTo(map);

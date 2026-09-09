@@ -285,13 +285,12 @@ export const TILES: Record<
   MapId,
   { url: string; attribution: string; subdomains?: string }
 > = {
-  // Carto, not tile.openstreetmap.org: OSM volunteer servers require a Referer
-  // and serve a 403 graphic to file:// souvenirs (and some privacy browsers).
+  // Esri, not OSM.org or Carto: OSM volunteer servers require a Referer and
+  // serve a 403 graphic to file:// souvenirs. Carto's public URL now watermarks
+  // "API KEY REQUIRED". Esri street tiles load from a local HTML file.
   streets: {
-    url: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
-    attribution:
-      '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
-    subdomains: 'abcd',
+    url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}',
+    attribution: 'Tiles &copy; Esri',
   },
   paper: {
     url: 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}',

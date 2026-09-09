@@ -66,7 +66,7 @@ export function PrivacyPage() {
         <p>
           When a stop has a place name but no coordinates, the app asks
           OpenStreetMap Nominatim to find it. The map preview and the downloaded
-          souvenir load map tiles from Carto, Esri, or OpenTopoMap. Those
+          souvenir load map tiles from Esri or OpenTopoMap. Those
           services see the usual request data a map needs (the tile area, and
           typically your IP address).
         </p>
