@@ -31,7 +31,7 @@ npm install
 npm run dev
 ```
 
-Then open the local URL Vite prints, try a sample trip, and download a map. Download is free in this public preview. Locally, **Email me a link** shows the link on the page so you can test without sending mail.
+Then open the local URL Vite prints, try a sample trip, and download a map. Download is free in this public preview. Locally, **Email me a link** shows the link on the page so you can test without sending mail. On iPhone and iPad, Download opens the souvenir in a new Safari tab — a file saved to Files often will not play.
 
 ## Sign-in setup (one time)
 

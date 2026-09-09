@@ -11,6 +11,16 @@ const RUNTIME = `
   var look = trip.look || {};
   var fields = look.fields || {};
   var tiles = trip.tiles || {};
+  var hosted = trip.hosted || "";
+  if (hosted && location.protocol === "file:") {
+    var apple =
+      /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+      (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+    if (apple) {
+      location.replace(hosted);
+      return;
+    }
+  }
   var map = L.map("map", {
     zoomControl: false,
     scrollWheelZoom: false,
@@ -32,6 +42,15 @@ const RUNTIME = `
   if (tiles.subdomains) layerOpts.subdomains = tiles.subdomains;
   // Streets uses Esri so this still works from file:// (OSM tiles require a Referer).
   L.tileLayer(tiles.url, layerOpts).addTo(map);
+  function kickMap() {
+    try { map.invalidateSize(); } catch (err) {}
+  }
+  kickMap();
+  window.addEventListener("load", kickMap);
+  window.addEventListener("orientationchange", kickMap);
+  window.addEventListener("resize", kickMap);
+  window.setTimeout(kickMap, 200);
+  window.setTimeout(kickMap, 800);
 
   var layer = L.layerGroup().addTo(map);
   var markers = [];
@@ -318,10 +337,21 @@ const RUNTIME = `
 })();
 `
 
-export function buildSouvenirHtml(title: string, stops: ExportStop[], look: Look): string {
+export function buildSouvenirHtml(
+  title: string,
+  stops: ExportStop[],
+  look: Look,
+  hostedUrl = '',
+): string {
   const theme = THEME_VARS[look.theme]
   const tiles = TILES[look.map]
-  const payload = JSON.stringify({ title, stops, look, tiles }).replace(/</g, '\\u003c')
+  const payload = JSON.stringify({
+    title,
+    stops,
+    look,
+    tiles,
+    hosted: hostedUrl,
+  }).replace(/</g, '\\u003c')
   const range = dateRangeLabel(stops)
   const count = stops.length === 1 ? '1 stop' : `${stops.length} stops`
 
@@ -329,7 +359,8 @@ export function buildSouvenirHtml(title: string, stops: ExportStop[], look: Look
 <html lang="en" data-theme="${escapeHtml(look.theme)}">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  ${hostedUrl ? `<noscript><meta http-equiv="refresh" content="0;url=${escapeHtml(hostedUrl)}"></noscript>` : ''}
   <title>${escapeHtml(title)} · MemoryMap</title>
   <style>
 ${leafletCss}
@@ -357,8 +388,9 @@ body {
   position: relative;
   width: min(100%, calc(75vh * 16 / 10));
   aspect-ratio: 16 / 10;
+  height: auto;
   margin: 24px auto 0;
-  min-height: 220px;
+  min-height: 240px;
   overflow: hidden;
   border-radius: 16px;
 }
@@ -496,6 +528,8 @@ body {
   color: var(--ink);
   cursor: pointer;
   border-radius: 10px;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 .mm-controls button#mm-play {
   background: var(--terra);

@@ -1,3 +1,36 @@
+export function isAppleTouchDevice(): boolean {
+  if (typeof navigator === 'undefined') return false
+  return (
+    /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
+  )
+}
+
+export async function publishSouvenir(html: string): Promise<string | null> {
+  try {
+    const res = await fetch('/api/souvenir', {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/html; charset=utf-8' },
+      body: html,
+    })
+    if (!res.ok) return null
+    const data = (await res.json()) as { url?: string }
+    if (!data.url) return null
+    return new URL(data.url, window.location.origin).href
+  } catch {
+    return null
+  }
+}
+
+function openHtmlTab(html: string): boolean {
+  const tab = window.open('', '_blank')
+  if (!tab) return false
+  tab.document.open()
+  tab.document.write(html)
+  tab.document.close()
+  return true
+}
+
 export function downloadText(
   text: string,
   filename: string,
@@ -35,4 +68,22 @@ export function downloadText(
     },
     inFrame ? 60_000 : 2_000,
   )
+}
+
+export async function saveSouvenir(
+  filename: string,
+  build: (hostedUrl: string) => string,
+): Promise<void> {
+  const draft = build('')
+  const hosted = await publishSouvenir(draft)
+  const html = hosted ? build(hosted) : draft
+  if (isAppleTouchDevice()) {
+    if (hosted) {
+      const opened = window.open(hosted, '_blank', 'noopener')
+      if (!opened) window.location.assign(hosted)
+      return
+    }
+    if (openHtmlTab(html)) return
+  }
+  downloadText(html, filename)
 }

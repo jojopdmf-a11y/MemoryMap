@@ -13,7 +13,7 @@ import {
   checkoutUrl,
   type CreditPack,
 } from '../commerce'
-import { downloadText } from '../download'
+import { saveSouvenir } from '../download'
 import { recipeFingerprint, type SouvenirRecipe } from '../recipe'
 import { buildSouvenirHtml } from '../souvenir'
 import { souvenirFilename } from '../trip'
@@ -28,10 +28,11 @@ type Props = {
   onClose: () => void
 }
 
-function saveFile(recipe: SouvenirRecipe) {
-  const html = buildSouvenirHtml(recipe.title, recipe.stops, recipe.look)
+async function saveFile(recipe: SouvenirRecipe) {
   const filename = souvenirFilename(recipe.title)
-  downloadText(html, filename, 'text/html;charset=utf-8')
+  await saveSouvenir(filename, (hosted) =>
+    buildSouvenirHtml(recipe.title, recipe.stops, recipe.look, hosted),
+  )
   return filename
 }
 
@@ -84,17 +85,17 @@ export function DownloadSheet({ open, intent, recipe, onClose }: Props) {
     onClose()
   }
 
-  function confirmDownload() {
+  async function confirmDownload() {
     if (!recipe) return
     setError(null)
     try {
       if (match) {
         completeFreeRedownload(match.id)
-        saveFile(match.recipe)
+        await saveFile(match.recipe)
       } else {
         const filenameUsed = souvenirFilename(recipe.title)
         recordPaidDownload(recipe, filenameUsed)
-        saveFile(recipe)
+        await saveFile(recipe)
       }
       close()
     } catch (err) {

@@ -6,7 +6,7 @@ import { DropZone, SheetPicker } from './components/DropZone'
 import { FeedbackNote } from './components/FeedbackNote'
 import { PreviewMap } from './components/PreviewMap'
 import { StopTable } from './components/StopTable'
-import { downloadText } from './download'
+import { saveSouvenir } from './download'
 import {
   createBlankStop,
   displayDate,
@@ -235,7 +235,7 @@ export default function App() {
     })
   }
 
-  function downloadMap() {
+  async function downloadMap() {
     if (!ready) return
     try {
       const tripTitle = title.trim() || 'Untitled trip'
@@ -244,9 +244,10 @@ export default function App() {
         ...look,
         fields: { ...DEFAULT_FIELDS, ...look.fields },
       }
-      const html = buildSouvenirHtml(tripTitle, plotted, recipeLook)
       const filename = souvenirFilename(tripTitle)
-      downloadText(html, filename, 'text/html;charset=utf-8')
+      await saveSouvenir(filename, (hosted) =>
+        buildSouvenirHtml(tripTitle, plotted, recipeLook, hosted),
+      )
       recordBrowserDownload(
         { title: tripTitle, stops: plotted, look: recipeLook },
         filename,

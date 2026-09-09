@@ -2,8 +2,20 @@ import type { IncomingMessage, ServerResponse } from 'node:http'
 import type { Plugin } from 'vite'
 import { handleAuth, type AuthEnv } from './worker/auth.ts'
 import { handleFeedback } from './worker/feedback.ts'
+import { handleSouvenir, type SouvenirStore } from './worker/souvenir.ts'
 
-function localAuthEnv(): AuthEnv {
+const localSouvenirs = new Map<string, string>()
+
+const localSouvenirStore: SouvenirStore = {
+  async get(key) {
+    return localSouvenirs.get(key) ?? null
+  },
+  async put(key, value) {
+    localSouvenirs.set(key, value)
+  },
+}
+
+function localAuthEnv(): AuthEnv & { SOUVENIRS: SouvenirStore } {
   return {
     AUTH_SECRET: process.env.AUTH_SECRET || 'memorymap-dev-auth-secret',
     RESEND_API_KEY: process.env.RESEND_API_KEY,
@@ -11,6 +23,7 @@ function localAuthEnv(): AuthEnv {
     GOOGLE_CLIENT_ID:
       process.env.GOOGLE_CLIENT_ID || process.env.VITE_GOOGLE_CLIENT_ID,
     ALLOW_DEV_LINKS: process.env.ALLOW_DEV_LINKS ?? '1',
+    SOUVENIRS: localSouvenirStore,
   }
 }
 
@@ -48,7 +61,7 @@ async function pipe(
   res: ServerResponse,
   next: () => void,
 ) {
-  if (!req.url?.startsWith('/api/')) {
+  if (!req.url?.startsWith('/api/') && !req.url?.startsWith('/s/')) {
     next()
     return
   }
@@ -56,7 +69,9 @@ async function pipe(
     const request = await toRequest(req)
     const env = localAuthEnv()
     const response =
-      (await handleAuth(request, env)) ?? (await handleFeedback(request, env))
+      (await handleSouvenir(request, env)) ??
+      (await handleAuth(request, env)) ??
+      (await handleFeedback(request, env))
     if (!response) {
       next()
       return

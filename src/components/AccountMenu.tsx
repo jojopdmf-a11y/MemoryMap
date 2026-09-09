@@ -6,7 +6,7 @@ import {
   signOut,
   useAccount,
 } from '../accountStore'
-import { downloadText } from '../download'
+import { saveSouvenir } from '../download'
 import { buildSouvenirHtml } from '../souvenir'
 import { claimChrome, onChromeClaim } from '../chrome'
 import { SignInForm } from './SignInForm'
@@ -37,16 +37,18 @@ export function AccountMenu() {
     }
   }, [open])
 
-  function downloadAgain(id: string) {
+  async function downloadAgain(id: string) {
     setError(null)
     try {
       const item = completeFreeRedownload(id)
-      const html = buildSouvenirHtml(
-        item.recipe.title,
-        item.recipe.stops,
-        item.recipe.look,
+      await saveSouvenir(item.filename, (hosted) =>
+        buildSouvenirHtml(
+          item.recipe.title,
+          item.recipe.stops,
+          item.recipe.look,
+          hosted,
+        ),
       )
-      downloadText(html, item.filename, 'text/html;charset=utf-8')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not download that map.')
     }

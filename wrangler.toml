@@ -16,7 +16,12 @@ directory = "./dist"
 binding = "ASSETS"
 html_handling = "auto-trailing-slash"
 not_found_handling = "single-page-application"
-run_worker_first = ["/api/*"]
+run_worker_first = ["/api/*", "/s/*"]
+
+[[kv_namespaces]]
+binding = "SOUVENIRS"
+id = "3cf3a800b33546f0a9d21cbdff6b22ca"
+preview_id = "7e4481fec92740d3a5dbdff5cc6464cc"
 
 [observability]
 enabled = true

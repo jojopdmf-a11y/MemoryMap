@@ -20,5 +20,5 @@
     "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["vite.config.ts", "vite.auth.ts", "worker/auth.ts", "worker/feedback.ts"]
+  "include": ["vite.config.ts", "vite.auth.ts", "worker/auth.ts", "worker/feedback.ts", "worker/souvenir.ts"]
 }

@@ -74,8 +74,10 @@ export function PrivacyPage() {
         <h2>The file you download</h2>
         <p>
           Download is free in this public preview. A souvenir is a single HTML
-          file on your computer. It contains the trip you plotted. It is not
-          stored on our servers. The file still needs the internet for map tiles.
+          file on your computer. It contains the trip you plotted. The file still
+          needs the internet for map tiles. On iPhone and iPad, Safari often
+          cannot run a file saved to Downloads, so we also keep a copy for 30
+          days at a private memorymap.world link and open that in a new tab.
         </p>
 
         <h2>Advertising</h2>
@@ -89,7 +91,7 @@ export function PrivacyPage() {
           Questions about this page or your data:{' '}
           <a href={CONTACT_MAILTO}>{CONTACT_EMAIL}</a>.
         </p>
-        <p className="legal-updated">Updated September 8, 2026.</p>
+        <p className="legal-updated">Updated September 9, 2026.</p>
       </main>
       <SiteFooter />
     </div>
