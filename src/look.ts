@@ -23,6 +23,7 @@ export type Look = {
   speedMs: number
   theme: ThemeId
   fields: CardFields
+  followRoads: boolean
 }
 
 export const DEFAULT_LOOK: Look = {
@@ -34,6 +35,7 @@ export const DEFAULT_LOOK: Look = {
   speedMs: 1500,
   theme: 'cream',
   fields: { ...DEFAULT_FIELDS },
+  followRoads: false,
 }
 
 export type ThemeVars = {

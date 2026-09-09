@@ -42,6 +42,7 @@ export function recipeFingerprint(recipe: SouvenirRecipe): string {
         speedMs: normalized.look.speedMs,
         theme: normalized.look.theme,
         fields: normalized.look.fields,
+        followRoads: Boolean(normalized.look.followRoads),
       },
     }),
   )

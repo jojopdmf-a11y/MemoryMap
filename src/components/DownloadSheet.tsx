@@ -15,7 +15,7 @@ import {
 } from '../commerce'
 import { saveSouvenir } from '../download'
 import { recipeFingerprint, type SouvenirRecipe } from '../recipe'
-import { buildSouvenirHtml } from '../souvenir'
+import { htmlForSouvenir } from '../souvenir'
 import { souvenirFilename } from '../trip'
 import { SignInForm } from './SignInForm'
 
@@ -31,7 +31,7 @@ type Props = {
 async function saveFile(recipe: SouvenirRecipe) {
   const filename = souvenirFilename(recipe.title)
   await saveSouvenir(filename, (hosted) =>
-    buildSouvenirHtml(recipe.title, recipe.stops, recipe.look, hosted),
+    htmlForSouvenir(recipe.title, recipe.stops, recipe.look, hosted),
   )
   return filename
 }

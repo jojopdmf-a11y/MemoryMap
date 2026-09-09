@@ -13,15 +13,17 @@ import {
   TILES,
   type Look,
 } from '../look'
+import { pathThroughStops, type LatLng } from '../route'
 import type { Stop } from '../types'
 
 type Props = {
   stops: Stop[]
   look: Look
   revealed: number
+  roads?: LatLng[][] | null
 }
 
-export function PreviewMap({ stops, look, revealed }: Props) {
+export function PreviewMap({ stops, look, revealed, roads = null }: Props) {
   const containerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<L.Map | null>(null)
   const layerRef = useRef<L.LayerGroup | null>(null)
@@ -49,6 +51,15 @@ export function PreviewMap({ stops, look, revealed }: Props) {
     layerRef.current = L.layerGroup().addTo(map)
     map.setView([20, 0], 2)
     mapRef.current = map
+    const enableWheel = () => map.scrollWheelZoom.enable()
+    const disableWheel = () => map.scrollWheelZoom.disable()
+    el.addEventListener('mouseenter', enableWheel)
+    el.addEventListener('mouseleave', disableWheel)
+    el.addEventListener('focusin', enableWheel)
+    const onFocusOut = (event: FocusEvent) => {
+      if (!el.contains(event.relatedTarget as Node | null)) disableWheel()
+    }
+    el.addEventListener('focusout', onFocusOut)
 
     const ro = new ResizeObserver(() => {
       map.invalidateSize()
@@ -56,6 +67,10 @@ export function PreviewMap({ stops, look, revealed }: Props) {
     ro.observe(el)
 
     return () => {
+      el.removeEventListener('mouseenter', enableWheel)
+      el.removeEventListener('mouseleave', disableWheel)
+      el.removeEventListener('focusin', enableWheel)
+      el.removeEventListener('focusout', onFocusOut)
       ro.disconnect()
       map.remove()
       mapRef.current = null
@@ -119,9 +134,11 @@ export function PreviewMap({ stops, look, revealed }: Props) {
     )
     const visible = plotted.slice(0, Math.max(0, revealed))
     const visibleIds = new Set(visible.map((stop) => stop.id))
-    const visLatLngs = visible.map(
-      (stop) => [stop.lat as number, stop.lng as number] as L.LatLngTuple,
-    )
+    const visLatLngs = pathThroughStops(
+      plotted.map((stop) => ({ lat: stop.lat as number, lng: stop.lng as number })),
+      revealed,
+      look.followRoads ? roads : null,
+    ) as L.LatLngTuple[]
 
     for (const [id, marker] of markersRef.current) {
       if (!visibleIds.has(id)) {
@@ -183,6 +200,7 @@ export function PreviewMap({ stops, look, revealed }: Props) {
     if (look.path !== 'none' && visLatLngs.length >= 2) {
       if (pathRef.current) {
         pathRef.current.setLatLngs(visLatLngs)
+        pathRef.current.options.smoothFactor = 0
         pathRef.current.setStyle({
           color: look.pathColor,
           dashArray: look.path === 'dashed' ? '8 8' : undefined,
@@ -192,6 +210,7 @@ export function PreviewMap({ stops, look, revealed }: Props) {
           color: look.pathColor,
           weight: 3,
           opacity: 0.9,
+          smoothFactor: 0,
           dashArray: look.path === 'dashed' ? '8 8' : undefined,
         }).addTo(layer)
       }
@@ -199,7 +218,7 @@ export function PreviewMap({ stops, look, revealed }: Props) {
       layer.removeLayer(pathRef.current)
       pathRef.current = null
     }
-  }, [stops, look, revealed])
+  }, [stops, look, revealed, roads])
 
   return (
     <div

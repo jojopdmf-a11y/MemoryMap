@@ -1,6 +1,7 @@
 import leafletCss from 'leaflet/dist/leaflet.css?raw'
 import leafletJs from 'leaflet/dist/leaflet.js?raw'
 import { TILES, THEME_VARS, type Look } from './look'
+import { traceDriveLegs, type LatLng } from './route'
 import { dateRangeLabel } from './trip'
 import type { ExportStop } from './types'
 
@@ -12,6 +13,7 @@ const RUNTIME = `
   var fields = look.fields || {};
   var tiles = trip.tiles || {};
   var hosted = trip.hosted || "";
+  var roads = trip.roads || null;
   if (hosted && location.protocol === "file:") {
     var handheld =
       /Android|webOS|iPhone|iPad|iPod|Mobile|Tablet|Silk|Kindle/i.test(navigator.userAgent) ||
@@ -28,6 +30,11 @@ const RUNTIME = `
     zoomDelta: 0.25
   });
   L.control.zoom({ position: "topright" }).addTo(map);
+  var mapEl = document.getElementById("map");
+  if (mapEl) {
+    mapEl.addEventListener("mouseenter", function () { map.scrollWheelZoom.enable(); });
+    mapEl.addEventListener("mouseleave", function () { map.scrollWheelZoom.disable(); });
+  }
   var dateBox = document.getElementById("mm-date");
   var dateTitle = document.getElementById("mm-date-title");
   var dateVal = document.getElementById("mm-date-value");
@@ -203,6 +210,26 @@ const RUNTIME = `
     return { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255 };
   }
 
+  function pathThroughStops(count) {
+    var n = Math.max(0, Math.min(count, stops.length));
+    if (n < 2) return [];
+    if (!roads) {
+      return stops.slice(0, n).map(function (s) { return [s.lat, s.lng]; });
+    }
+    var out = [];
+    for (var i = 0; i < n - 1; i++) {
+      var leg = roads[i];
+      var stop = stops[i];
+      var next = stops[i + 1];
+      var use = (leg && leg.length >= 2)
+        ? leg
+        : [[stop.lat, stop.lng], [next.lat, next.lng]];
+      if (out.length === 0) out.push.apply(out, use);
+      else out.push.apply(out, use.slice(1));
+    }
+    return out;
+  }
+
   function applyLabelTone(m, i) {
     var tip = m.getTooltip && m.getTooltip();
     if (!tip) return;
@@ -267,7 +294,7 @@ const RUNTIME = `
       }
       applyLabelTone(m, index);
     });
-    var visLatLngs = stops.slice(0, revealed).map(function (s) { return [s.lat, s.lng]; });
+    var visLatLngs = pathThroughStops(revealed);
     if (look.path !== "none" && visLatLngs.length >= 2) {
       if (pathLine) {
         pathLine.setLatLngs(visLatLngs);
@@ -276,6 +303,7 @@ const RUNTIME = `
           color: look.pathColor || "#1f7a6a",
           weight: 3,
           opacity: 0.9,
+          smoothFactor: 0,
           dashArray: look.path === "dashed" ? "8 8" : undefined
         }).addTo(layer);
       }
@@ -402,11 +430,30 @@ const RUNTIME = `
 })();
 `
 
+export async function htmlForSouvenir(
+  title: string,
+  stops: ExportStop[],
+  look: Look,
+  hostedUrl = '',
+  knownRoads: LatLng[][] | null = null,
+): Promise<string> {
+  let roads: LatLng[][] | null = null
+  if (look.followRoads && stops.length >= 2) {
+    try {
+      roads = await traceDriveLegs(stops)
+    } catch {
+      roads = knownRoads
+    }
+  }
+  return buildSouvenirHtml(title, stops, look, hostedUrl, roads)
+}
+
 export function buildSouvenirHtml(
   title: string,
   stops: ExportStop[],
   look: Look,
   hostedUrl = '',
+  roads: LatLng[][] | null = null,
 ): string {
   const theme = THEME_VARS[look.theme]
   const tiles = TILES[look.map]
@@ -416,6 +463,7 @@ export function buildSouvenirHtml(
     look,
     tiles,
     hosted: hostedUrl,
+    roads: look.followRoads ? roads : null,
   }).replace(/</g, '\\u003c')
   const range = dateRangeLabel(stops)
   const count = stops.length === 1 ? '1 stop' : `${stops.length} stops`

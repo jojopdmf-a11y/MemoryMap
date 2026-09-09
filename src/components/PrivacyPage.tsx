@@ -64,11 +64,16 @@ export function PrivacyPage() {
 
         <h2>Lookups and map tiles</h2>
         <p>
-          When a stop has a place name but no coordinates, the app asks
-          OpenStreetMap Nominatim to find it. The map preview and the downloaded
-          souvenir load map tiles from Esri or OpenTopoMap. Those
-          services see the usual request data a map needs (the tile area, and
-          typically your IP address).
+          When you type a place, we ask Photon (Komoot) for address suggestions.
+          City names may also go to Open-Meteo or OpenStreetMap Nominatim. The
+          map preview and the downloaded souvenir load map tiles from Esri or
+          OpenTopoMap.
+        </p>
+        <p>
+          Turning on Road trip sends the stop coordinates to the public OSRM
+          driving router so the line can follow roads. We cache suggestions and
+          road traces so zooming, playing, and downloading do not keep asking.
+          Those services typically see your IP address and the query.
         </p>
 
         <h2>The file you download</h2>

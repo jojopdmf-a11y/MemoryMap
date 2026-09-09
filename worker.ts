@@ -1,5 +1,6 @@
 import { handleAuth, type AuthEnv } from './worker/auth'
 import { handleFeedback } from './worker/feedback'
+import { handleGeo } from './worker/geo'
 import { handleSouvenir, type SouvenirEnv } from './worker/souvenir'
 
 export interface Env extends AuthEnv, SouvenirEnv {
@@ -12,6 +13,8 @@ export default {
     try {
       const souvenir = await handleSouvenir(request, env)
       if (souvenir) return souvenir
+      const geo = await handleGeo(request)
+      if (geo) return geo
       const auth = await handleAuth(request, env)
       if (auth) return auth
       const feedback = await handleFeedback(request, env)

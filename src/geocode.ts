@@ -7,6 +7,10 @@ export type GeocodeHit = {
 const OPEN_METEO = 'https://geocoding-api.open-meteo.com/v1/search'
 const NOMINATIM = 'https://nominatim.openstreetmap.org/search'
 
+function looksLikeAddress(place: string): boolean {
+  return /\d/.test(place) || place.includes(',')
+}
+
 async function geocodeOpenMeteo(place: string): Promise<GeocodeHit | null> {
   const url = `${OPEN_METEO}?name=${encodeURIComponent(place)}&count=1&language=en&format=json`
   const res = await fetch(url)
@@ -53,14 +57,48 @@ async function geocodeNominatim(place: string): Promise<GeocodeHit | null> {
   return { lat, lng, label: first.display_name ?? place }
 }
 
+async function geocodePhoton(place: string): Promise<GeocodeHit | null> {
+  const hits = await suggestPlaces(place)
+  return hits[0] ?? null
+}
+
+export async function suggestPlaces(
+  place: string,
+  signal?: AbortSignal,
+): Promise<GeocodeHit[]> {
+  const query = place.trim()
+  if (query.length < 3) return []
+  try {
+    const res = await fetch(`/api/suggest?q=${encodeURIComponent(query)}`, { signal })
+    if (!res.ok) return []
+    const data = (await res.json()) as { hits?: GeocodeHit[] }
+    return (data.hits ?? []).filter(
+      (hit) => Number.isFinite(hit.lat) && Number.isFinite(hit.lng) && hit.label,
+    )
+  } catch {
+    return []
+  }
+}
+
 export async function geocodePlace(place: string): Promise<GeocodeHit | null> {
   const query = place.trim()
   if (!query) return null
   try {
-    const hit = await geocodeOpenMeteo(query)
-    if (hit) return hit
-    return await geocodeNominatim(query)
+    if (looksLikeAddress(query)) {
+      return (await geocodePhoton(query)) || (await geocodeNominatim(query))
+    }
+    const city = await geocodeOpenMeteo(query)
+    if (hitOk(city, query)) return city
+    return (await geocodePhoton(query)) || (await geocodeNominatim(query))
   } catch {
     return null
   }
+}
+
+function hitOk(hit: GeocodeHit | null, query: string): hit is GeocodeHit {
+  if (!hit) return false
+  const needle = query.toLowerCase()
+  const label = hit.label.toLowerCase()
+  const first = needle.split(/[,\s]+/)[0] ?? ''
+  return !first || label.includes(first)
 }

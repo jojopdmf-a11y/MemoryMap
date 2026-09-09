@@ -20,7 +20,9 @@ Excel (`.xlsx`) and Google Sheets links work the same way. If the workbook has s
 
 A Google Sheet must be shared as “Anyone with the link can view,” or download it and drop the file.
 
-On the landing page you can also type a trip label plus date, city, state, and country for each stop. The app turns that into the same CSV the rest of the flow uses.
+On the landing page you can also type a trip label plus date, city or street address, state, and country for each stop. Suggestions appear as you type. The app turns that into the same CSV the rest of the flow uses.
+
+Turn on **Road trip** under the map to follow driving roads instead of a straight line. Routing is fetched once (and baked into the souvenir). Zooming, panning, and Play do not request it again. If a leg cannot be traced — a cruise, for example — that segment stays a straight line.
 
 See `public/caribbean-cruise.csv`, `public/european-train.csv`, and `public/la-to-nashville.csv` for mixed examples.
 

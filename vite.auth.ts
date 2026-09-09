@@ -2,6 +2,7 @@ import type { IncomingMessage, ServerResponse } from 'node:http'
 import type { Plugin } from 'vite'
 import { handleAuth, type AuthEnv } from './worker/auth.ts'
 import { handleFeedback } from './worker/feedback.ts'
+import { handleGeo } from './worker/geo.ts'
 import { handleSouvenir, type SouvenirStore } from './worker/souvenir.ts'
 
 const localSouvenirs = new Map<string, string>()
@@ -70,6 +71,7 @@ async function pipe(
     const env = localAuthEnv()
     const response =
       (await handleSouvenir(request, env)) ??
+      (await handleGeo(request)) ??
       (await handleAuth(request, env)) ??
       (await handleFeedback(request, env))
     if (!response) {

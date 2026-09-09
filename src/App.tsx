@@ -15,6 +15,7 @@ import {
   titleFromFilename,
 } from './csv'
 import { geocodePlace } from './geocode'
+import { traceDriveLegs, type LatLng } from './route'
 import {
   ingestFile,
   ingestGoogleSheetsUrl,
@@ -25,7 +26,7 @@ import { exportableStops, souvenirFilename } from './trip'
 import { SiteFooter } from './components/SiteFooter'
 import { StyleBar } from './components/StyleBar'
 import { DEFAULT_FIELDS, DEFAULT_LOOK, type CardField, type Look } from './look'
-import { buildSouvenirHtml } from './souvenir'
+import { htmlForSouvenir } from './souvenir'
 import { recordBrowserDownload } from './accountStore'
 import type { Stop } from './types'
 import './App.css'
@@ -43,6 +44,8 @@ export default function App() {
   const [look, setLook] = useState<Look>(DEFAULT_LOOK)
   const [revealed, setRevealed] = useState(0)
   const [playing, setPlaying] = useState(false)
+  const [driveLegs, setDriveLegs] = useState<LatLng[][] | null>(null)
+  const [tracing, setTracing] = useState(false)
   const geoGen = useRef(0)
   const stopsRef = useRef<Stop[] | null>(null)
 
@@ -136,6 +139,8 @@ export default function App() {
     setStops(result.stops)
     setRevealed(0)
     setPlaying(false)
+    setDriveLegs(null)
+    setTracing(false)
     setLook((current) => ({
       ...current,
       fields: { ...DEFAULT_FIELDS },
@@ -179,6 +184,8 @@ export default function App() {
     setSheetChoices(null)
     setRevealed(0)
     setPlaying(false)
+    setDriveLegs(null)
+    setTracing(false)
   }
 
   const included = stops?.filter((s) => !s.dismissed) ?? []
@@ -189,6 +196,43 @@ export default function App() {
   const plottedStops = (stops ?? []).filter(
     (s) => !s.dismissed && s.lat != null && s.lng != null,
   )
+  const routeKey = plotted
+    .map((stop) => `${stop.lat.toFixed(5)},${stop.lng.toFixed(5)}`)
+    .join('|')
+
+  useEffect(() => {
+    if (!look.followRoads) {
+      setDriveLegs(null)
+      setTracing(false)
+      return
+    }
+    const pts = routeKey
+      ? routeKey.split('|').map((pair) => {
+          const [lat, lng] = pair.split(',')
+          return { lat: Number(lat), lng: Number(lng) }
+        })
+      : []
+    if (pts.length < 2 || pts.some((p) => !Number.isFinite(p.lat) || !Number.isFinite(p.lng))) {
+      setDriveLegs(null)
+      setTracing(false)
+      return
+    }
+    const ac = new AbortController()
+    setTracing(true)
+    void traceDriveLegs(pts, ac.signal)
+      .then((legs) => {
+        if (!ac.signal.aborted) setDriveLegs(legs)
+      })
+      .catch((err) => {
+        if (ac.signal.aborted) return
+        setDriveLegs(null)
+        if (err instanceof DOMException && err.name === 'AbortError') return
+      })
+      .finally(() => {
+        if (!ac.signal.aborted) setTracing(false)
+      })
+    return () => ac.abort()
+  }, [look.followRoads, routeKey])
 
   useEffect(() => {
     document.documentElement.dataset.theme = look.theme
@@ -246,7 +290,7 @@ export default function App() {
       }
       const filename = souvenirFilename(tripTitle)
       await saveSouvenir(filename, (hosted) =>
-        buildSouvenirHtml(tripTitle, plotted, recipeLook, hosted),
+        htmlForSouvenir(tripTitle, plotted, recipeLook, hosted, driveLegs),
       )
       recordBrowserDownload(
         { title: tripTitle, stops: plotted, look: recipeLook },
@@ -313,16 +357,22 @@ export default function App() {
             <aside className="map-guide" aria-label="What to do next">
               <p className="map-guide-kicker">What to do</p>
               <ul>
-                <li>Look over your locations in the list below.</li>
+                <li>Look over your locations in the list below. Type a city or a street address — suggestions appear as you type.</li>
                 <li>Fix or skip any that have errors.</li>
                 <li>Use the column check boxes to choose what is displayed.</li>
                 <li>Press ‘Play Tour’ to watch the route appear.</li>
+                <li>Turn on Road trip if you want the line to follow driving roads. Zooming and play stay snappy.</li>
                 <li>Change the look of the map at any time using the options below the map.</li>
                 <li>Download once you are finished.</li>
               </ul>
             </aside>
             <section className="map-panel">
-              <PreviewMap stops={stops} look={look} revealed={revealed} />
+              <PreviewMap
+                stops={stops}
+                look={look}
+                revealed={revealed}
+                roads={look.followRoads ? driveLegs : null}
+              />
               {revealed > 0 && plottedStops[revealed - 1] && (
                 <aside className="map-date-window" aria-live="polite">
                   <strong className="map-date-title">
@@ -342,6 +392,9 @@ export default function App() {
               )}
               {busy && (
                 <p className="map-cue is-busy">Looking up places… centering the map as they land.</p>
+              )}
+              {tracing && !busy && (
+                <p className="map-cue is-trace">Tracing roads… you can still play, zoom, and download.</p>
               )}
             </section>
             <FeedbackNote />
@@ -373,7 +426,9 @@ export default function App() {
               hint={
                 busy
                   ? 'Looking up places…'
-                  : !ready
+                  : tracing
+                    ? 'Tracing the drive… zoom and play stay available.'
+                    : !ready
                     ? 'Skip or fix stops without coordinates to download.'
                     : `${plotted.length} stop${plotted.length === 1 ? '' : 's'} ready. Download is free.`
               }

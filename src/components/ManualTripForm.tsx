@@ -5,6 +5,7 @@ import {
   manualStopsToCsv,
   type ManualStopDraft,
 } from '../csv'
+import { PlaceSuggest } from './PlaceSuggest'
 
 type Props = {
   importing: boolean
@@ -29,7 +30,7 @@ export function ManualTripForm({ importing, onSubmit }: Props) {
   function plot() {
     const filled = filledManualStops(rows)
     if (filled.length === 0 || !filled.some((row) => row.city.trim())) {
-      setError('Add at least one city. Date, state, and country help the lookup.')
+      setError('Add at least one city or street address. Date, state, and country help the lookup.')
       return
     }
     setError(null)
@@ -48,8 +49,8 @@ export function ManualTripForm({ importing, onSubmit }: Props) {
       <div className="manual-head">
         <h2 className="entry-heading">Type the locations here</h2>
         <p className="hint">
-          Same trip — name the tour or cruise, then add each stop. We look up
-          the places either way.
+          Same trip — name the tour or cruise, then add each stop. Cities and
+          street addresses both work. Suggestions appear as you type.
         </p>
       </div>
       <label className="manual-label">
@@ -73,14 +74,23 @@ export function ManualTripForm({ importing, onSubmit }: Props) {
                 onChange={(e) => updateRow(index, { date: e.target.value })}
               />
             </label>
-            <label>
-              City
-              <input
+            <label className="manual-place">
+              Place
+              <PlaceSuggest
                 value={row.city}
                 disabled={importing}
-                placeholder="Barcelona"
-                autoComplete="address-level2"
-                onChange={(e) => updateRow(index, { city: e.target.value })}
+                placeholder="City or street address"
+                ariaLabel={`Place for stop ${index + 1}`}
+                onChange={(city) =>
+                  updateRow(index, { city, lat: null, lng: null })
+                }
+                onPick={(hit) =>
+                  updateRow(index, {
+                    city: hit.label,
+                    lat: hit.lat,
+                    lng: hit.lng,
+                  })
+                }
               />
             </label>
             <label>

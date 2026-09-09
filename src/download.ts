@@ -77,11 +77,11 @@ export function downloadText(
 
 export async function saveSouvenir(
   filename: string,
-  build: (hostedUrl: string) => string,
+  build: (hostedUrl: string) => string | Promise<string>,
 ): Promise<void> {
-  const draft = build('')
+  const draft = await Promise.resolve(build(''))
   const hosted = await publishSouvenir(draft)
-  const html = hosted ? build(hosted) : draft
+  const html = hosted ? await Promise.resolve(build(hosted)) : draft
   if (prefersHostedSouvenir()) {
     if (hosted) {
       const opened = window.open(hosted, '_blank', 'noopener')

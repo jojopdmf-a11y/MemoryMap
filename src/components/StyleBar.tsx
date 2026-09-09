@@ -103,6 +103,23 @@ export function StyleBar({
           ))}
         </select>
       </label>
+      <div className="road-toggle">
+        <span>Roads</span>
+        <button
+          type="button"
+          className={look.followRoads ? 'is-on' : undefined}
+          aria-pressed={look.followRoads}
+          title="Follow driving roads between stops. Zoom and play stay snappy — the route is fetched once."
+          onClick={() =>
+            onChange({
+              followRoads: !look.followRoads,
+              path: !look.followRoads && look.path === 'none' ? 'solid' : look.path,
+            })
+          }
+        >
+          Road trip
+        </button>
+      </div>
       <label>
         Pace
         <select

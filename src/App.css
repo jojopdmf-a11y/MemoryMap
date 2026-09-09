@@ -1100,21 +1100,111 @@
   line-height: 1.2;
 }
 
-.map-cue {
-  position: absolute;
-  z-index: 500;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  margin: 0;
-  pointer-events: none;
-  padding: 12px 18px;
-  background: color-mix(in srgb, var(--paper) 92%, transparent);
+.map-cue.is-busy,
+.map-cue.is-trace {
+  top: auto;
+  bottom: 12px;
+  transform: translate(-50%, 0);
+}
+
+.style-bar .road-toggle {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.style-bar .road-toggle button {
+  font-family: var(--sans);
+  font-size: 14px;
+  padding: 6px 10px;
   border: 1px solid var(--line);
-  box-shadow: var(--shadow-soft);
+  background: var(--paper);
+  color: var(--ink);
+  border-radius: var(--radius-xs);
+  text-transform: none;
+  letter-spacing: 0;
+  cursor: pointer;
+}
+
+.style-bar .road-toggle button.is-on,
+.style-bar .road-toggle button[aria-pressed='true'] {
+  background: var(--terra);
+  color: var(--paper);
+  border-color: var(--terra);
+}
+
+.place-suggest {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+}
+
+.place-suggest-list {
+  position: fixed;
+  z-index: 900;
+  margin: 0;
+  padding: 4px;
+  list-style: none;
+  max-height: min(280px, 50vh);
+  overflow: auto;
+  background: var(--paper);
+  color: var(--ink);
+  border: 1px solid var(--line);
   border-radius: var(--radius-sm);
-  text-align: center;
-  max-width: min(420px, 90%);
+  box-shadow: var(--shadow-soft);
+}
+
+.place-suggest-list li {
+  padding: 8px 10px;
+  border-radius: var(--radius-xs);
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1.35;
+}
+
+.place-suggest-list li.is-active,
+.place-suggest-list li:hover {
+  background: color-mix(in srgb, var(--terra) 16%, transparent);
+}
+
+.place-suggest-status {
+  color: var(--muted);
+  cursor: default;
+}
+
+.stop-table .place-suggest input {
+  width: 100%;
+  min-width: 72px;
+  border: 0;
+  background: transparent;
+  padding: 4px 0;
+  color: inherit;
+  border-bottom: 1px solid transparent;
+}
+
+.stop-table .place-suggest input:focus {
+  outline: none;
+  border-bottom-color: var(--terra);
+}
+
+.manual-stop .place-suggest input {
+  font-size: 16px;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  background: var(--wash);
+  color: var(--ink);
+  border-radius: var(--radius-xs);
+}
+
+.app.is-landing .manual-stop .place-suggest input {
+  background: color-mix(in srgb, var(--paper) 78%, transparent);
 }
 
 .style-bar {

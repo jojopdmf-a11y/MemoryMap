@@ -1,6 +1,7 @@
 import { formatDate, stopLabel } from '../csv'
 import type { CardField, CardFields } from '../look'
 import type { GeoStatus, Stop } from '../types'
+import { PlaceSuggest } from './PlaceSuggest'
 
 const STATUS_LABEL: Record<GeoStatus, string> = {
   coords: 'From CSV',
@@ -109,21 +110,27 @@ export function StopTable({
                 />
               </td>
               <td>
-                <input
+                <PlaceSuggest
                   value={stop.place}
-                  placeholder="City or address"
-                  onChange={(e) =>
+                  placeholder="City or street address"
+                  ariaLabel={`Place for stop ${index + 1}`}
+                  onChange={(place) =>
                     onChange(stop.id, {
-                      place: e.target.value,
-                      status:
-                        stop.lat != null && stop.lng != null
-                          ? stop.status
-                          : e.target.value.trim()
-                            ? 'pending'
-                            : 'missing',
+                      place,
+                      lat: null,
+                      lng: null,
+                      status: place.trim() ? 'pending' : 'missing',
                     })
                   }
-                  onBlur={() => {
+                  onPick={(hit) =>
+                    onChange(stop.id, {
+                      place: hit.label,
+                      lat: hit.lat,
+                      lng: hit.lng,
+                      status: 'geocoded',
+                    })
+                  }
+                  onBlurLookup={() => {
                     if (
                       stop.place.trim() &&
                       (stop.lat == null || stop.lng == null) &&
@@ -132,7 +139,6 @@ export function StopTable({
                       onLookup(stop.id)
                     }
                   }}
-                  aria-label={`Place for stop ${index + 1}`}
                 />
               </td>
               <td>

@@ -7,7 +7,7 @@ import {
   useAccount,
 } from '../accountStore'
 import { saveSouvenir } from '../download'
-import { buildSouvenirHtml } from '../souvenir'
+import { htmlForSouvenir } from '../souvenir'
 import { claimChrome, onChromeClaim } from '../chrome'
 import { SignInForm } from './SignInForm'
 
@@ -42,7 +42,7 @@ export function AccountMenu() {
     try {
       const item = completeFreeRedownload(id)
       await saveSouvenir(item.filename, (hosted) =>
-        buildSouvenirHtml(
+        htmlForSouvenir(
           item.recipe.title,
           item.recipe.stops,
           item.recipe.look,

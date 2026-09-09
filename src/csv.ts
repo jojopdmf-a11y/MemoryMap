@@ -134,10 +134,12 @@ export type ManualStopDraft = {
   city: string
   state: string
   country: string
+  lat: number | null
+  lng: number | null
 }
 
 export function emptyManualStop(): ManualStopDraft {
-  return { date: '', city: '', state: '', country: '' }
+  return { date: '', city: '', state: '', country: '', lat: null, lng: null }
 }
 
 export function filledManualStops(rows: ManualStopDraft[]): ManualStopDraft[] {
@@ -152,10 +154,19 @@ export function manualStopsToCsv(rows: ManualStopDraft[]): string {
     city: row.city.trim(),
     state: row.state.trim(),
     country: row.country.trim(),
+    lat: row.lat,
+    lng: row.lng,
   }))
   return Papa.unparse({
-    fields: ['date', 'city', 'state', 'country'],
-    data: filled.map((row) => [row.date, row.city, row.state, row.country]),
+    fields: ['date', 'city', 'state', 'country', 'lat', 'lng'],
+    data: filled.map((row) => [
+      row.date,
+      row.city,
+      row.state,
+      row.country,
+      row.lat ?? '',
+      row.lng ?? '',
+    ]),
   })
 }
 
