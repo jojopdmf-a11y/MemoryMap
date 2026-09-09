@@ -339,8 +339,19 @@ const RUNTIME = `
   var shareBtn = document.getElementById("mm-share");
   var copyBtn = document.getElementById("mm-copy");
   var saveBtn = document.getElementById("mm-save");
-  var keepHint = document.getElementById("mm-keep-hint");
-  if (keepHint && keepUrl) keepHint.hidden = false;
+  var note = document.getElementById("mm-note");
+  var noteLink = document.getElementById("mm-note-link");
+  var noteLinkWrap = document.getElementById("mm-note-link-wrap");
+  var noteDismiss = document.getElementById("mm-note-dismiss");
+  if (noteLink && noteLinkWrap && keepUrl) {
+    noteLink.href = keepUrl;
+    noteLinkWrap.hidden = false;
+  }
+  if (noteDismiss && note) {
+    noteDismiss.addEventListener("click", function () {
+      note.hidden = true;
+    });
+  }
   if (shareBtn) {
     if (!keepUrl || !navigator.share) shareBtn.hidden = true;
     else {
@@ -642,8 +653,46 @@ body {
   font-size: 11px;
   color: var(--muted);
 }
-.mm-keep-hint { padding-top: 0; }
-.mm-keep-hint[hidden] { display: none; }
+.mm-note {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  margin: 12px 20px 4px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  background: color-mix(in srgb, var(--paper) 82%, var(--terra) 10%);
+  border-radius: 12px;
+  max-width: 42rem;
+}
+.mm-note[hidden] { display: none; }
+.mm-note-kicker {
+  margin: 0 0 4px;
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--terra);
+}
+.mm-note p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--ink);
+}
+.mm-note p + p { margin-top: 8px; }
+.mm-note a { color: var(--terra); }
+#mm-note-dismiss {
+  flex: none;
+  margin-left: auto;
+  font-family: inherit;
+  font-size: 12px;
+  padding: 6px 10px;
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--ink);
+  cursor: pointer;
+  border-radius: 8px;
+  touch-action: manipulation;
+}
 .mm-pin-wrap { background: none !important; border: none !important; }
 .mm-pin {
   width: 28px;
@@ -700,6 +749,8 @@ body {
 @media (max-width: 640px) {
   .mm-stage { width: calc(100% - 24px); min-height: 180px; margin-top: 16px; }
   .mm-chrome { grid-template-columns: 1fr; }
+  .mm-note { flex-direction: column; margin-inline: 16px; }
+  #mm-note-dismiss { margin-left: 0; align-self: flex-start; }
 }
   </style>
 </head>
@@ -738,9 +789,19 @@ body {
       <button type="button" id="mm-save">Save file</button>
     </div>
   </header>
+  <aside class="mm-note" id="mm-note">
+    <div>
+      <p class="mm-note-kicker">Your souvenir</p>
+      <p>This is a playable MemoryMap of this trip. Press Play tour to watch the route. Map tiles need the internet.</p>
+      <p>Keep or share it with Share or Copy link — bookmark the page, add it to your home screen, or send the link. On a computer you can also keep this HTML file. On a phone or tablet, a file in Downloads often will not play; use the link instead.</p>
+      <p id="mm-note-link-wrap"${hostedUrl ? '' : ' hidden'}>
+        <a id="mm-note-link" href="${hostedUrl ? escapeHtml(hostedUrl) : '#'}">Open the keepable copy on memorymap.world</a>
+      </p>
+    </div>
+    <button type="button" id="mm-note-dismiss">Got it</button>
+  </aside>
   <ol class="mm-list" id="mm-list"></ol>
   <p class="mm-credit">A MemoryMap souvenir · tiles need the internet</p>
-  <p class="mm-credit mm-keep-hint" id="mm-keep-hint" hidden>On a phone or tablet, tap Share or Copy link and bookmark this page. A file in Downloads often will not play.</p>
   <script type="application/json" id="memorymap-trip">${payload}</script>
   <script>${leafletJs}</script>
   <script>${RUNTIME}</script>
