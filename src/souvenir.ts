@@ -13,10 +13,10 @@ const RUNTIME = `
   var tiles = trip.tiles || {};
   var hosted = trip.hosted || "";
   if (hosted && location.protocol === "file:") {
-    var apple =
-      /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+    var handheld =
+      /Android|webOS|iPhone|iPad|iPod|Mobile|Tablet|Silk|Kindle/i.test(navigator.userAgent) ||
       (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
-    if (apple) {
+    if (handheld) {
       location.replace(hosted);
       return;
     }

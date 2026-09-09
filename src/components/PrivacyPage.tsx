@@ -75,9 +75,9 @@ export function PrivacyPage() {
         <p>
           Download is free in this public preview. A souvenir is a single HTML
           file on your computer. It contains the trip you plotted. The file still
-          needs the internet for map tiles. On iPhone and iPad, Safari often
-          cannot run a file saved to Downloads, so we also keep a copy for 30
-          days at a private memorymap.world link and open that in a new tab.
+          needs the internet for map tiles. On phones and tablets, a file saved
+          to Downloads often cannot run, so we also keep a copy for 30 days at a
+          private memorymap.world link and open that in a new tab.
         </p>
 
         <h2>Advertising</h2>

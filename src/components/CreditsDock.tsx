@@ -9,8 +9,8 @@ export function CreditsDock({ canDownload, hint, onDownload }: Props) {
     <div className="credits-dock">
       <p className="credits-lead">
         Download is free in this public preview. Sign in to keep a list in this
-        browser so you can download a map again. On iPhone and iPad, Download
-        opens the map in a new Safari tab so Play tour and tiles can run.
+        browser so you can download a map again. On a phone or tablet, Download
+        opens the map in a new browser tab so Play tour and tiles can run.
       </p>
       <div className="panel-actions">
         <button

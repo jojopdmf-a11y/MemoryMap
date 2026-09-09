@@ -1,9 +1,14 @@
-export function isAppleTouchDevice(): boolean {
+/** Phones and tablets: Files/Downloads previews often will not run a saved HTML map. */
+export function prefersHostedSouvenir(): boolean {
   if (typeof navigator === 'undefined') return false
-  return (
-    /iPad|iPhone|iPod/.test(navigator.userAgent) ||
-    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
-  )
+  const ua = navigator.userAgent
+  if (
+    /Android|webOS|iPhone|iPad|iPod|IEMobile|Mobile|Tablet|Silk|Kindle/i.test(ua)
+  ) {
+    return true
+  }
+  // iPadOS 13+ reports as Macintosh with a touch screen.
+  return navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1
 }
 
 export async function publishSouvenir(html: string): Promise<string | null> {
@@ -77,7 +82,7 @@ export async function saveSouvenir(
   const draft = build('')
   const hosted = await publishSouvenir(draft)
   const html = hosted ? build(hosted) : draft
-  if (isAppleTouchDevice()) {
+  if (prefersHostedSouvenir()) {
     if (hosted) {
       const opened = window.open(hosted, '_blank', 'noopener')
       if (!opened) window.location.assign(hosted)
