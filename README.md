@@ -67,7 +67,7 @@ This is a public preview. Mapping and the souvenir file are free. Sign-in is opt
 
 ## How the live site updates
 
-The live site is [memorymap.world](https://memorymap.world). Cloudflare is already connected to this GitHub repo.
+The live site is [memorymap.world](https://memorymap.world) (and [www.memorymap.world](https://www.memorymap.world)). Cloudflare is already connected to this GitHub repo. Both hostnames are attached to the Worker so the site should open with or without `www`.
 
 **To update the website:** change the code, commit, and push to `main`. Cloudflare builds and publishes that commit. That’s it.
 

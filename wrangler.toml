@@ -2,6 +2,15 @@ name = "memorymap"
 main = "./worker.ts"
 compatibility_date = "2026-09-08"
 
+# Keep both hostnames on the Worker so typing memorymap.world or www works.
+[[routes]]
+pattern = "memorymap.world"
+custom_domain = true
+
+[[routes]]
+pattern = "www.memorymap.world"
+custom_domain = true
+
 [assets]
 directory = "./dist"
 binding = "ASSETS"
