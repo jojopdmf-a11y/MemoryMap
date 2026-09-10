@@ -578,13 +578,13 @@ body {
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  gap: 12px;
-  padding: 24px 20px 0;
+  gap: 8px;
+  padding: 12px 12px 0;
 }
 .mm-stage {
   position: relative;
   flex: 0 0 auto;
-  width: min(calc(75vh * 16 / 10), calc(100vw - 48px - 16.5rem));
+  width: min(calc(75vh * 16 / 10), calc(100vw - 24px - 11rem));
   aspect-ratio: 16 / 10;
   height: auto;
   margin: 0;
@@ -593,11 +593,11 @@ body {
   border-radius: 16px;
 }
 .mm-rail {
-  flex: 0 0 15.5rem;
-  width: 15.5rem;
+  flex: 0 0 10.25rem;
+  width: 10.25rem;
   display: grid;
   align-content: start;
-  gap: 8px;
+  gap: 6px;
 }
 .mm-workspace.is-note-gone .mm-rail {
   flex-basis: auto;
@@ -800,10 +800,10 @@ body {
 .mm-note {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
   width: 100%;
   margin: 0;
-  padding: 10px 12px;
+  padding: 8px 10px;
   border: 1px solid var(--line);
   background: color-mix(in srgb, var(--paper) 82%, var(--terra) 10%);
   border-radius: 12px;
@@ -818,8 +818,8 @@ body {
 }
 .mm-note p {
   margin: 0;
-  font-size: 12px;
-  line-height: 1.35;
+  font-size: 11px;
+  line-height: 1.3;
   color: var(--ink);
 }
 .mm-note p + p { margin-top: 6px; }
@@ -828,8 +828,8 @@ body {
   flex: none;
   align-self: flex-start;
   font-family: inherit;
-  font-size: 12px;
-  padding: 6px 10px;
+  font-size: 11px;
+  padding: 4px 8px;
   border: 1px solid var(--line);
   background: transparent;
   color: var(--ink);
@@ -850,24 +850,24 @@ body {
 #mm-feedback-btn {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   width: auto;
-  padding: 8px 10px;
+  padding: 6px 8px;
   border: 1px solid var(--line);
   background: color-mix(in srgb, var(--paper) 88%, white);
   color: var(--ink);
   text-align: left;
   cursor: pointer;
-  border-radius: 12px;
+  border-radius: 10px;
   box-shadow: none;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 650;
-  line-height: 1.25;
+  line-height: 1.2;
 }
 #mm-feedback-form {
   display: grid;
-  gap: 10px;
-  width: min(16rem, 100%);
+  gap: 8px;
+  width: min(16rem, calc(100vw - 24px));
   max-height: min(18rem, 46vh);
   overflow: auto;
   margin-top: 8px;
@@ -982,7 +982,7 @@ body {
   .mm-rail,
   .mm-workspace.is-note-gone .mm-rail {
     flex: none;
-    width: min(100%, 22rem);
+    width: min(100%, 16rem);
   }
 }
 @media (max-width: 640px) {
@@ -1007,7 +1007,7 @@ body {
       <aside class="mm-note" id="mm-note">
         <div>
           <p class="mm-note-kicker">Your souvenir</p>
-          <p>Press Play tour to watch the route. Keep or share it with Share or Copy link. On a phone, use the link — a file in Downloads often will not play.</p>
+            <p>Play tour to watch the route. Share or Copy link to keep it. On a phone, use the link.</p>
           <p id="mm-note-link-wrap"${hostedUrl ? '' : ' hidden'}>
             <a id="mm-note-link" href="${hostedUrl ? escapeHtml(hostedUrl) : '#'}">Open the keepable copy on memorymap.world</a>
           </p>
@@ -1015,7 +1015,7 @@ body {
         <button type="button" id="mm-note-dismiss">Got it</button>
       </aside>
       <div class="mm-feedback">
-        <button type="button" id="mm-feedback-btn" aria-expanded="false" aria-controls="mm-feedback-form">Feedback or Suggestion?</button>
+          <button type="button" id="mm-feedback-btn" aria-expanded="false" aria-controls="mm-feedback-form">Feedback</button>
         <form id="mm-feedback-form" hidden>
           <p>Tell us what to improve. You can also write <a href="${CONTACT_MAILTO}">${escapeHtml(CONTACT_EMAIL)}</a>.</p>
           <label>
