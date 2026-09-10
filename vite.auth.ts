@@ -1,9 +1,34 @@
+import { readFileSync, existsSync } from 'node:fs'
+import { resolve } from 'node:path'
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import type { Plugin } from 'vite'
 import { handleAuth, type AuthEnv } from './worker/auth.ts'
 import { handleFeedback } from './worker/feedback.ts'
 import { handleGeo } from './worker/geo.ts'
+import { handlePaddle } from './worker/paddle.ts'
 import { handleSouvenir, type SouvenirStore } from './worker/souvenir.ts'
+
+loadDevVars()
+
+function loadDevVars() {
+  const file = resolve(process.cwd(), '.dev.vars')
+  if (!existsSync(file)) return
+  for (const line of readFileSync(file, 'utf8').split('\n')) {
+    const trimmed = line.trim()
+    if (!trimmed || trimmed.startsWith('#')) continue
+    const eq = trimmed.indexOf('=')
+    if (eq < 1) continue
+    const key = trimmed.slice(0, eq).trim()
+    let value = trimmed.slice(eq + 1).trim()
+    if (
+      (value.startsWith('"') && value.endsWith('"')) ||
+      (value.startsWith("'") && value.endsWith("'"))
+    ) {
+      value = value.slice(1, -1)
+    }
+    if (!process.env[key]) process.env[key] = value
+  }
+}
 
 const localSouvenirs = new Map<string, string>()
 
@@ -11,12 +36,17 @@ const localSouvenirStore: SouvenirStore = {
   async get(key) {
     return localSouvenirs.get(key) ?? null
   },
-  async put(key, value) {
+  async put(key, value, _options) {
     localSouvenirs.set(key, value)
   },
 }
 
-function localAuthEnv(): AuthEnv & { SOUVENIRS: SouvenirStore } {
+function localAuthEnv(): AuthEnv & {
+  SOUVENIRS: SouvenirStore
+  PADDLE_API_KEY?: string
+  PADDLE_WEBHOOK_SECRET?: string
+  PADDLE_SANDBOX?: string
+} {
   return {
     AUTH_SECRET: process.env.AUTH_SECRET || 'memorymap-dev-auth-secret',
     RESEND_API_KEY: process.env.RESEND_API_KEY,
@@ -24,6 +54,9 @@ function localAuthEnv(): AuthEnv & { SOUVENIRS: SouvenirStore } {
     GOOGLE_CLIENT_ID:
       process.env.GOOGLE_CLIENT_ID || process.env.VITE_GOOGLE_CLIENT_ID,
     ALLOW_DEV_LINKS: process.env.ALLOW_DEV_LINKS ?? '1',
+    PADDLE_API_KEY: process.env.PADDLE_API_KEY,
+    PADDLE_WEBHOOK_SECRET: process.env.PADDLE_WEBHOOK_SECRET,
+    PADDLE_SANDBOX: process.env.PADDLE_SANDBOX ?? '1',
     SOUVENIRS: localSouvenirStore,
   }
 }
@@ -73,6 +106,7 @@ async function pipe(
       (await handleSouvenir(request, env)) ??
       (await handleGeo(request)) ??
       (await handleAuth(request, env)) ??
+      (await handlePaddle(request, env)) ??
       (await handleFeedback(request, env))
     if (!response) {
       next()

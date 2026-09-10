@@ -219,6 +219,31 @@ export function buyPack(pack: CreditPack, source: Purchase['source'] = 'local'):
   return next
 }
 
+export function applyCheckoutGrant(pack: CreditPack, transactionId: string): AccountRecord {
+  const account = requireAccount()
+  if (account.purchases.some((item) => item.id === transactionId)) {
+    return account
+  }
+  const next: AccountRecord = {
+    ...account,
+    credits: account.credits + pack.credits,
+    purchases: [
+      {
+        id: transactionId,
+        packId: pack.id,
+        credits: pack.credits,
+        usd: pack.usd,
+        createdAt: nowIso(),
+        source: 'checkout',
+      },
+      ...account.purchases,
+    ],
+  }
+  replaceAccount(next)
+  emit()
+  return next
+}
+
 export function findLibraryMatch(fingerprint: string): LibraryItem | null {
   const account = snapshot.account
   if (!account) return null

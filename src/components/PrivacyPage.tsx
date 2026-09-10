@@ -22,7 +22,8 @@ export function PrivacyPage() {
         <p>
           {SITE_NAME} is a public preview. It turns a list of places into a map
           you can preview, then download as a souvenir file for free. Sign-in
-          is optional. Paid credits are not for sale yet. This page describes
+          is optional. Download is free. Paddle sandbox checkout can add test
+          credit packs on this browser; live charges are off. This page describes
           what happens to that information today.
         </p>
 
@@ -51,10 +52,14 @@ export function PrivacyPage() {
           directly.
         </p>
 
-        <h2>What we see</h2>
+        <h2>Payments</h2>
         <p>
-          This public preview does not sell credits. We do not collect payment
-          details.
+          Download does not require a card. If you buy a credit pack, checkout
+          is handled by Paddle, our merchant of record. Card details go to Paddle,
+          not to MemoryMap. We receive your email, the pack you bought, and a
+          Paddle transaction id so we can add credits on this browser. The
+          current connection is Paddle sandbox, so those checkouts are for
+          testing and are not live charges.
         </p>
         <p>
           If you write to{' '}
@@ -97,7 +102,7 @@ export function PrivacyPage() {
           Questions about this page or your data:{' '}
           <a href={CONTACT_MAILTO}>{CONTACT_EMAIL}</a>.
         </p>
-        <p className="legal-updated">Updated September 9, 2026.</p>
+        <p className="legal-updated">Updated September 10, 2026.</p>
       </main>
       <SiteFooter />
     </div>

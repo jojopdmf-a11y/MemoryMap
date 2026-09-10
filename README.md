@@ -4,7 +4,7 @@ Type the stops, drop a CSV of places and dates, an Excel workbook, or a Google S
 
 The downloaded file has Leaflet, styles, and stop data baked in. It only needs the internet for map tiles.
 
-Sign-in is optional. Anyone can create their own account with an email link or Google. Paid credits are not for sale yet.
+Sign-in is optional. Anyone can create their own account with an email link or Google. Download is free. Paddle sandbox checkout is wired so credit packs can be tested; live charges are off.
 
 ## CSV columns
 
@@ -63,9 +63,36 @@ Until Resend is connected, the live **Email me a link** button will say email is
 
 Until that client ID is set, **Continue with Google** explains that email still works.
 
+## Paddle sandbox (test checkout)
+
+Paddle is the merchant of record. The catalog in sandbox already has MemoryMap credit packs ($2 / $5 / $10) plus the CougarCalc products from the other project, which share this sandbox account.
+
+**Do not put the Paddle API key in git.** It belongs in:
+
+- Local `.dev.vars` (gitignored): `PADDLE_API_KEY` and `PADDLE_WEBHOOK_SECRET`
+- Cloudflare → Workers → `memorymap` → Settings → Variables and Secrets, both marked secret
+
+The Paddle.js client token in `src/creditPacks.ts` is public on purpose (`test_…`). The secret API key never ships to the browser.
+
+After sign-in, **Account → Paddle sandbox** opens overlay checkout. Download still does not spend credits.
+
+### Cursor Paddle tools (same as the other chat)
+
+This Cloud Agent session cannot attach MCP servers to itself. Desktop Cursor and **new** Cloud Agents pick them up from config:
+
+1. **This repo:** `.cursor/mcp.json` talks to `https://sandbox-mcp.paddle.com/mcp` using `PADDLE_SANDBOX_API_KEY` in your environment.
+2. **Desktop:** Cursor Settings → MCP Tools, or export `PADDLE_SANDBOX_API_KEY` then restart Cursor.
+3. **Cloud Agents:** add the same remote MCP in [Cursor dashboard → Integrations & MCP](https://cursor.com/dashboard/integrations) (or the Cloud Agents MCP panel) with header `Authorization: Bearer <sandbox API key>`. A chat that started without that MCP will not grow the tools mid-run.
+
+Paddle tools are `search` and `execute` against the Billing API (products, prices, transactions, webhooks).
+
+### Webhook
+
+Sandbox destination: `https://memorymap.world/api/paddle/webhook` (`transaction.paid` / `completed` / `billed` / `updated`). The Worker verifies `Paddle-Signature` and records the grant. The browser also calls `/api/paddle/fulfill` after overlay checkout so credits appear without waiting on the webhook.
+
 ## Public preview
 
-This is a public preview. Mapping and the souvenir file are free. Sign-in is optional. Paid credits are not for sale yet.
+This is a public preview. Mapping and the souvenir file are free. Sign-in is optional. Paddle sandbox checkout is for testing credit packs. Live charges are off.
 
 ## How the live site updates
 

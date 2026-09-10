@@ -9,10 +9,11 @@ import {
 } from '../accountStore'
 import {
   CREDIT_PACKS,
-  checkoutConfigured,
   checkoutUrl,
+  paddleConfigured,
   type CreditPack,
 } from '../commerce'
+import { openCreditCheckout } from '../paddleCheckout'
 import { saveSouvenir } from '../download'
 import { recipeFingerprint, type SouvenirRecipe } from '../recipe'
 import { htmlForSouvenir } from '../souvenir'
@@ -42,6 +43,7 @@ export function DownloadSheet({ open, intent, recipe, onClose }: Props) {
   const dialogRef = useRef<HTMLDivElement>(null)
   const [error, setError] = useState<string | null>(null)
   const [note, setNote] = useState<string | null>(null)
+  const [buying, setBuying] = useState(false)
   const match = recipe ? findLibraryMatch(recipeFingerprint(recipe)) : null
   const filename = recipe ? souvenirFilename(recipe.title) : 'MemoryMap-trip.html'
   const leftover = account ? Math.max(0, account.credits - (match ? 0 : 1)) : 0
@@ -58,24 +60,30 @@ export function DownloadSheet({ open, intent, recipe, onClose }: Props) {
 
   if (!open) return null
 
-  function purchase(pack: CreditPack) {
+  async function purchase(pack: CreditPack) {
     setError(null)
     setNote(null)
     try {
       requireAccount()
-      if (checkoutConfigured()) {
-        const url = checkoutUrl(pack, account?.email ?? '')
-        if (url) {
-          window.location.assign(url)
-          return
-        }
+      if (paddleConfigured()) {
+        setBuying(true)
+        await openCreditCheckout(pack, account?.email ?? '')
+        setNote('Paddle sandbox checkout is opening. Credits land here after payment is confirmed.')
+        return
+      }
+      const url = checkoutUrl(pack, account?.email ?? '')
+      if (url) {
+        window.location.assign(url)
+        return
       }
       buyPack(pack, 'local')
       setNote(
-        `Added ${pack.credits} credit${pack.credits === 1 ? '' : 's'} on this browser. Card checkout will use a merchant of record once it is connected.`,
+        `Added ${pack.credits} credit${pack.credits === 1 ? '' : 's'} on this browser. Card checkout will use Paddle once the sandbox key is on this server.`,
       )
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not add credits.')
+    } finally {
+      setBuying(false)
     }
   }
 
@@ -139,8 +147,8 @@ export function DownloadSheet({ open, intent, recipe, onClose }: Props) {
             <p className="hint">
               {account.email} · {account.credits} credit
               {account.credits === 1 ? '' : 's'}. A download uses 1 credit.
-              {checkoutConfigured()
-                ? ' Checkout opens our merchant of record.'
+              {paddleConfigured()
+                ? ' Checkout is Paddle sandbox — test cards only. Download is still free.'
                 : ' Card charges are not live yet; a pack only adds credits on this browser.'}
             </p>
             <ul className="pack-row">
@@ -149,7 +157,8 @@ export function DownloadSheet({ open, intent, recipe, onClose }: Props) {
                   <button
                     type="button"
                     className="pack-card"
-                    onClick={() => purchase(pack)}
+                    disabled={buying}
+                    onClick={() => void purchase(pack)}
                   >
                     <strong>${pack.usd}</strong>
                     <span>

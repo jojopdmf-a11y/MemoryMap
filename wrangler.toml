@@ -23,5 +23,8 @@ binding = "SOUVENIRS"
 id = "3cf3a800b33546f0a9d21cbdff6b22ca"
 preview_id = "7e4481fec92740d3a5dbdff5cc6464cc"
 
+[vars]
+PADDLE_SANDBOX = "1"
+
 [observability]
 enabled = true

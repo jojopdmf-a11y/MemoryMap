@@ -6,8 +6,10 @@ import {
   signOut,
   useAccount,
 } from '../accountStore'
+import { CREDIT_PACKS, paddleConfigured, type CreditPack } from '../commerce'
 import { saveSouvenir } from '../download'
 import { htmlForSouvenir } from '../souvenir'
+import { openCreditCheckout } from '../paddleCheckout'
 import { claimChrome, onChromeClaim } from '../chrome'
 import { SignInForm } from './SignInForm'
 
@@ -15,6 +17,7 @@ export function AccountMenu() {
   const { account, notice } = useAccount()
   const [open, setOpen] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [buying, setBuying] = useState(false)
   const rootRef = useRef<HTMLDivElement>(null)
   const panelId = useId()
 
@@ -36,6 +39,22 @@ export function AccountMenu() {
       document.removeEventListener('keydown', onKey)
     }
   }, [open])
+
+  async function buy(pack: CreditPack) {
+    if (!account) return
+    setError(null)
+    setBuying(true)
+    try {
+      await openCreditCheckout(pack, account.email)
+      setAccountNotice(
+        'Paddle sandbox checkout is opening. Credits land on this browser after payment is confirmed.',
+      )
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not start checkout.')
+    } finally {
+      setBuying(false)
+    }
+  }
 
   async function downloadAgain(id: string) {
     setError(null)
@@ -72,7 +91,9 @@ export function AccountMenu() {
         <span className="account-who">{account ? account.email : 'Sign in'}</span>
         <span className="account-credits">
           {account
-            ? `${account.library.length} saved map${account.library.length === 1 ? '' : 's'}`
+            ? account.credits > 0
+              ? `${account.credits} credit${account.credits === 1 ? '' : 's'} · ${account.library.length} saved`
+              : `${account.library.length} saved map${account.library.length === 1 ? '' : 's'}`
             : 'Email or Google'}
         </span>
       </button>
@@ -90,9 +111,38 @@ export function AccountMenu() {
               <p className="account-balance">{account.email}</p>
               <p className="hint">
                 Signed in {formatWhen(account.createdAt) || 'today'}. Download is
-                free. Maps you download while signed in are listed here and stay
-                in this browser.
+                still free. Maps you download while signed in are listed here and
+                stay in this browser.
+                {account.credits > 0
+                  ? ` You have ${account.credits} credit${account.credits === 1 ? '' : 's'} from sandbox checkout.`
+                  : ''}
               </p>
+              {paddleConfigured() && (
+                <div className="history-block">
+                  <p className="kicker">Paddle sandbox</p>
+                  <p className="hint">
+                    Test card checkout through Paddle. Live charges are off.
+                    Download does not spend these credits yet.
+                  </p>
+                  <ul className="pack-row">
+                    {CREDIT_PACKS.map((pack) => (
+                      <li key={pack.id}>
+                        <button
+                          type="button"
+                          className="pack-card"
+                          disabled={buying}
+                          onClick={() => void buy(pack)}
+                        >
+                          <strong>${pack.usd}</strong>
+                          <span>
+                            {pack.credits} credit{pack.credits === 1 ? '' : 's'}
+                          </span>
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
               <div className="history-block">
                 <p className="kicker">Downloads</p>
                 {account.library.length === 0 ? (

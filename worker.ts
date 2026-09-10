@@ -1,9 +1,10 @@
 import { handleAuth, type AuthEnv } from './worker/auth'
 import { handleFeedback } from './worker/feedback'
 import { handleGeo } from './worker/geo'
+import { handlePaddle, type PaddleEnv } from './worker/paddle'
 import { handleSouvenir, type SouvenirEnv } from './worker/souvenir'
 
-export interface Env extends AuthEnv, SouvenirEnv {
+export interface Env extends AuthEnv, SouvenirEnv, PaddleEnv {
   ASSETS: { fetch: (request: Request) => Promise<Response> }
 }
 
@@ -17,6 +18,8 @@ export default {
       if (geo) return geo
       const auth = await handleAuth(request, env)
       if (auth) return auth
+      const paddle = await handlePaddle(request, env)
+      if (paddle) return paddle
       const feedback = await handleFeedback(request, env)
       if (feedback) return feedback
     } catch {
