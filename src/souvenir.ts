@@ -579,12 +579,14 @@ body {
   justify-content: center;
   align-items: flex-start;
   gap: 8px;
-  padding: 12px 12px 0;
+  padding: 8px 8px 0;
+  width: 100%;
+  box-sizing: border-box;
 }
 .mm-stage {
   position: relative;
   flex: 0 0 auto;
-  width: min(calc(75vh * 16 / 10), calc(100vw - 24px - 11rem));
+  width: min(calc((100vh - 16px) * 16 / 10), calc(100vw - 16px - 9.75rem));
   aspect-ratio: 16 / 10;
   height: auto;
   margin: 0;
@@ -593,8 +595,8 @@ body {
   border-radius: 16px;
 }
 .mm-rail {
-  flex: 0 0 10.25rem;
-  width: 10.25rem;
+  flex: 0 0 9.5rem;
+  width: 9.5rem;
   display: grid;
   align-content: start;
   gap: 6px;
@@ -602,6 +604,9 @@ body {
 .mm-workspace.is-note-gone .mm-rail {
   flex-basis: auto;
   width: auto;
+}
+.mm-workspace.is-note-gone .mm-stage {
+  width: min(calc((100vh - 16px) * 16 / 10), calc(100vw - 16px - 5.5rem));
 }
 #map {
   position: absolute;
@@ -977,7 +982,10 @@ body {
     align-items: center;
   }
   .mm-stage {
-    width: min(100%, calc(75vh * 16 / 10));
+    width: min(100%, calc((100vh - 16px) * 16 / 10));
+  }
+  .mm-workspace.is-note-gone .mm-stage {
+    width: min(100%, calc((100vh - 16px) * 16 / 10));
   }
   .mm-rail,
   .mm-workspace.is-note-gone .mm-rail {
