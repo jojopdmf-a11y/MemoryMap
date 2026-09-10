@@ -900,13 +900,11 @@
 
 .map-stage {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  grid-template-columns: 15.5rem minmax(0, 1fr) 15.5rem;
   align-items: center;
   column-gap: 16px;
-  width: 100%;
   padding-inline: max(24px, env(safe-area-inset-left, 0px))
     max(24px, env(safe-area-inset-right, 0px));
-  box-sizing: border-box;
 }
 
 .map-guide {
@@ -939,14 +937,13 @@
 
 .map-stage .map-panel {
   grid-column: 2;
-  width: min(100%, calc(75vh * 16 / 10));
+  width: 100%;
   margin-inline: 0;
-  justify-self: center;
 }
 
 .map-feedback {
   grid-column: 3;
-  justify-self: start;
+  justify-self: end;
   align-self: center;
   position: relative;
   width: 100%;
