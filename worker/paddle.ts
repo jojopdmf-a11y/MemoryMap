@@ -80,7 +80,12 @@ async function paddleFetch(
   if (!res.ok) {
     const err = asRecord(data.error)
     const detail = asString(err?.detail) || asString(data.error)
-    throw new Error(detail || 'Paddle could not complete that request.')
+    const code = asString(err?.code)
+    throw new Error(
+      [code && `${code} (${res.status})`, detail]
+        .filter(Boolean)
+        .join(': ') || 'Paddle could not complete that request.',
+    )
   }
   return data
 }
