@@ -357,13 +357,10 @@ export default function App() {
             <aside className="map-guide" aria-label="What to do next">
               <p className="map-guide-kicker">What to do</p>
               <ul>
-                <li>Look over your locations in the list below. Type a city or a street address — suggestions appear as you type.</li>
-                <li>Fix or skip any that have errors.</li>
-                <li>Use the column check boxes to choose what is displayed.</li>
-                <li>Press ‘Play Tour’ to watch the route appear.</li>
-                <li>Turn on Road trip if you want the line to follow driving roads. Zooming and play stay snappy.</li>
-                <li>Change the look of the map at any time using the options below the map.</li>
-                <li>Download once you are finished.</li>
+                <li>Press Play tour to watch the route appear.</li>
+                <li>Change the look in the bar under the map.</li>
+                <li>Fix or skip any stop that didn’t land.</li>
+                <li>Download when the trip looks right.</li>
               </ul>
             </aside>
             <section className="map-panel">
