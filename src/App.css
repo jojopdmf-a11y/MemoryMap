@@ -474,7 +474,10 @@
 }
 
 .brand-hero .kicker {
-  margin: 0 0 10px;
+  margin: 0 0 14px;
+  color: var(--muted);
+  font-size: 10px;
+  letter-spacing: 0.28em;
 }
 
 .brand-lockup {
@@ -485,17 +488,21 @@
 
 .brand-mark {
   margin: 0;
-  font-size: clamp(40px, 8vw, 76px);
-  font-weight: 600;
-  letter-spacing: 0.2em;
-  padding-inline-start: 0.2em;
+  font-size: clamp(52px, 11vw, 98px);
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  padding-inline-start: 0.14em;
   text-transform: uppercase;
-  color: var(--terra);
-  line-height: 0.92;
+  color: var(--ink);
+  line-height: 0.88;
+  text-shadow:
+    0 0 28px color-mix(in srgb, var(--paper) 92%, transparent),
+    0 1px 0 color-mix(in srgb, var(--paper) 88%, white),
+    0 12px 30px color-mix(in srgb, var(--ink) 16%, transparent);
 }
 
 .brand-hero .tagline {
-  margin: 0.06em 0 0;
+  margin: 0.22em 0 0;
   max-width: none;
   font-size: clamp(15px, 2.2vw, 18px);
   font-style: italic;
@@ -507,10 +514,17 @@
 
 .brand-lockup::after {
   content: '';
-  width: 3.4rem;
-  height: 1px;
-  margin: 14px 0 0;
-  background: color-mix(in srgb, var(--flare) 58%, transparent);
+  width: 4.6rem;
+  height: 2px;
+  margin: 16px 0 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--flare) 18%,
+    color-mix(in srgb, var(--flare) 70%, var(--terra)) 50%,
+    var(--flare) 82%,
+    transparent
+  );
 }
 
 .trip-start {
