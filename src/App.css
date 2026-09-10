@@ -495,6 +495,7 @@
   text-transform: uppercase;
   color: var(--ink);
   line-height: 0.88;
+  white-space: nowrap;
   text-shadow:
     0 0 28px color-mix(in srgb, var(--paper) 92%, transparent),
     0 1px 0 color-mix(in srgb, var(--paper) 88%, white),
@@ -525,6 +526,19 @@
     var(--flare) 82%,
     transparent
   );
+}
+
+@media (max-width: 720px) {
+  .app.is-landing .dropzone {
+    padding-top: 92px;
+  }
+
+  .brand-mark {
+    font-size: min(52px, calc((100vw - 3.25rem) / 10.5));
+    letter-spacing: 0.05em;
+    padding-inline-start: 0.04em;
+    white-space: nowrap;
+  }
 }
 
 .trip-start {
