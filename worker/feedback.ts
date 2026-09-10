@@ -7,11 +7,17 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const MAX_BODY = 12_000
 const MAX_COMMENT = 4000
 const CONTACT_TO = 'hello@memorymap.world'
+const CORS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type',
+  'Access-Control-Max-Age': '86400',
+}
 
 function json(data: unknown, status = 200): Response {
   return new Response(JSON.stringify(data), {
     status,
-    headers: { 'Content-Type': 'application/json; charset=utf-8' },
+    headers: { 'Content-Type': 'application/json; charset=utf-8', ...CORS },
   })
 }
 
@@ -29,7 +35,7 @@ export async function handleFeedback(
   const url = new URL(request.url)
   if (url.pathname !== '/api/feedback') return null
   if (request.method === 'OPTIONS') {
-    return new Response(null, { status: 204 })
+    return new Response(null, { status: 204, headers: CORS })
   }
   if (request.method !== 'POST') {
     return json({ error: 'Not found.' }, 404)
@@ -41,9 +47,13 @@ export async function handleFeedback(
     return json({ error: 'That note is too long. Please shorten it.' }, 413)
   }
 
-  let body: { comment?: string; email?: string }
+  let body: { comment?: string; email?: string; source?: string }
   try {
-    body = (await request.json()) as { comment?: string; email?: string }
+    body = (await request.json()) as {
+      comment?: string
+      email?: string
+      source?: string
+    }
   } catch {
     return json({ error: 'Write a short note to send.' }, 400)
   }
@@ -65,11 +75,13 @@ export async function handleFeedback(
   const replyLine = email
     ? `They asked for a reply at ${email}.`
     : 'They did not leave an email.'
+  const fromSouvenir = String(body.source ?? '').toLowerCase() === 'souvenir'
+  const where = fromSouvenir ? 'a souvenir map' : 'the map page'
   const payload: Record<string, unknown> = {
     from,
     to: [CONTACT_TO],
-    subject: 'MemoryMap feedback',
-    text: `Feedback from the map page:\n\n${comment}\n\n${replyLine}`,
+    subject: fromSouvenir ? 'MemoryMap souvenir feedback' : 'MemoryMap feedback',
+    text: `Feedback from ${where}:\n\n${comment}\n\n${replyLine}`,
   }
   if (email) payload.reply_to = email
 

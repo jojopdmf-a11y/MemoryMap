@@ -2,6 +2,7 @@ import leafletCss from 'leaflet/dist/leaflet.css?raw'
 import leafletJs from 'leaflet/dist/leaflet.js?raw'
 import { TILES, THEME_VARS, type Look } from './look'
 import { traceDriveLegs, type LatLng } from './route'
+import { CONTACT_EMAIL, CONTACT_MAILTO } from './site'
 import { dateRangeLabel } from './trip'
 import type { ExportStop } from './types'
 
@@ -426,6 +427,79 @@ const RUNTIME = `
     });
   }
 
+  var feedbackBtn = document.getElementById("mm-feedback-btn");
+  var feedbackForm = document.getElementById("mm-feedback-form");
+  var feedbackComment = document.getElementById("mm-feedback-comment");
+  var feedbackEmail = document.getElementById("mm-feedback-email");
+  var feedbackError = document.getElementById("mm-feedback-error");
+  var feedbackSend = document.getElementById("mm-feedback-send");
+  function feedbackEndpoint() {
+    var host = location.hostname || "";
+    if (location.protocol === "http:" || location.protocol === "https:") {
+      if (
+        host === "memorymap.world" ||
+        host === "www.memorymap.world" ||
+        host === "localhost" ||
+        host === "127.0.0.1"
+      ) {
+        return location.origin + "/api/feedback";
+      }
+    }
+    return "https://memorymap.world/api/feedback";
+  }
+  function mailtoFeedback(comment, email) {
+    var body = comment + (email ? "\\n\\nReply to: " + email : "");
+    location.href = "mailto:hello@memorymap.world?subject=" +
+      encodeURIComponent("MemoryMap feedback") +
+      "&body=" + encodeURIComponent(body);
+  }
+  if (feedbackBtn && feedbackForm) {
+    feedbackBtn.addEventListener("click", function () {
+      feedbackForm.hidden = !feedbackForm.hidden;
+      feedbackBtn.setAttribute("aria-expanded", feedbackForm.hidden ? "false" : "true");
+    });
+    feedbackForm.addEventListener("submit", function (event) {
+      event.preventDefault();
+      var comment = ((feedbackComment && feedbackComment.value) || "").trim();
+      var email = ((feedbackEmail && feedbackEmail.value) || "").trim();
+      if (comment.length < 2) return;
+      if (feedbackError) {
+        feedbackError.hidden = true;
+        feedbackError.textContent = "";
+      }
+      if (feedbackSend) {
+        feedbackSend.disabled = true;
+        feedbackSend.textContent = "Sending…";
+      }
+      fetch(feedbackEndpoint(), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ comment: comment, email: email, source: "souvenir" })
+      }).then(function (res) {
+        return res.json().then(function (data) {
+          return { ok: res.ok, data: data };
+        }).catch(function () {
+          return { ok: res.ok, data: {} };
+        });
+      }).then(function (result) {
+        if (!result.ok) throw new Error((result.data && result.data.error) || "Could not send that note.");
+        feedbackForm.innerHTML = "<p>Thanks. We read these at <a href=\\"mailto:hello@memorymap.world\\">hello@memorymap.world</a>.</p>";
+        feedbackBtn.setAttribute("aria-expanded", "false");
+      }).catch(function (err) {
+        if (feedbackSend) {
+          feedbackSend.disabled = false;
+          feedbackSend.textContent = "Send note";
+        }
+        if (feedbackError) {
+          feedbackError.hidden = false;
+          feedbackError.textContent = (err && err.message) || "Could not send that note. Try hello@memorymap.world.";
+        } else {
+          mailtoFeedback(comment, email);
+        }
+      });
+    });
+  }
+
   draw(0);
 })();
 `
@@ -497,15 +571,32 @@ body {
   flex-direction: column;
   min-height: 100vh;
 }
+.mm-workspace {
+  display: flex;
+  justify-content: center;
+  align-items: start;
+  gap: 16px;
+  padding: 24px 20px 0;
+}
 .mm-stage {
   position: relative;
+  flex: 1 1 auto;
   width: min(100%, calc(75vh * 16 / 10));
+  max-width: calc(75vh * 16 / 10);
   aspect-ratio: 16 / 10;
   height: auto;
-  margin: 24px auto 0;
+  margin: 0;
   min-height: 240px;
   overflow: hidden;
   border-radius: 16px;
+}
+.mm-rail {
+  flex: 0 0 22rem;
+  width: 22rem;
+  max-width: 100%;
+  display: grid;
+  align-content: start;
+  gap: 12px;
 }
 #map {
   position: absolute;
@@ -703,14 +794,13 @@ body {
 }
 .mm-note {
   display: flex;
+  flex-direction: column;
   gap: 12px;
-  align-items: flex-start;
-  margin: 12px 20px 4px;
+  margin: 0;
   padding: 12px 14px;
   border: 1px solid var(--line);
   background: color-mix(in srgb, var(--paper) 82%, var(--terra) 10%);
   border-radius: 12px;
-  max-width: 42rem;
 }
 .mm-note[hidden] { display: none; }
 .mm-note-kicker {
@@ -730,7 +820,7 @@ body {
 .mm-note a { color: var(--terra); }
 #mm-note-dismiss {
   flex: none;
-  margin-left: auto;
+  align-self: flex-start;
   font-family: inherit;
   font-size: 12px;
   padding: 6px 10px;
@@ -741,6 +831,81 @@ body {
   border-radius: 8px;
   touch-action: manipulation;
 }
+.mm-feedback {
+  position: relative;
+}
+.mm-feedback button,
+.mm-feedback textarea,
+.mm-feedback input {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+#mm-feedback-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  background: color-mix(in srgb, var(--paper) 88%, white);
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 650;
+  line-height: 1.25;
+}
+#mm-feedback-form {
+  display: grid;
+  gap: 10px;
+  margin-top: 8px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  background: var(--paper);
+  border-radius: 12px;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.09);
+}
+#mm-feedback-form[hidden] { display: none; }
+#mm-feedback-form p { margin: 0; font-size: 13px; line-height: 1.4; color: var(--muted); }
+#mm-feedback-form a { color: var(--terra); }
+#mm-feedback-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--muted);
+}
+#mm-feedback-form textarea,
+#mm-feedback-form input {
+  font-size: 15px;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  background: color-mix(in srgb, var(--paper) 72%, white);
+  color: var(--ink);
+  border-radius: 8px;
+}
+#mm-feedback-form textarea { min-height: 6.5rem; resize: vertical; }
+#mm-feedback-send {
+  justify-self: start;
+  padding: 9px 14px;
+  border: 1px solid var(--terra);
+  background: var(--terra);
+  color: var(--paper);
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 15px;
+}
+#mm-feedback-send:disabled { opacity: 0.4; cursor: default; }
+#mm-feedback-error {
+  margin: 0;
+  padding: 8px 10px;
+  border: 1px solid color-mix(in srgb, var(--terra) 45%, transparent);
+  background: color-mix(in srgb, var(--terra) 12%, transparent);
+  border-radius: 8px;
+  color: var(--ink);
+  font-size: 13px;
+}
+#mm-feedback-error[hidden] { display: none; }
 .mm-pin-wrap { background: none !important; border: none !important; }
 .mm-pin {
   width: 28px;
@@ -794,23 +959,61 @@ body {
   font-weight: 700;
   border-radius: 8px;
 }
+@media (max-width: 900px) {
+  .mm-workspace {
+    flex-direction: column;
+    align-items: center;
+    padding-inline: 16px;
+  }
+  .mm-stage { width: min(100%, calc(75vh * 16 / 10)); max-width: none; }
+  .mm-rail { flex: none; width: min(100%, 22rem); }
+}
 @media (max-width: 640px) {
-  .mm-stage { width: calc(100% - 24px); min-height: 180px; margin-top: 16px; }
+  .mm-stage { width: calc(100% - 24px); min-height: 180px; }
   .mm-chrome { grid-template-columns: 1fr; }
-  .mm-note { flex-direction: column; margin-inline: 16px; }
-  #mm-note-dismiss { margin-left: 0; align-self: flex-start; }
 }
   </style>
 </head>
 <body>
-  <div class="mm-stage">
-    <div id="map"></div>
-    <aside class="mm-date" id="mm-date" hidden>
-      <strong class="mm-date-title" id="mm-date-title"></strong>
-      <span class="mm-date-kicker">Date</span>
-      <strong class="mm-date-value" id="mm-date-value"></strong>
-    </aside>
-    <p class="mm-cue" id="mm-cue">Press Play tour to watch the route appear</p>
+  <div class="mm-workspace">
+    <div class="mm-stage">
+      <div id="map"></div>
+      <aside class="mm-date" id="mm-date" hidden>
+        <strong class="mm-date-title" id="mm-date-title"></strong>
+        <span class="mm-date-kicker">Date</span>
+        <strong class="mm-date-value" id="mm-date-value"></strong>
+      </aside>
+      <p class="mm-cue" id="mm-cue">Press Play tour to watch the route appear</p>
+    </div>
+    <div class="mm-rail">
+      <aside class="mm-note" id="mm-note">
+        <div>
+          <p class="mm-note-kicker">Your souvenir</p>
+          <p>This is a playable MemoryMap of this trip. Press Play tour to watch the route. Map tiles need the internet.</p>
+          <p>Keep or share it with Share or Copy link — bookmark the page, add it to your home screen, or send the link. On a computer you can also keep this HTML file. On a phone or tablet, a file in Downloads often will not play; use the link instead.</p>
+          <p id="mm-note-link-wrap"${hostedUrl ? '' : ' hidden'}>
+            <a id="mm-note-link" href="${hostedUrl ? escapeHtml(hostedUrl) : '#'}">Open the keepable copy on memorymap.world</a>
+          </p>
+        </div>
+        <button type="button" id="mm-note-dismiss">Got it</button>
+      </aside>
+      <div class="mm-feedback">
+        <button type="button" id="mm-feedback-btn" aria-expanded="false" aria-controls="mm-feedback-form">Feedback or Suggestion?</button>
+        <form id="mm-feedback-form" hidden>
+          <p>Tell us what to improve. You can also write <a href="${CONTACT_MAILTO}">${escapeHtml(CONTACT_EMAIL)}</a>.</p>
+          <label>
+            Comment
+            <textarea id="mm-feedback-comment" rows="5" required placeholder="What should we change or add?"></textarea>
+          </label>
+          <label>
+            Email for a reply (optional)
+            <input id="mm-feedback-email" type="email" autocomplete="email" placeholder="you@example.com" />
+          </label>
+          <p id="mm-feedback-error" hidden></p>
+          <button type="submit" id="mm-feedback-send">Send note</button>
+        </form>
+      </div>
+    </div>
   </div>
   <header class="mm-chrome">
     <div>
@@ -837,17 +1040,6 @@ body {
       <button type="button" id="mm-save">Save file</button>
     </div>
   </header>
-  <aside class="mm-note" id="mm-note">
-    <div>
-      <p class="mm-note-kicker">Your souvenir</p>
-      <p>This is a playable MemoryMap of this trip. Press Play tour to watch the route. Map tiles need the internet.</p>
-      <p>Keep or share it with Share or Copy link — bookmark the page, add it to your home screen, or send the link. On a computer you can also keep this HTML file. On a phone or tablet, a file in Downloads often will not play; use the link instead.</p>
-      <p id="mm-note-link-wrap"${hostedUrl ? '' : ' hidden'}>
-        <a id="mm-note-link" href="${hostedUrl ? escapeHtml(hostedUrl) : '#'}">Open the keepable copy on memorymap.world</a>
-      </p>
-    </div>
-    <button type="button" id="mm-note-dismiss">Got it</button>
-  </aside>
   <ol class="mm-list" id="mm-list"></ol>
   <p class="mm-credit">A MemoryMap souvenir · tiles need the internet</p>
   <script type="application/json" id="memorymap-trip">${payload}</script>
