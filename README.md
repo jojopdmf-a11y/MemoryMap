@@ -86,6 +86,14 @@ This Cloud Agent session cannot attach MCP servers to itself. Desktop Cursor and
 
 Paddle tools are `search` and `execute` against the Billing API (products, prices, transactions, webhooks).
 
+### One-time Paddle dashboard steps
+
+Until these are set, overlay checkout still opens from Paddle.js; hosted payment links will not.
+
+1. Paddle sandbox → **Checkout → Checkout settings** → Default payment link → `https://memorymap.world/`
+2. Add approved websites: `memorymap.world`, `www.memorymap.world`, `localhost`, `127.0.0.1`
+3. Test with Paddle sandbox cards (for example `4242 4242 4242 4242`)
+
 ### Webhook
 
 Sandbox destination: `https://memorymap.world/api/paddle/webhook` (`transaction.paid` / `completed` / `billed` / `updated`). The Worker verifies `Paddle-Signature` and records the grant. The browser also calls `/api/paddle/fulfill` after overlay checkout so credits appear without waiting on the webhook.

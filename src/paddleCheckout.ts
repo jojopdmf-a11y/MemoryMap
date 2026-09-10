@@ -87,7 +87,7 @@ async function paddle(): Promise<PaddleCheckout> {
 async function createTransaction(pack: CreditPack, email: string): Promise<{
   transactionId: string
   url: string | null
-}> {
+} | null> {
   const res = await fetch('/api/paddle/checkout', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -98,10 +98,23 @@ async function createTransaction(pack: CreditPack, email: string): Promise<{
     transactionId?: string
     url?: string | null
   }
-  if (!res.ok || !data.transactionId) {
-    throw new Error(data.error || 'Could not start checkout.')
-  }
+  if (!res.ok || !data.transactionId) return null
   return { transactionId: data.transactionId, url: data.url ?? null }
+}
+
+export async function openCreditCheckout(pack: CreditPack, email: string): Promise<void> {
+  requireAccount()
+  const client = await paddle()
+  const started = await createTransaction(pack, email)
+  if (started?.transactionId) {
+    client.Checkout.open({ transactionId: started.transactionId })
+    return
+  }
+  client.Checkout.open({
+    items: [{ priceId: pack.priceId, quantity: 1 }],
+    customer: { email },
+    customData: { app: 'memorymap', packId: pack.id, email },
+  })
 }
 
 export async function fulfillPaddlePayment(transactionId: string): Promise<boolean> {
@@ -155,28 +168,4 @@ export async function consumePaddleReturn(): Promise<boolean> {
   url.searchParams.delete('txn')
   window.history.replaceState({}, '', `${url.pathname}${url.search}${url.hash}`)
   return fulfillPaddlePayment(transactionId)
-}
-
-export async function openCreditCheckout(pack: CreditPack, email: string): Promise<void> {
-  requireAccount()
-  const client = await paddle()
-  try {
-    const started = await createTransaction(pack, email)
-    try {
-      client.Checkout.open({ transactionId: started.transactionId })
-      return
-    } catch {
-      if (started.url) {
-        window.location.assign(started.url)
-        return
-      }
-    }
-  } catch {
-    // Overlay can still open from price ids if the Worker key is missing.
-  }
-  client.Checkout.open({
-    items: [{ priceId: pack.priceId, quantity: 1 }],
-    customer: { email },
-    customData: { app: 'memorymap', packId: pack.id, email },
-  })
 }

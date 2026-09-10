@@ -244,25 +244,37 @@ async function handleCheckout(request: Request, env: PaddleEnv): Promise<Respons
   if (!EMAIL_RE.test(email)) {
     return json({ error: 'Sign in with a valid email before checkout.' }, 400)
   }
-  const payload = await paddleFetch(env, '/transactions', {
-    method: 'POST',
-    body: JSON.stringify({
-      items: [{ price_id: pack.priceId, quantity: 1 }],
-      custom_data: {
-        app: 'memorymap',
-        packId: pack.id,
-        email,
+  try {
+    const payload = await paddleFetch(env, '/transactions', {
+      method: 'POST',
+      body: JSON.stringify({
+        items: [{ price_id: pack.priceId, quantity: 1 }],
+        custom_data: {
+          app: 'memorymap',
+          packId: pack.id,
+          email,
+        },
+        collection_mode: 'automatic',
+      }),
+    })
+    const txn = asRecord(payload.data)
+    const checkout = asRecord(txn?.checkout)
+    return json({
+      transactionId: asString(txn?.id),
+      url: asString(checkout?.url) || null,
+      packId: pack.id,
+    })
+  } catch (err) {
+    return json(
+      {
+        error:
+          err instanceof Error
+            ? err.message
+            : 'Could not start checkout.',
       },
-      collection_mode: 'automatic',
-    }),
-  })
-  const txn = asRecord(payload.data)
-  const checkout = asRecord(txn?.checkout)
-  return json({
-    transactionId: asString(txn?.id),
-    url: asString(checkout?.url) || null,
-    packId: pack.id,
-  })
+      400,
+    )
+  }
 }
 
 async function handleFulfill(request: Request, env: PaddleEnv): Promise<Response> {
