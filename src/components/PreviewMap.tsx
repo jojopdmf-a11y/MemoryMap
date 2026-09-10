@@ -285,11 +285,11 @@ function syncTooltip(
     const tip = marker.getTooltip()
     const el = tip?.getElement()
     if (el) paintLabel(el, tone, pinColor, mode)
-    tip?.setOpacity(labelOpacity(tone, mode))
+    tip?.setOpacity(mode === 'hidden' ? 1 : labelOpacity(tone, mode))
     return
   }
   existing.setContent(escapeHtml(label))
-  existing.setOpacity(labelOpacity(tone, mode))
+  existing.setOpacity(mode === 'hidden' ? 1 : labelOpacity(tone, mode))
   const el = existing.getElement()
   if (!el) return
   paintLabel(el, tone, pinColor, mode)

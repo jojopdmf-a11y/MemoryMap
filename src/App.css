@@ -1672,6 +1672,10 @@
   pointer-events: none;
 }
 
+.leaflet-tooltip.mm-label.is-hidden {
+  opacity: 0 !important;
+}
+
 .leaflet-tooltip-right.mm-label::before {
   border-right-color: var(--label-fill);
 }

@@ -247,7 +247,7 @@ const RUNTIME = `
     var hidden = mode === "hidden";
     var fading = mode === "play" && age >= 2;
     var active = !hidden && age <= 0;
-    tip.setOpacity(hidden || fading ? 0 : 1);
+    tip.setOpacity(hidden ? 1 : fading ? 0 : 1);
     var el = tip.getElement && tip.getElement();
     if (!el) return;
     var rgb = pinRgb(look.pinColor);
@@ -266,6 +266,11 @@ const RUNTIME = `
     var done = tourDone();
     locBtn.disabled = !done;
     locBtn.setAttribute("aria-pressed", done && showLocations ? "true" : "false");
+    locBtn.title = done
+      ? (showLocations
+        ? "Hide the location banners. Pins and the route stay."
+        : "Show the location banners")
+      : "Available after the tour finishes";
   }
 
   function draw(count) {
@@ -665,6 +670,7 @@ body {
 }
 .leaflet-tooltip.mm-label.is-hidden {
   pointer-events: none;
+  opacity: 0 !important;
 }
 .leaflet-tooltip-right.mm-label::before { border-right-color: var(--label-fill); }
 .mm-date {
