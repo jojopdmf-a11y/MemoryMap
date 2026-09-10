@@ -13,7 +13,7 @@ export const SAMPLE_TRIPS: SampleTrip[] = [
   {
     id: 'caribbean',
     title: 'Caribbean Cruise',
-    blurb: 'Eastern Caribbean ports, plotted over the water.',
+    blurb: 'Eastern Caribbean Experience',
     filename: 'caribbean-cruise.csv',
     look: {
       followRoads: false,
@@ -47,8 +47,8 @@ Prague,2025-06-12,Prague Czechia,,,Old Town
   },
   {
     id: 'nashville',
-    title: 'L.A. to Nashville Road Trip',
-    blurb: 'West to Music City on the interstate.',
+    title: 'L.A. To Nashville',
+    blurb: 'American Interstate Adventure',
     filename: 'la-to-nashville.csv',
     csv: `title,date,place,lat,lng,notes
 Los Angeles,2025-09-01,Los Angeles CA,34.0522,-118.2437,Start west
@@ -60,8 +60,8 @@ Nashville,2025-09-08,Nashville TN,36.1627,-86.7816,Music City
   },
   {
     id: 'appalachian',
-    title: 'Appalachian Trail Section Hike',
-    blurb: 'Springer Mountain to Max Patch: six AT waypoints.',
+    title: 'Appalachian Trail Hike',
+    blurb: 'Springer Mountain to Max Patch',
     filename: 'appalachian-trail.csv',
     look: { followRoads: false, map: 'terrain' },
     csv: `title,date,place,lat,lng,notes
@@ -76,7 +76,7 @@ Max Patch,2025-04-21,Max Patch NC,35.7970,-82.9568,Bald with a view
   {
     id: 'asia',
     title: 'Historic Landmarks of Asia',
-    blurb: 'Six landmarks from India to Japan.',
+    blurb: 'Travel Across Time',
     filename: 'asia-landmarks.csv',
     look: { followRoads: false },
     csv: `title,date,place,lat,lng,notes

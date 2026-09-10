@@ -536,8 +536,15 @@
 }
 
 .app.is-landing .dropzone {
+  max-width: min(1120px, 100%);
   margin-top: 0;
   padding-top: 64px;
+}
+
+.app.is-landing .brand-hero,
+.app.is-landing .trip-start {
+  max-width: 760px;
+  margin-inline: auto;
 }
 
 .dropzone > h1 {
@@ -799,7 +806,7 @@
   margin: 18px 0 0;
   padding: 0;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(196px, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 10px;
 }
 
@@ -807,9 +814,10 @@
   width: 100%;
   display: grid;
   justify-items: start;
+  align-content: start;
   gap: 4px;
   min-height: 100%;
-  padding: 16px 14px;
+  padding: 14px 12px;
   text-align: left;
   border: 1px solid var(--line);
   background: color-mix(in srgb, var(--paper) 82%, transparent);
@@ -840,21 +848,37 @@
 
 .sample-trip-card strong {
   font-family: var(--serif);
-  font-size: 18px;
+  font-size: clamp(15px, 1.35vw, 17px);
   font-weight: 600;
   letter-spacing: 0.01em;
+  line-height: 1.2;
+  text-wrap: balance;
 }
 
 .sample-trip-blurb {
   color: var(--muted);
   font-family: var(--sans);
-  font-size: 13px;
+  font-size: 12px;
   line-height: 1.35;
+  text-wrap: pretty;
 }
 
 @media (max-width: 700px) {
+  .sample-trips {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin-inline: -8px;
+    padding-inline: 8px;
+  }
+
   .sample-trip-grid {
-    grid-template-columns: 1fr;
+    width: max-content;
+    min-width: 100%;
+    grid-template-columns: repeat(5, minmax(9.75rem, 1fr));
+  }
+
+  .sample-trip-card {
+    width: 10.25rem;
   }
 }
 
