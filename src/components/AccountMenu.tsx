@@ -9,7 +9,10 @@ import {
 import { CREDIT_PACKS, paddleConfigured, type CreditPack } from '../commerce'
 import { saveSouvenir } from '../download'
 import { htmlForSouvenir } from '../souvenir'
-import { openCreditCheckout } from '../paddleCheckout'
+import {
+  DEFAULT_PAYMENT_LINK_HELP,
+  openCreditCheckout,
+} from '../paddleCheckout'
 import { claimChrome, onChromeClaim } from '../chrome'
 import { SignInForm } from './SignInForm'
 
@@ -50,7 +53,14 @@ export function AccountMenu() {
         'Paddle sandbox checkout is opening. Credits land on this browser after payment is confirmed.',
       )
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not start checkout.')
+      const message =
+        err instanceof Error ? err.message : 'Could not start checkout.'
+      setError(message)
+      setAccountNotice(
+        /default payment link/i.test(message)
+          ? DEFAULT_PAYMENT_LINK_HELP
+          : message,
+      )
     } finally {
       setBuying(false)
     }
@@ -122,7 +132,9 @@ export function AccountMenu() {
                   <p className="kicker">Paddle sandbox</p>
                   <p className="hint">
                     Test card checkout through Paddle. Live charges are off.
-                    Download does not spend these credits yet.
+                    Download does not spend these credits yet. Checkout needs a
+                    default payment link in Paddle → Checkout → Checkout settings
+                    (https://memorymap.world/ or https://localhost/).
                   </p>
                   <ul className="pack-row">
                     {CREDIT_PACKS.map((pack) => (

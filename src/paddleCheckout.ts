@@ -14,10 +14,12 @@ type PaddleCheckout = {
 
 type PaddleEvent = {
   name?: string
+  error?: { detail?: string; code?: string; message?: string } | string
   data?: {
     transaction_id?: string
     id?: string
     transaction?: { id?: string }
+    error?: { detail?: string; code?: string; message?: string } | string
   }
 }
 
@@ -26,6 +28,9 @@ declare global {
     Paddle?: PaddleCheckout
   }
 }
+
+export const DEFAULT_PAYMENT_LINK_HELP =
+  'Paddle sandbox still needs a default payment link before checkout can open. In Paddle: Checkout → Checkout settings → Default payment link. Set it to https://memorymap.world/ (or https://localhost/ for this preview), save, then click a pack again.'
 
 let paddleReady: Promise<PaddleCheckout> | null = null
 const seen = new Set<string>()
@@ -37,6 +42,20 @@ function transactionIdFromEvent(event: PaddleEvent): string {
       event.data?.id ||
       '',
   ).trim()
+}
+
+function eventErrorText(event: PaddleEvent): string {
+  const raw = event.error ?? event.data?.error
+  if (typeof raw === 'string' && raw.trim()) return raw.trim()
+  if (raw && typeof raw === 'object') {
+    const detail = [raw.detail, raw.message, raw.code].filter(Boolean).join(' — ')
+    if (detail) return detail
+  }
+  return ''
+}
+
+function needsDefaultPaymentLink(message: string): boolean {
+  return /default payment link|checkout_url_not_set/i.test(message)
 }
 
 async function loadScript(): Promise<void> {
@@ -72,6 +91,15 @@ async function paddle(): Promise<PaddleCheckout> {
           },
         },
         eventCallback: (event: PaddleEvent) => {
+          if (event.name === 'checkout.error' || event.name === 'checkout.warning') {
+            const detail = eventErrorText(event)
+            setAccountNotice(
+              needsDefaultPaymentLink(detail)
+                ? DEFAULT_PAYMENT_LINK_HELP
+                : detail || DEFAULT_PAYMENT_LINK_HELP,
+            )
+            return
+          }
           if (event.name !== 'checkout.completed') return
           const transactionId = transactionIdFromEvent(event)
           if (!transactionId) return
@@ -84,10 +112,10 @@ async function paddle(): Promise<PaddleCheckout> {
   return paddleReady
 }
 
-async function createTransaction(pack: CreditPack, email: string): Promise<{
-  transactionId: string
-  url: string | null
-} | null> {
+async function createTransaction(
+  pack: CreditPack,
+  email: string,
+): Promise<{ transactionId: string; url: string | null } | { error: string }> {
   const res = await fetch('/api/paddle/checkout', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -98,18 +126,25 @@ async function createTransaction(pack: CreditPack, email: string): Promise<{
     transactionId?: string
     url?: string | null
   }
-  if (!res.ok || !data.transactionId) return null
-  return { transactionId: data.transactionId, url: data.url ?? null }
+  if (res.ok && data.transactionId) {
+    return { transactionId: data.transactionId, url: data.url ?? null }
+  }
+  return { error: data.error || 'Could not start checkout.' }
 }
 
 export async function openCreditCheckout(pack: CreditPack, email: string): Promise<void> {
   requireAccount()
-  const client = await paddle()
   const started = await createTransaction(pack, email)
-  if (started?.transactionId) {
+  if ('error' in started) {
+    if (needsDefaultPaymentLink(started.error)) {
+      throw new Error(DEFAULT_PAYMENT_LINK_HELP)
+    }
+  } else {
+    const client = await paddle()
     client.Checkout.open({ transactionId: started.transactionId })
     return
   }
+  const client = await paddle()
   client.Checkout.open({
     items: [{ priceId: pack.priceId, quantity: 1 }],
     customer: { email },

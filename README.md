@@ -88,9 +88,9 @@ Paddle tools are `search` and `execute` against the Billing API (products, price
 
 ### One-time Paddle dashboard steps
 
-Until these are set, overlay checkout still opens from Paddle.js; hosted payment links will not.
+Checkout will not open until a default payment link exists. That setting is not available on the API key — it has to be saved in the Paddle dashboard. Overlay and hosted links both fail with “Something went wrong” until this is set.
 
-1. Paddle sandbox → **Checkout → Checkout settings** → Default payment link → `https://memorymap.world/`
+1. Paddle sandbox → **Checkout → Checkout settings** → Default payment link → `https://memorymap.world/` (use `https://localhost/` if you are only testing this preview)
 2. Add approved websites: `memorymap.world`, `www.memorymap.world`, `localhost`, `127.0.0.1`
 3. Test with Paddle sandbox cards (for example `4242 4242 4242 4242`)
 
