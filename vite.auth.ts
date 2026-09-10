@@ -26,7 +26,9 @@ function loadDevVars() {
     ) {
       value = value.slice(1, -1)
     }
-    if (!process.env[key]) process.env[key] = value
+    if (!process.env[key] || key.startsWith('PADDLE_')) {
+      process.env[key] = value
+    }
   }
 }
 
