@@ -189,18 +189,14 @@ export async function fulfillPaddlePayment(transactionId: string): Promise<boole
   }
 }
 
-export async function consumePaddleReturn(): Promise<boolean> {
+export async function bootPaddleFromUrl(): Promise<void> {
   const url = new URL(window.location.href)
   const transactionId = (
-    url.searchParams.get('paddle_txn') ||
     url.searchParams.get('_ptxn') ||
+    url.searchParams.get('paddle_txn') ||
     url.searchParams.get('txn') ||
     ''
   ).trim()
-  if (!transactionId) return false
-  url.searchParams.delete('paddle_txn')
-  url.searchParams.delete('_ptxn')
-  url.searchParams.delete('txn')
-  window.history.replaceState({}, '', `${url.pathname}${url.search}${url.hash}`)
-  return fulfillPaddlePayment(transactionId)
+  if (!transactionId) return
+  await paddle()
 }
