@@ -379,6 +379,9 @@ const RUNTIME = `
   if (noteDismiss && note) {
     noteDismiss.addEventListener("click", function () {
       note.hidden = true;
+      var workspace = document.querySelector(".mm-workspace");
+      if (workspace) workspace.classList.add("is-note-gone");
+      kickMap();
     });
   }
   if (shareBtn) {
@@ -574,29 +577,31 @@ body {
 .mm-workspace {
   display: flex;
   justify-content: center;
+  align-items: flex-start;
+  gap: 12px;
   padding: 24px 20px 0;
 }
 .mm-stage {
   position: relative;
-  width: min(100%, calc(75vh * 16 / 10));
+  flex: 0 0 auto;
+  width: min(calc(75vh * 16 / 10), calc(100vw - 48px - 16.5rem));
   aspect-ratio: 16 / 10;
   height: auto;
-  margin: 0 auto;
+  margin: 0;
   min-height: 240px;
   overflow: hidden;
   border-radius: 16px;
 }
 .mm-rail {
-  position: absolute;
-  z-index: 850;
-  top: 12px;
-  right: 50px;
-  width: min(16rem, calc(100% - 72px));
+  flex: 0 0 15.5rem;
+  width: 15.5rem;
   display: grid;
   align-content: start;
-  justify-items: end;
   gap: 8px;
-  pointer-events: none;
+}
+.mm-workspace.is-note-gone .mm-rail {
+  flex-basis: auto;
+  width: auto;
 }
 #map {
   position: absolute;
@@ -800,10 +805,8 @@ body {
   margin: 0;
   padding: 10px 12px;
   border: 1px solid var(--line);
-  background: color-mix(in srgb, var(--paper) 92%, transparent);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+  background: color-mix(in srgb, var(--paper) 82%, var(--terra) 10%);
   border-radius: 12px;
-  pointer-events: auto;
 }
 .mm-note[hidden] { display: none; }
 .mm-note-kicker {
@@ -838,7 +841,6 @@ body {
   position: relative;
   width: max-content;
   max-width: 100%;
-  pointer-events: auto;
 }
 .mm-feedback button,
 .mm-feedback textarea,
@@ -852,12 +854,12 @@ body {
   width: auto;
   padding: 8px 10px;
   border: 1px solid var(--line);
-  background: color-mix(in srgb, var(--paper) 92%, transparent);
+  background: color-mix(in srgb, var(--paper) 88%, white);
   color: var(--ink);
   text-align: left;
   cursor: pointer;
   border-radius: 12px;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+  box-shadow: none;
   font-size: 12px;
   font-weight: 650;
   line-height: 1.25;
@@ -969,10 +971,23 @@ body {
   font-weight: 700;
   border-radius: 8px;
 }
+@media (max-width: 960px) {
+  .mm-workspace {
+    flex-direction: column;
+    align-items: center;
+  }
+  .mm-stage {
+    width: min(100%, calc(75vh * 16 / 10));
+  }
+  .mm-rail,
+  .mm-workspace.is-note-gone .mm-rail {
+    flex: none;
+    width: min(100%, 22rem);
+  }
+}
 @media (max-width: 640px) {
   .mm-workspace { padding: 16px 12px 0; }
   .mm-stage { width: calc(100% - 24px); min-height: 180px; }
-  .mm-rail { right: 12px; width: min(15rem, calc(100% - 24px)); }
   .mm-chrome { grid-template-columns: 1fr; }
 }
   </style>
@@ -987,33 +1002,33 @@ body {
         <strong class="mm-date-value" id="mm-date-value"></strong>
       </aside>
       <p class="mm-cue" id="mm-cue">Press Play tour to watch the route appear</p>
-      <div class="mm-rail">
-        <aside class="mm-note" id="mm-note">
-          <div>
-            <p class="mm-note-kicker">Your souvenir</p>
-            <p>Press Play tour to watch the route. Keep or share it with Share or Copy link. On a phone, use the link — a file in Downloads often will not play.</p>
-            <p id="mm-note-link-wrap"${hostedUrl ? '' : ' hidden'}>
-              <a id="mm-note-link" href="${hostedUrl ? escapeHtml(hostedUrl) : '#'}">Open the keepable copy on memorymap.world</a>
-            </p>
-          </div>
-          <button type="button" id="mm-note-dismiss">Got it</button>
-        </aside>
-        <div class="mm-feedback">
-          <button type="button" id="mm-feedback-btn" aria-expanded="false" aria-controls="mm-feedback-form">Feedback or Suggestion?</button>
-          <form id="mm-feedback-form" hidden>
-            <p>Tell us what to improve. You can also write <a href="${CONTACT_MAILTO}">${escapeHtml(CONTACT_EMAIL)}</a>.</p>
-            <label>
-              Comment
-              <textarea id="mm-feedback-comment" rows="5" required placeholder="What should we change or add?"></textarea>
-            </label>
-            <label>
-              Email for a reply (optional)
-              <input id="mm-feedback-email" type="email" autocomplete="email" placeholder="you@example.com" />
-            </label>
-            <p id="mm-feedback-error" hidden></p>
-            <button type="submit" id="mm-feedback-send">Send note</button>
-          </form>
+    </div>
+    <div class="mm-rail">
+      <aside class="mm-note" id="mm-note">
+        <div>
+          <p class="mm-note-kicker">Your souvenir</p>
+          <p>Press Play tour to watch the route. Keep or share it with Share or Copy link. On a phone, use the link — a file in Downloads often will not play.</p>
+          <p id="mm-note-link-wrap"${hostedUrl ? '' : ' hidden'}>
+            <a id="mm-note-link" href="${hostedUrl ? escapeHtml(hostedUrl) : '#'}">Open the keepable copy on memorymap.world</a>
+          </p>
         </div>
+        <button type="button" id="mm-note-dismiss">Got it</button>
+      </aside>
+      <div class="mm-feedback">
+        <button type="button" id="mm-feedback-btn" aria-expanded="false" aria-controls="mm-feedback-form">Feedback or Suggestion?</button>
+        <form id="mm-feedback-form" hidden>
+          <p>Tell us what to improve. You can also write <a href="${CONTACT_MAILTO}">${escapeHtml(CONTACT_EMAIL)}</a>.</p>
+          <label>
+            Comment
+            <textarea id="mm-feedback-comment" rows="5" required placeholder="What should we change or add?"></textarea>
+          </label>
+          <label>
+            Email for a reply (optional)
+            <input id="mm-feedback-email" type="email" autocomplete="email" placeholder="you@example.com" />
+          </label>
+          <p id="mm-feedback-error" hidden></p>
+          <button type="submit" id="mm-feedback-send">Send note</button>
+        </form>
       </div>
     </div>
   </div>
