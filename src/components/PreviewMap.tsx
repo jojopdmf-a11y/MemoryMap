@@ -5,12 +5,14 @@ import { formatDate, stopLabel } from '../csv'
 import {
   labelClassName,
   labelFillAlpha,
+  labelOpacity,
   labelTone,
   pinFill,
   pinInk,
   pinLabelText,
   popupInnerHtml,
   TILES,
+  type LabelMode,
   type Look,
 } from '../look'
 import { pathThroughStops, type LatLng } from '../route'
@@ -21,9 +23,16 @@ type Props = {
   look: Look
   revealed: number
   roads?: LatLng[][] | null
+  labelMode?: LabelMode
 }
 
-export function PreviewMap({ stops, look, revealed, roads = null }: Props) {
+export function PreviewMap({
+  stops,
+  look,
+  revealed,
+  roads = null,
+  labelMode = 'play',
+}: Props) {
   const containerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<L.Map | null>(null)
   const layerRef = useRef<L.LayerGroup | null>(null)
@@ -177,7 +186,7 @@ export function PreviewMap({ stops, look, revealed, roads = null }: Props) {
             offset: [10, 0],
             opacity: 1,
             interactive: false,
-            className: labelClassName(index, revealed),
+            className: labelClassName(index, revealed, labelMode),
           })
         }
         if (html) marker.bindPopup(html, { autoPan: false })
@@ -187,7 +196,9 @@ export function PreviewMap({ stops, look, revealed, roads = null }: Props) {
         )
         marker.addTo(layer)
         markersRef.current.set(stop.id, marker)
-        if (label) syncTooltip(marker, index, revealed, label, look.pinColor)
+        if (label) {
+          syncTooltip(marker, index, revealed, label, look.pinColor, labelMode)
+        }
       } else {
         marker.setLatLng([stop.lat as number, stop.lng as number])
         const iconKey = `${look.pin}|${look.pinColor}|${active}|${index}`
@@ -197,7 +208,7 @@ export function PreviewMap({ stops, look, revealed, roads = null }: Props) {
           iconKeysRef.current.set(marker, iconKey)
         }
         if (html) marker.setPopupContent(html)
-        syncTooltip(marker, index, revealed, label, look.pinColor)
+        syncTooltip(marker, index, revealed, label, look.pinColor, labelMode)
       }
     })
 
@@ -222,7 +233,7 @@ export function PreviewMap({ stops, look, revealed, roads = null }: Props) {
       layer.removeLayer(pathRef.current)
       pathRef.current = null
     }
-  }, [stops, look, revealed, roads])
+  }, [stops, look, revealed, roads, labelMode])
 
   return (
     <div
@@ -234,12 +245,18 @@ export function PreviewMap({ stops, look, revealed, roads = null }: Props) {
   )
 }
 
-function paintLabel(el: HTMLElement, tone: ReturnType<typeof labelTone>, pinColor: string) {
+function paintLabel(
+  el: HTMLElement,
+  tone: ReturnType<typeof labelTone>,
+  pinColor: string,
+  mode: LabelMode,
+) {
   const fill = pinFill(pinColor, labelFillAlpha(tone))
   el.style.setProperty('--label-fill', fill)
   el.style.setProperty('--label-ink', pinInk(pinColor))
-  el.classList.toggle('is-active', tone === 'active')
-  el.classList.toggle('is-fading', tone === 'fading')
+  el.classList.toggle('is-active', mode !== 'hidden' && tone === 'active')
+  el.classList.toggle('is-fading', mode === 'play' && tone === 'fading')
+  el.classList.toggle('is-hidden', mode === 'hidden')
 }
 
 function syncTooltip(
@@ -248,12 +265,14 @@ function syncTooltip(
   revealed: number,
   label: string,
   pinColor: string,
+  mode: LabelMode,
 ) {
   const existing = marker.getTooltip()
   if (!label) {
     if (existing) marker.unbindTooltip()
     return
   }
+  const tone = labelTone(index, revealed, mode)
   if (!existing) {
     marker.bindTooltip(escapeHtml(label), {
       permanent: true,
@@ -261,19 +280,19 @@ function syncTooltip(
       offset: [10, 0],
       opacity: 1,
       interactive: false,
-      className: labelClassName(index, revealed),
+      className: labelClassName(index, revealed, mode),
     })
     const tip = marker.getTooltip()
     const el = tip?.getElement()
-    if (el) paintLabel(el, labelTone(index, revealed), pinColor)
+    if (el) paintLabel(el, tone, pinColor, mode)
+    tip?.setOpacity(labelOpacity(tone, mode))
     return
   }
   existing.setContent(escapeHtml(label))
-  const tone = labelTone(index, revealed)
-  existing.setOpacity(tone === 'fading' ? 0 : 1)
+  existing.setOpacity(labelOpacity(tone, mode))
   const el = existing.getElement()
   if (!el) return
-  paintLabel(el, tone, pinColor)
+  paintLabel(el, tone, pinColor, mode)
 }
 
 function pinIcon(n: number, look: Look, active: boolean): L.DivIcon {

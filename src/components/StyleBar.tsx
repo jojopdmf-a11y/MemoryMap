@@ -15,10 +15,13 @@ type Props = {
   canPlay: boolean
   revealed: number
   stopCount: number
+  tourComplete: boolean
+  showLocations: boolean
   onChange: (patch: Partial<Look>) => void
   onPlay: () => void
   onReset: () => void
   onScrub: (count: number) => void
+  onToggleLocations: () => void
 }
 
 export function StyleBar({
@@ -27,10 +30,13 @@ export function StyleBar({
   canPlay,
   revealed,
   stopCount,
+  tourComplete,
+  showLocations,
   onChange,
   onPlay,
   onReset,
   onScrub,
+  onToggleLocations,
 }: Props) {
   const [colorWell, setColorWell] = useState<'pin' | 'line' | null>(null)
 
@@ -118,6 +124,23 @@ export function StyleBar({
           }
         >
           Road trip
+        </button>
+      </div>
+      <div className="road-toggle">
+        <span>View</span>
+        <button
+          type="button"
+          className={tourComplete && showLocations ? 'is-on' : undefined}
+          aria-pressed={tourComplete && showLocations}
+          disabled={!tourComplete}
+          title={
+            tourComplete
+              ? 'Show or hide the location banners. Pins and the route stay.'
+              : 'Available after the tour finishes'
+          }
+          onClick={onToggleLocations}
+        >
+          Locations
         </button>
       </div>
       <label>

@@ -1165,6 +1165,11 @@
   cursor: pointer;
 }
 
+.style-bar .road-toggle button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
 .style-bar .road-toggle button.is-on,
 .style-bar .road-toggle button[aria-pressed='true'] {
   background: var(--terra);
@@ -1662,7 +1667,8 @@
     border-color 0.25s ease;
 }
 
-.leaflet-tooltip.mm-label.is-fading {
+.leaflet-tooltip.mm-label.is-fading,
+.leaflet-tooltip.mm-label.is-hidden {
   pointer-events: none;
 }
 

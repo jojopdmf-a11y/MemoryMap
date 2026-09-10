@@ -25,7 +25,7 @@ import {
 import { exportableStops, souvenirFilename } from './trip'
 import { SiteFooter } from './components/SiteFooter'
 import { StyleBar } from './components/StyleBar'
-import { DEFAULT_FIELDS, DEFAULT_LOOK, type CardField, type Look } from './look'
+import { DEFAULT_FIELDS, DEFAULT_LOOK, resolveLabelMode, type CardField, type Look } from './look'
 import { htmlForSouvenir } from './souvenir'
 import { recordBrowserDownload } from './accountStore'
 import type { Stop } from './types'
@@ -44,6 +44,7 @@ export default function App() {
   const [look, setLook] = useState<Look>(DEFAULT_LOOK)
   const [revealed, setRevealed] = useState(0)
   const [playing, setPlaying] = useState(false)
+  const [showLocations, setShowLocations] = useState(true)
   const [driveLegs, setDriveLegs] = useState<LatLng[][] | null>(null)
   const [tracing, setTracing] = useState(false)
   const geoGen = useRef(0)
@@ -144,6 +145,7 @@ export default function App() {
     setStops(result.stops)
     setRevealed(0)
     setPlaying(false)
+    setShowLocations(true)
     setDriveLegs(null)
     setTracing(false)
     setLook({
@@ -190,6 +192,7 @@ export default function App() {
     setSheetChoices(null)
     setRevealed(0)
     setPlaying(false)
+    setShowLocations(true)
     setDriveLegs(null)
     setTracing(false)
   }
@@ -202,6 +205,9 @@ export default function App() {
   const plottedStops = (stops ?? []).filter(
     (s) => !s.dismissed && s.lat != null && s.lng != null,
   )
+  const tourComplete =
+    plotted.length > 0 && revealed >= plotted.length && !playing
+  const labelMode = resolveLabelMode(tourComplete, showLocations)
   const routeKey = plotted
     .map((stop) => `${stop.lat.toFixed(5)},${stop.lng.toFixed(5)}`)
     .join('|')
@@ -271,6 +277,7 @@ export default function App() {
   function resetTour() {
     setPlaying(false)
     setRevealed(0)
+    setShowLocations(true)
   }
 
   function scrubTour(count: number) {
@@ -376,6 +383,7 @@ export default function App() {
                 look={look}
                 revealed={revealed}
                 roads={look.followRoads ? driveLegs : null}
+                labelMode={labelMode}
               />
               {revealed > 0 && plottedStops[revealed - 1] && (
                 <aside className="map-date-window" aria-live="polite">
@@ -411,10 +419,13 @@ export default function App() {
             canPlay={plotted.length > 0}
             revealed={revealed}
             stopCount={plotted.length}
+            tourComplete={tourComplete}
+            showLocations={showLocations}
             onChange={(patch) => setLook((current) => ({ ...current, ...patch }))}
             onPlay={togglePlay}
             onReset={resetTour}
             onScrub={scrubTour}
+            onToggleLocations={() => setShowLocations((on) => !on)}
           />
           <section className="panel">
             <div className="panel-head">

@@ -191,19 +191,44 @@ export const PALETTE_GRID: string[][] = PALETTE_LIGHTS.map((light, row) =>
 export const LABEL_HOLD_AFTER = 2
 
 export type LabelTone = 'active' | 'visible' | 'fading'
+export type LabelMode = 'play' | 'all' | 'hidden'
 
-export function labelTone(index: number, revealed: number): LabelTone {
+export function resolveLabelMode(
+  tourComplete: boolean,
+  showLocations: boolean,
+): LabelMode {
+  if (!tourComplete) return 'play'
+  return showLocations ? 'all' : 'hidden'
+}
+
+export function labelTone(
+  index: number,
+  revealed: number,
+  mode: LabelMode = 'play',
+): LabelTone {
+  if (mode === 'hidden') return 'fading'
+  if (mode === 'all') return index === revealed - 1 ? 'active' : 'visible'
   const age = revealed - (index + 1)
   if (age <= 0) return 'active'
   if (age < LABEL_HOLD_AFTER) return 'visible'
   return 'fading'
 }
 
-export function labelClassName(index: number, revealed: number): string {
-  const tone = labelTone(index, revealed)
+export function labelClassName(
+  index: number,
+  revealed: number,
+  mode: LabelMode = 'play',
+): string {
+  if (mode === 'hidden') return 'mm-label is-hidden'
+  const tone = labelTone(index, revealed, mode)
   if (tone === 'active') return 'mm-label is-active'
   if (tone === 'fading') return 'mm-label is-fading'
   return 'mm-label'
+}
+
+export function labelOpacity(tone: LabelTone, mode: LabelMode = 'play'): number {
+  if (mode === 'hidden' || tone === 'fading') return 0
+  return 1
 }
 
 export function labelFillAlpha(tone: LabelTone): number {

@@ -65,6 +65,7 @@ const RUNTIME = `
   var pathLine = null;
   var revealed = 0;
   var playing = false;
+  var showLocations = true;
   var timer = null;
   var speedMs = look.speedMs || 1500;
 
@@ -144,6 +145,7 @@ const RUNTIME = `
   var nowNum = document.getElementById("mm-now-num");
   var list = document.getElementById("mm-list");
   var cue = document.getElementById("mm-cue");
+  var locBtn = document.getElementById("mm-locations");
 
   stops.forEach(function (stop, i) {
     var li = document.createElement("li");
@@ -162,6 +164,7 @@ const RUNTIME = `
   if (stops.length === 0) {
     playBtn.disabled = true;
     resetBtn.disabled = true;
+    if (locBtn) locBtn.disabled = true;
     if (scrub) scrub.disabled = true;
   } else if (scrub) {
     scrub.max = String(stops.length);
@@ -188,6 +191,7 @@ const RUNTIME = `
       if (!playing) return;
       if (revealed >= stops.length) {
         pause();
+        draw(revealed);
         return;
       }
       draw(revealed + 1);
@@ -231,21 +235,37 @@ const RUNTIME = `
     return out;
   }
 
+  function tourDone() {
+    return revealed >= stops.length && stops.length > 0 && !playing;
+  }
+
   function applyLabelTone(m, i) {
     var tip = m.getTooltip && m.getTooltip();
     if (!tip) return;
+    var mode = tourDone() ? (showLocations ? "all" : "hidden") : "play";
     var age = revealed - (i + 1);
-    tip.setOpacity(age >= 2 ? 0 : 1);
+    var hidden = mode === "hidden";
+    var fading = mode === "play" && age >= 2;
+    var active = !hidden && age <= 0;
+    tip.setOpacity(hidden || fading ? 0 : 1);
     var el = tip.getElement && tip.getElement();
     if (!el) return;
     var rgb = pinRgb(look.pinColor);
-    var alpha = age <= 0 ? 0.72 : 0.5;
+    var alpha = active ? 0.72 : 0.5;
     var fill = "rgba(" + rgb.r + ", " + rgb.g + ", " + rgb.b + ", " + alpha + ")";
     var lum = (0.2126 * rgb.r + 0.7152 * rgb.g + 0.0722 * rgb.b) / 255;
     el.style.setProperty("--label-fill", fill);
     el.style.setProperty("--label-ink", lum > 0.62 ? "#16302c" : "#eef5f2");
-    el.classList.toggle("is-active", age <= 0);
-    el.classList.toggle("is-fading", age >= 2);
+    el.classList.toggle("is-active", active);
+    el.classList.toggle("is-fading", fading);
+    el.classList.toggle("is-hidden", hidden);
+  }
+
+  function syncLocationsBtn() {
+    if (!locBtn) return;
+    var done = tourDone();
+    locBtn.disabled = !done;
+    locBtn.setAttribute("aria-pressed", done && showLocations ? "true" : "false");
   }
 
   function draw(count) {
@@ -345,6 +365,7 @@ const RUNTIME = `
       var top = currentLi.offsetTop - list.clientHeight / 2 + currentLi.clientHeight / 2;
       list.scrollTop = Math.max(0, top);
     }
+    syncLocationsBtn();
   }
 
   playBtn.addEventListener("click", function () {
@@ -353,8 +374,17 @@ const RUNTIME = `
   });
   resetBtn.addEventListener("click", function () {
     pause();
+    showLocations = true;
     draw(0);
   });
+  if (locBtn) {
+    locBtn.addEventListener("click", function () {
+      if (!tourDone()) return;
+      showLocations = !showLocations;
+      markers.forEach(function (m, index) { applyLabelTone(m, index); });
+      syncLocationsBtn();
+    });
+  }
   if (scrub) {
     scrub.addEventListener("input", function () {
       pause();
@@ -633,6 +663,9 @@ body {
 .leaflet-tooltip.mm-label.is-fading {
   pointer-events: none;
 }
+.leaflet-tooltip.mm-label.is-hidden {
+  pointer-events: none;
+}
 .leaflet-tooltip-right.mm-label::before { border-right-color: var(--label-fill); }
 .mm-date {
   position: absolute;
@@ -746,6 +779,11 @@ body {
   -webkit-tap-highlight-color: transparent;
 }
 .mm-controls button#mm-play {
+  background: var(--terra);
+  color: var(--paper);
+  border-color: var(--terra);
+}
+.mm-controls button#mm-locations[aria-pressed="true"] {
   background: var(--terra);
   color: var(--paper);
   border-color: var(--terra);
@@ -1056,6 +1094,7 @@ body {
     <div class="mm-controls">
       <button type="button" id="mm-play" aria-pressed="false">Play tour</button>
       <button type="button" id="mm-reset">Reset</button>
+      <button type="button" id="mm-locations" aria-pressed="false" disabled title="Available after the tour finishes">Locations</button>
       <label class="mm-scrub-wrap">
         <span id="mm-scrub-label">0 / ${stops.length}</span>
         <input id="mm-scrub" type="range" min="0" max="${stops.length}" value="0" aria-label="Scrub through the route" />
