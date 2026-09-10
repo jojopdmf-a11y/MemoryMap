@@ -24,7 +24,7 @@ On the landing page you can also type a trip label plus date, city or street add
 
 Turn on **Road trip** under the map to follow driving roads instead of a straight line. Routing is fetched once (and baked into the souvenir). Zooming, panning, and Play do not request it again. If a leg cannot be traced — a cruise, for example — that segment stays a straight line.
 
-See `public/caribbean-cruise.csv`, `public/european-train.csv`, and `public/la-to-nashville.csv` for mixed examples.
+See `public/caribbean-cruise.csv`, `public/european-train.csv`, `public/la-to-nashville.csv`, `public/appalachian-trail.csv`, and `public/asia-landmarks.csv` for mixed examples.
 
 ## Run
 

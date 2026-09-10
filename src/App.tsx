@@ -124,7 +124,12 @@ export default function App() {
     }
   }
 
-  function loadFromText(text: string, filename: string, tripTitle?: string) {
+  function loadFromText(
+    text: string,
+    filename: string,
+    tripTitle?: string,
+    lookPatch?: Partial<Look>,
+  ) {
     const result = parseCsv(text)
     geoGen.current += 1
     const generation = geoGen.current
@@ -141,10 +146,11 @@ export default function App() {
     setPlaying(false)
     setDriveLegs(null)
     setTracing(false)
-    setLook((current) => ({
-      ...current,
-      fields: { ...DEFAULT_FIELDS },
-    }))
+    setLook({
+      ...DEFAULT_LOOK,
+      ...lookPatch,
+      fields: { ...DEFAULT_FIELDS, ...lookPatch?.fields },
+    })
     void geocodeAll(result.stops, generation)
   }
 
@@ -346,7 +352,9 @@ export default function App() {
           onFile={onFile}
           onSheetsUrl={onSheetsUrl}
           onManual={(csv, label) => loadFromText(csv, label)}
-          onSample={(csv, filename, title) => loadFromText(csv, filename, title)}
+          onSample={(trip) =>
+            loadFromText(trip.csv, trip.filename, trip.title, trip.look)
+          }
         />
       )}
 

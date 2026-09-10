@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { SAMPLE_TRIPS } from '../sample'
+import { SAMPLE_TRIPS, type SampleTrip } from '../sample'
 import type { SheetChoice } from '../source'
 import { AdSlot } from './AdSlot'
 import { ManualTripForm } from './ManualTripForm'
@@ -9,7 +9,7 @@ type Props = {
   onFile: (file: File) => void
   onSheetsUrl: (url: string) => void
   onManual: (csv: string, label: string) => void
-  onSample: (csv: string, filename: string, title: string) => void
+  onSample: (trip: SampleTrip) => void
 }
 
 export function DropZone({
@@ -113,8 +113,8 @@ export function DropZone({
         <section className="sample-trips" aria-labelledby="sample-trips-heading">
           <h2 id="sample-trips-heading">No spreadsheet handy? Try a sample.</h2>
           <p className="sample-trips-lead">
-            Play with a cruise, a train, or a road trip — same map as your own
-            file.
+            Play with a cruise, a train, a road trip, a trail, or a tour of
+            Asia — same map as your own file.
           </p>
           <ul className="sample-trip-grid">
             {SAMPLE_TRIPS.map((trip) => (
@@ -123,10 +123,11 @@ export function DropZone({
                   type="button"
                   className="sample-trip-card"
                   disabled={importing}
-                  onClick={() => onSample(trip.csv, trip.filename, trip.title)}
+                  onClick={() => onSample(trip)}
                 >
                   <span className="sample-trip-try">Try</span>
                   <strong>{trip.title}</strong>
+                  <span className="sample-trip-blurb">{trip.blurb}</span>
                 </button>
               </li>
             ))}
