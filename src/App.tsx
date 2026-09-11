@@ -326,6 +326,9 @@ export default function App() {
           <p className="tagline">Visualize Your Voyages, Treasure Your Travels.</p>
         </div>
         <div className="topbar-tools">
+          <a className="ghost" href="/guides/">
+            Guides
+          </a>
           {stops && (
             <button type="button" className="ghost" onClick={reset}>
               New file
