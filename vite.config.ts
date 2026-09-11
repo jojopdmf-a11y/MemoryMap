@@ -22,12 +22,14 @@ function contentTypeFor(file: string): string {
       return 'text/css; charset=utf-8'
     case '.html':
       return 'text/html; charset=utf-8'
+    case '.csv':
+      return 'text/csv; charset=utf-8'
     default:
       return 'application/octet-stream'
   }
 }
 
-/** Pretty /guides/* URLs must serve public HTML, not the SPA shell. */
+/** Pretty /guides/* URLs must serve public HTML and assets, not the SPA shell. */
 function serveGuidesHtml(): Plugin {
   const handle = (
     req: IncomingMessage,
@@ -39,6 +41,12 @@ function serveGuidesHtml(): Plugin {
     if (file) {
       res.statusCode = 200
       res.setHeader('Content-Type', contentTypeFor(file))
+      if (extname(file) === '.csv') {
+        res.setHeader(
+          'Content-Disposition',
+          `attachment; filename="${file.split('/').pop() ?? 'download.csv'}"`,
+        )
+      }
       res.end(readFileSync(file))
       return
     }
