@@ -1,5 +1,5 @@
 import { hasKeptFingerprint } from './ledger.ts'
-import { emailFromRequest } from './session.ts'
+import { emailFromRequest, sessionTokenFromRequest } from './session.ts'
 
 export type SouvenirStore = {
   get: (key: string) => Promise<string | null>
@@ -13,6 +13,7 @@ export type SouvenirStore = {
 export type SouvenirEnv = {
   SOUVENIRS?: SouvenirStore
   AUTH_SECRET?: string
+  PADDLE_SANDBOX?: string
 }
 
 const MAX_BYTES = 1_200_000
@@ -75,27 +76,31 @@ export async function handleSouvenir(
   if (!env.SOUVENIRS) {
     return json({ error: 'Could not keep that map for phones.' }, 503)
   }
-  let email: string
-  try {
-    email = await emailFromRequest(request, env.AUTH_SECRET)
-  } catch (err) {
-    return json(
-      {
-        error:
-          err instanceof Error ? err.message : 'Sign in to continue.',
-      },
-      401,
-    )
-  }
-  const fingerprint = url.searchParams.get('fingerprint')?.trim() ?? ''
-  if (!(await hasKeptFingerprint(env, email, fingerprint))) {
-    return json(
-      {
-        error:
-          'Keep this map with a credit before publishing a phone copy.',
-      },
-      403,
-    )
+  const preview = env.PADDLE_SANDBOX !== '0'
+  const signedIn = Boolean(sessionTokenFromRequest(request))
+  if (signedIn || !preview) {
+    let email: string
+    try {
+      email = await emailFromRequest(request, env.AUTH_SECRET)
+    } catch (err) {
+      return json(
+        {
+          error:
+            err instanceof Error ? err.message : 'Sign in to continue.',
+        },
+        401,
+      )
+    }
+    const fingerprint = url.searchParams.get('fingerprint')?.trim() ?? ''
+    if (!(await hasKeptFingerprint(env, email, fingerprint))) {
+      return json(
+        {
+          error:
+            'Keep this map with a credit before publishing a phone copy.',
+        },
+        403,
+      )
+    }
   }
   const length = Number(request.headers.get('content-length') || '0')
   if (Number.isFinite(length) && length > MAX_BYTES) {

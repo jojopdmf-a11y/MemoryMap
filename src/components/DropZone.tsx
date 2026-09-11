@@ -57,9 +57,9 @@ export function DropZone({
           </div>
           <p className="lede">
             This is a public preview. Drop a file, paste a Google Sheets link, or
-            enter the stops. Mapping and Play are free. Keeping the souvenir file
-            uses 1 credit. Signed-in people can add preview credits at no charge.
-            Live card charges are off.
+            enter the stops. Mapping, Play, and download are free. Sign in only
+            if you want the map saved on your account. Live card charges are
+            off.
           </p>
         </header>
         <div className="trip-start">

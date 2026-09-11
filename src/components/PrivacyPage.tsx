@@ -23,11 +23,11 @@ export function PrivacyPage() {
         <p className="legal-kicker">Public preview</p>
         <h1>Privacy</h1>
         <p>
-          {SITE_NAME} is a public preview. Mapping and Play are free. Keeping
-          the souvenir file uses 1 credit. Sign-in is required to keep a file.
-          During this preview, signed-in people can add credits at no charge.
-          Live card charges are off. This page describes what happens to that
-          information today.
+          {SITE_NAME} is a public preview. Mapping, Play, and download are free.
+          Sign in only if you want a map saved on your account. During this
+          preview, signed-in people can add credits at no charge. Live card
+          charges are off. This page describes what happens to that information
+          today.
         </p>
 
         <h2>What stays on your computer</h2>
@@ -95,13 +95,15 @@ export function PrivacyPage() {
 
         <h2>The file you keep</h2>
         <p>
-          Keeping a souvenir spends 1 credit unless that exact trip and style
-          is already on your account. The file is a single HTML document on your
-          computer. It contains the trip you plotted. The file still needs the
-          internet for map tiles. On phones and tablets, a file saved to
-          Downloads often cannot run, so we also keep a copy for a year at a
-          private memorymap.world link and open that in a new tab. Share or copy
-          that link to bookmark the map.
+          During this public preview, you can download a souvenir without
+          signing in. That file stays on your computer. If you are signed in,
+          keeping a souvenir on your account spends 1 credit unless that exact
+          trip and style is already saved. The file is a single HTML document.
+          It contains the trip you plotted and still needs the internet for map
+          tiles. On phones and tablets, a file saved to Downloads often cannot
+          run, so we also keep a copy for a year at a private memorymap.world
+          link and open that in a new tab. Share or copy that link to bookmark
+          the map.
         </p>
 
         <h2>Advertising</h2>

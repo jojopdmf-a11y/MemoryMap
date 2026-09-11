@@ -13,19 +13,18 @@ export function prefersHostedSouvenir(): boolean {
 
 export async function publishSouvenir(
   html: string,
-  fingerprint: string,
+  fingerprint = '',
 ): Promise<string | null> {
-  if (!fingerprint.trim()) return null
   try {
-    const res = await fetch(
-      `/api/souvenir?fingerprint=${encodeURIComponent(fingerprint)}`,
-      {
-        method: 'POST',
-        credentials: 'same-origin',
-        headers: { 'Content-Type': 'text/html; charset=utf-8' },
-        body: html,
-      },
-    )
+    const qs = fingerprint.trim()
+      ? `?fingerprint=${encodeURIComponent(fingerprint.trim())}`
+      : ''
+    const res = await fetch(`/api/souvenir${qs}`, {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: { 'Content-Type': 'text/html; charset=utf-8' },
+      body: html,
+    })
     if (!res.ok) return null
     const data = (await res.json()) as { url?: string }
     if (!data.url) return null

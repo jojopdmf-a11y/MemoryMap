@@ -22,10 +22,14 @@ import {
   type IngestResult,
   type SheetChoice,
 } from './source'
-import { exportableStops } from './trip'
+import { exportableStops, souvenirFilename } from './trip'
 import { SiteFooter } from './components/SiteFooter'
 import { StyleBar } from './components/StyleBar'
 import { DEFAULT_FIELDS, DEFAULT_LOOK, resolveLabelMode, type CardField, type Look } from './look'
+import { htmlForSouvenir } from './souvenir'
+import { saveSouvenir } from './download'
+import { useAccount } from './accountStore'
+import { PADDLE_SANDBOX } from './commerce'
 import type { Stop } from './types'
 import './App.css'
 
@@ -48,6 +52,7 @@ export default function App() {
   const [downloadOpen, setDownloadOpen] = useState(false)
   const geoGen = useRef(0)
   const stopsRef = useRef<Stop[] | null>(null)
+  const { account } = useAccount()
 
   useEffect(() => {
     stopsRef.current = stops
@@ -304,8 +309,26 @@ export default function App() {
       }
     : null
 
-  function downloadMap() {
+  async function downloadMap() {
     if (!ready) return
+    if (PADDLE_SANDBOX && !account) {
+      try {
+        const tripTitle = title.trim() || 'Untitled trip'
+        await saveSouvenir(
+          souvenirFilename(tripTitle),
+          (hosted) =>
+            htmlForSouvenir(tripTitle, plotted, recipeLook, hosted, driveLegs),
+          '',
+        )
+      } catch (err) {
+        setError(
+          err instanceof Error
+            ? err.message
+            : 'Could not download the souvenir file.',
+        )
+      }
+      return
+    }
     setDownloadOpen(true)
   }
 
@@ -441,7 +464,7 @@ export default function App() {
                     ? 'Tracing the drive… zoom and play stay available.'
                     : !ready
                     ? 'Skip or fix stops without coordinates to download.'
-                    : `${plotted.length} stop${plotted.length === 1 ? '' : 's'} ready. Keeping the file uses 1 credit.`
+                    : `${plotted.length} stop${plotted.length === 1 ? '' : 's'} ready.${PADDLE_SANDBOX && !account ? ' Download is free during this preview.' : ' Keeping the file uses 1 credit.'}`
               }
             />
             <StopTable

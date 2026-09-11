@@ -33,7 +33,7 @@ npm install
 npm run dev
 ```
 
-Then open the local URL Vite prints, try a sample trip, and preview the map. Mapping and Play stay free. Keeping the file asks you to sign in and uses 1 credit (the same trip and style can be downloaded again for free). During this public preview, signed-in people can add credits at no charge. Locally, **Email me a link** shows the link on the page so you can test without sending mail. On a phone or tablet, Download opens the souvenir in a new browser tab. Tap Share or Copy link on that page to bookmark or send it — a file saved to Files or Downloads often will not play.
+Then open the local URL Vite prints, try a sample trip, and download a map. During this public preview, download is free if you are not signed in. Sign in only if you want the map on your account. Locally, **Email me a link** shows the link on the page so you can test without sending mail. On a phone or tablet, Download opens the souvenir in a new browser tab. Tap Share or Copy link on that page to bookmark or send it — a file saved to Files or Downloads often will not play.
 
 ## Credits and the account ledger
 
@@ -41,8 +41,8 @@ Credits are not stored only in the browser. After sign-in, the Worker sets an Ht
 
 - `GET /api/account/me` — signed-in balance, purchases, and saved maps
 - `POST /api/account/preview-grant` — while Paddle is still sandbox, add 3 preview credits at no charge when the balance is 0
+- `POST /api/souvenir` — during preview, unsigned people can publish a phone copy. Once you are signed in, publishing requires that fingerprint already in your library. When live charges are on, unsigned publish is closed.
 - `POST /api/account/download` — spend 1 credit to keep a new fingerprint, or re-download the same map for free
-- `POST /api/souvenir?fingerprint=…` — publish the phone copy only if that fingerprint is already in the account library
 - Paddle sandbox webhooks and `/api/paddle/fulfill` credit the same ledger
 
 A client-side lock stops double-click spends. Rare concurrent KV races are accepted for this first version.
@@ -112,7 +112,7 @@ Sandbox destination: `https://memorymap.world/api/paddle/webhook` (`transaction.
 
 ## Public preview
 
-This is a public preview. Mapping and Play are free. Keeping the souvenir file uses 1 credit. Signed-in people can add preview credits at no charge. Live charges are off.
+This is a public preview. Mapping, Play, and download are free. Sign in only if you want the map on your account. Live charges are off.
 
 ## How the live site updates
 
