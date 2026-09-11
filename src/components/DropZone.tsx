@@ -57,9 +57,9 @@ export function DropZone({
           </div>
           <p className="lede">
             This is a public preview. Drop a file, paste a Google Sheets link, or
-            enter the stops. Mapping and the souvenir file are free. Sign-in is
-            optional. Paddle sandbox checkout is available for test credit
-            packs; live charges are off.
+            enter the stops. Mapping and Play are free. Keeping the souvenir file
+            uses 1 credit. Paddle sandbox checkout is for test packs; live
+            charges are off.
           </p>
         </header>
         <div className="trip-start">

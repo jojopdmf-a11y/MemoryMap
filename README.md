@@ -1,10 +1,10 @@
 # MemoryMap
 
-Type the stops, drop a CSV of places and dates, an Excel workbook, or a Google Sheets link. This public preview maps the route, then lets you download a single HTML file for free.
+Type the stops, drop a CSV of places and dates, an Excel workbook, or a Google Sheets link. This public preview maps the route. Mapping and Play are free. Keeping the souvenir HTML file uses 1 credit.
 
 The downloaded file has Leaflet, styles, and stop data baked in. It only needs the internet for map tiles.
 
-Sign-in is optional. Anyone can create their own account with an email link or Google. Download is free. Paddle sandbox checkout is wired so credit packs can be tested; live charges are off.
+Anyone can create their own account with an email link or Google. Credits and saved maps live on the server, keyed by that email. Paddle sandbox checkout is wired so credit packs can be tested; live charges are off.
 
 ## CSV columns
 
@@ -33,7 +33,18 @@ npm install
 npm run dev
 ```
 
-Then open the local URL Vite prints, try a sample trip, and download a map. Download is free in this public preview. Locally, **Email me a link** shows the link on the page so you can test without sending mail. On a phone or tablet, Download opens the souvenir in a new browser tab. Tap Share or Copy link on that page to bookmark or send it — a file saved to Files or Downloads often will not play.
+Then open the local URL Vite prints, try a sample trip, and preview the map. Mapping and Play stay free. Keeping the file asks you to sign in and uses 1 credit (the same trip and style can be downloaded again for free). Locally, **Email me a link** shows the link on the page so you can test without sending mail. On a phone or tablet, Download opens the souvenir in a new browser tab. Tap Share or Copy link on that page to bookmark or send it — a file saved to Files or Downloads often will not play.
+
+## Credits and the account ledger
+
+Credits are not stored only in the browser. After sign-in, the Worker sets an HttpOnly `mm_session` cookie and keeps the account in the existing `SOUVENIRS` KV namespace under `acct:v1:{email}`:
+
+- `GET /api/account/me` — signed-in balance, purchases, and saved maps
+- `POST /api/account/download` — spend 1 credit to keep a new fingerprint, or re-download the same map for free
+- `POST /api/souvenir?fingerprint=…` — publish the phone copy only if that fingerprint is already in the account library
+- Paddle sandbox webhooks and `/api/paddle/fulfill` credit the same ledger
+
+A client-side lock stops double-click spends. Rare concurrent KV races are accepted for this first version.
 
 ## Sign-in setup (one time)
 
@@ -74,7 +85,7 @@ Paddle is the merchant of record. The catalog in sandbox already has MemoryMap c
 
 The Paddle.js client token in `src/creditPacks.ts` is public on purpose (`test_…`). The secret API key never ships to the browser.
 
-After sign-in, **Account → Paddle sandbox** opens overlay checkout. Download still does not spend credits.
+After sign-in, **Account → Paddle sandbox** opens overlay checkout. After a sandbox payment, credits land on the account ledger. Keeping a new map spends 1 credit.
 
 ### Cursor Paddle tools (same as the other chat)
 
@@ -100,7 +111,7 @@ Sandbox destination: `https://memorymap.world/api/paddle/webhook` (`transaction.
 
 ## Public preview
 
-This is a public preview. Mapping and the souvenir file are free. Sign-in is optional. Paddle sandbox checkout is for testing credit packs. Live charges are off.
+This is a public preview. Mapping and Play are free. Keeping the souvenir file uses 1 credit. Paddle sandbox checkout is for testing credit packs. Live charges are off.
 
 ## How the live site updates
 

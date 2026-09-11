@@ -22,7 +22,7 @@ function fail(data: Record<string, unknown>, fallback: string): Error {
 export async function loadAuthConfig(): Promise<AuthConfig> {
   const fromEnv = String(import.meta.env.VITE_GOOGLE_CLIENT_ID ?? '').trim()
   try {
-    const res = await fetch('/api/auth/config')
+    const res = await fetch('/api/auth/config', { credentials: 'same-origin' })
     const data = await readJson(res)
     if (!res.ok) {
       return { googleClientId: fromEnv, emailReady: false }
@@ -43,6 +43,7 @@ export async function requestMagicLink(
   try {
     res = await fetch('/api/auth/magic-link', {
       method: 'POST',
+      credentials: 'same-origin',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email }),
     })
@@ -63,6 +64,7 @@ export async function redeemMagicToken(token: string): Promise<string> {
   try {
     res = await fetch('/api/auth/redeem', {
       method: 'POST',
+      credentials: 'same-origin',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ token }),
     })
@@ -84,6 +86,7 @@ export async function redeemGoogleAccessToken(
   try {
     res = await fetch('/api/auth/google', {
       method: 'POST',
+      credentials: 'same-origin',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ accessToken }),
     })

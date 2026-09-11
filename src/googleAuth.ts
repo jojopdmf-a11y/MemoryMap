@@ -1,6 +1,6 @@
 import { redeemGoogleAccessToken } from './authApi'
 import { googleClientId } from './commerce'
-import { signInWithEmail } from './accountStore'
+import { refreshAccount } from './accountStore'
 
 type GoogleTokenClient = {
   requestAccessToken: () => void
@@ -71,6 +71,6 @@ export async function continueWithGoogle(clientId?: string): Promise<void> {
     )
   }
   const accessToken = await requestGoogleAccessToken(id)
-  const email = await redeemGoogleAccessToken(accessToken)
-  signInWithEmail(email)
+  await redeemGoogleAccessToken(accessToken)
+  await refreshAccount()
 }

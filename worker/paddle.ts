@@ -4,6 +4,7 @@ import {
   packByPriceId,
   type CreditPack,
 } from '../src/creditPacks.ts'
+import { applyPurchase } from './ledger.ts'
 import type { SouvenirStore } from './souvenir.ts'
 
 export type PaddleEnv = {
@@ -162,12 +163,26 @@ async function writeGrant(env: PaddleEnv, grant: Grant): Promise<void> {
   })
 }
 
+async function creditLedger(env: PaddleEnv, grant: Grant): Promise<void> {
+  if (!grant.email || !EMAIL_RE.test(grant.email)) return
+  await applyPurchase(env, grant.email, {
+    id: grant.transactionId,
+    packId: grant.packId,
+    credits: grant.credits,
+    usd: grant.usd,
+    createdAt: grant.at,
+  })
+}
+
 async function grantForTransaction(
   env: PaddleEnv,
   transactionId: string,
 ): Promise<Grant> {
   const existing = await readGrant(env, transactionId)
-  if (existing) return existing
+  if (existing) {
+    await creditLedger(env, existing)
+    return existing
+  }
   const payload = await paddleFetch(env, `/transactions/${transactionId}`)
   const txn = asRecord(payload.data)
   if (!txn) throw new Error('Paddle did not return that payment.')
@@ -176,6 +191,7 @@ async function grantForTransaction(
     throw new Error('That payment is not a completed MemoryMap credit pack yet.')
   }
   await writeGrant(env, grant)
+  await creditLedger(env, grant)
   return grant
 }
 
@@ -341,7 +357,10 @@ async function handleWebhook(request: Request, env: PaddleEnv): Promise<Response
   const data = asRecord(event.data)
   if (data) {
     const grant = grantFromTransaction(data)
-    if (grant) await writeGrant(env, grant)
+    if (grant) {
+      await writeGrant(env, grant)
+      await creditLedger(env, grant)
+    }
   }
   return json({ ok: true })
 }

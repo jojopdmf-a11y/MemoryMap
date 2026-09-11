@@ -1,7 +1,7 @@
 import { useEffect, useId, useRef, useState } from 'react'
 import {
-  completeFreeRedownload,
   formatWhen,
+  keepDownload,
   setAccountNotice,
   signOut,
   useAccount,
@@ -9,6 +9,7 @@ import {
 import { CREDIT_PACKS, paddleConfigured, type CreditPack } from '../commerce'
 import { saveSouvenir } from '../download'
 import { htmlForSouvenir } from '../souvenir'
+import { recipeFingerprint } from '../recipe'
 import {
   DEFAULT_PAYMENT_LINK_HELP,
   openCreditCheckout,
@@ -50,7 +51,7 @@ export function AccountMenu() {
     try {
       await openCreditCheckout(pack, account.email)
       setAccountNotice(
-        'Paddle sandbox checkout is opening. Credits land on this browser after payment is confirmed.',
+        'Paddle sandbox checkout is opening. Credits land on your account after payment is confirmed.',
       )
     } catch (err) {
       const message =
@@ -67,16 +68,22 @@ export function AccountMenu() {
   }
 
   async function downloadAgain(id: string) {
+    if (!account) return
     setError(null)
     try {
-      const item = completeFreeRedownload(id)
-      await saveSouvenir(item.filename, (hosted) =>
-        htmlForSouvenir(
-          item.recipe.title,
-          item.recipe.stops,
-          item.recipe.look,
-          hosted,
-        ),
+      const item = account.library.find((row) => row.id === id)
+      if (!item) throw new Error('That saved map is no longer on this account.')
+      await keepDownload(item.recipe, item.filename)
+      await saveSouvenir(
+        item.filename,
+        (hosted) =>
+          htmlForSouvenir(
+            item.recipe.title,
+            item.recipe.stops,
+            item.recipe.look,
+            hosted,
+          ),
+        recipeFingerprint(item.recipe),
       )
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not download that map.')
@@ -120,11 +127,12 @@ export function AccountMenu() {
             <>
               <p className="account-balance">{account.email}</p>
               <p className="hint">
-                Signed in {formatWhen(account.createdAt) || 'today'}. Download is
-                still free. Maps you download while signed in are listed here and
-                stay in this browser.
+                Signed in {formatWhen(account.createdAt) || 'today'}. Mapping and
+                Play stay free. Keeping a new map uses 1 credit. The same trip
+                and style can be downloaded again for free. Credits live on your
+                MemoryMap account, not only this browser.
                 {account.credits > 0
-                  ? ` You have ${account.credits} credit${account.credits === 1 ? '' : 's'} from sandbox checkout.`
+                  ? ` You have ${account.credits} credit${account.credits === 1 ? '' : 's'}.`
                   : ''}
               </p>
               {paddleConfigured() && (
@@ -132,9 +140,10 @@ export function AccountMenu() {
                   <p className="kicker">Paddle sandbox</p>
                   <p className="hint">
                     Test card checkout through Paddle. Live charges are off.
-                    Download does not spend these credits yet. Checkout needs a
-                    default payment link in Paddle → Checkout → Checkout settings
-                    (https://memorymap.world/ or https://localhost/).
+                    After a sandbox payment, credits land on your account.
+                    Checkout needs a default payment link in Paddle → Checkout →
+                    Checkout settings (https://memorymap.world/ or
+                    https://localhost/).
                   </p>
                   <ul className="pack-row">
                     {CREDIT_PACKS.map((pack) => (
@@ -159,8 +168,8 @@ export function AccountMenu() {
                 <p className="kicker">Downloads</p>
                 {account.library.length === 0 ? (
                   <p className="hint">
-                    No saved maps yet. Download a souvenir while signed in and it
-                    will show up here so you can get it again.
+                    No saved maps yet. Keep a souvenir while signed in and it
+                    will show up here so you can download it again for free.
                   </p>
                 ) : (
                   <ul className="history-list">
@@ -195,7 +204,7 @@ export function AccountMenu() {
                 type="button"
                 className="linkish"
                 onClick={() => {
-                  signOut()
+                  void signOut()
                   setOpen(false)
                 }}
               >

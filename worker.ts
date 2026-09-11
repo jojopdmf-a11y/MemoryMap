@@ -1,3 +1,4 @@
+import { handleAccount } from './worker/account'
 import { handleAuth, type AuthEnv } from './worker/auth'
 import { handleFeedback } from './worker/feedback'
 import { handleGeo } from './worker/geo'
@@ -18,6 +19,8 @@ export default {
       if (geo) return geo
       const auth = await handleAuth(request, env)
       if (auth) return auth
+      const account = await handleAccount(request, env)
+      if (account) return account
       const paddle = await handlePaddle(request, env)
       if (paddle) return paddle
       const feedback = await handleFeedback(request, env)

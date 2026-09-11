@@ -1,4 +1,4 @@
-import { applyCheckoutGrant, requireAccount, setAccountNotice } from './accountStore'
+import { refreshAccount, requireAccount, setAccountNotice } from './accountStore'
 import {
   PADDLE_CLIENT_TOKEN,
   packById,
@@ -118,6 +118,7 @@ async function createTransaction(
 ): Promise<{ transactionId: string; url: string | null } | { error: string }> {
   const res = await fetch('/api/paddle/checkout', {
     method: 'POST',
+    credentials: 'same-origin',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ packId: pack.id, email }),
   })
@@ -160,6 +161,7 @@ export async function fulfillPaddlePayment(transactionId: string): Promise<boole
     requireAccount()
     const res = await fetch('/api/paddle/fulfill', {
       method: 'POST',
+      credentials: 'same-origin',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ transactionId: id }),
     })
@@ -175,7 +177,7 @@ export async function fulfillPaddlePayment(transactionId: string): Promise<boole
     }
     const pack = packById(String(data.packId ?? ''))
     if (!pack) throw new Error('Could not match that payment to a credit pack.')
-    applyCheckoutGrant(pack, id)
+    await refreshAccount()
     setAccountNotice(
       `Added ${pack.credits} credit${pack.credits === 1 ? '' : 's'} from Paddle sandbox checkout.`,
     )

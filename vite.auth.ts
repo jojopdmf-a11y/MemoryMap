@@ -2,6 +2,7 @@ import { readFileSync, existsSync } from 'node:fs'
 import { resolve } from 'node:path'
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import type { Plugin } from 'vite'
+import { handleAccount } from './worker/account.ts'
 import { handleAuth, type AuthEnv } from './worker/auth.ts'
 import { handleFeedback } from './worker/feedback.ts'
 import { handleGeo } from './worker/geo.ts'
@@ -108,6 +109,7 @@ async function pipe(
       (await handleSouvenir(request, env)) ??
       (await handleGeo(request)) ??
       (await handleAuth(request, env)) ??
+      (await handleAccount(request, env)) ??
       (await handlePaddle(request, env)) ??
       (await handleFeedback(request, env))
     if (!response) {

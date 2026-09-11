@@ -1,9 +1,7 @@
 import { useEffect, useId, useRef, useState } from 'react'
 import {
-  buyPack,
   findLibraryMatch,
-  recordPaidDownload,
-  completeFreeRedownload,
+  keepDownload,
   requireAccount,
   useAccount,
 } from '../accountStore'
@@ -18,6 +16,7 @@ import { saveSouvenir } from '../download'
 import { recipeFingerprint, type SouvenirRecipe } from '../recipe'
 import { htmlForSouvenir } from '../souvenir'
 import { souvenirFilename } from '../trip'
+import type { LatLng } from '../route'
 import { SignInForm } from './SignInForm'
 
 type Intent = 'download' | 'buy'
@@ -26,24 +25,29 @@ type Props = {
   open: boolean
   intent: Intent
   recipe: SouvenirRecipe | null
+  roads?: LatLng[][] | null
   onClose: () => void
 }
 
-async function saveFile(recipe: SouvenirRecipe) {
+async function saveFile(recipe: SouvenirRecipe, roads?: LatLng[][] | null) {
   const filename = souvenirFilename(recipe.title)
-  await saveSouvenir(filename, (hosted) =>
-    htmlForSouvenir(recipe.title, recipe.stops, recipe.look, hosted),
+  const fingerprint = recipeFingerprint(recipe)
+  await saveSouvenir(
+    filename,
+    (hosted) => htmlForSouvenir(recipe.title, recipe.stops, recipe.look, hosted, roads ?? null),
+    fingerprint,
   )
   return filename
 }
 
-export function DownloadSheet({ open, intent, recipe, onClose }: Props) {
+export function DownloadSheet({ open, intent, recipe, roads, onClose }: Props) {
   const { account } = useAccount()
   const titleId = useId()
   const dialogRef = useRef<HTMLDivElement>(null)
   const [error, setError] = useState<string | null>(null)
   const [note, setNote] = useState<string | null>(null)
   const [buying, setBuying] = useState(false)
+  const [keeping, setKeeping] = useState(false)
   const match = recipe ? findLibraryMatch(recipeFingerprint(recipe)) : null
   const filename = recipe ? souvenirFilename(recipe.title) : 'MemoryMap-trip.html'
   const leftover = account ? Math.max(0, account.credits - (match ? 0 : 1)) : 0
@@ -68,7 +72,9 @@ export function DownloadSheet({ open, intent, recipe, onClose }: Props) {
       if (paddleConfigured()) {
         setBuying(true)
         await openCreditCheckout(pack, account?.email ?? '')
-        setNote('Paddle sandbox checkout is opening. Credits land here after payment is confirmed.')
+        setNote(
+          'Paddle sandbox checkout is opening. Credits land on your account after payment is confirmed.',
+        )
         return
       }
       const url = checkoutUrl(pack, account?.email ?? '')
@@ -76,9 +82,8 @@ export function DownloadSheet({ open, intent, recipe, onClose }: Props) {
         window.location.assign(url)
         return
       }
-      buyPack(pack, 'local')
-      setNote(
-        `Added ${pack.credits} credit${pack.credits === 1 ? '' : 's'} on this browser. Card checkout will use Paddle once the sandbox key is on this server.`,
+      setError(
+        'Card checkout is not connected on this server yet. Paddle sandbox has to be available before credits can be added.',
       )
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not add credits.')
@@ -96,24 +101,22 @@ export function DownloadSheet({ open, intent, recipe, onClose }: Props) {
   async function confirmDownload() {
     if (!recipe) return
     setError(null)
+    setKeeping(true)
     try {
-      if (match) {
-        completeFreeRedownload(match.id)
-        await saveFile(match.recipe)
-      } else {
-        const filenameUsed = souvenirFilename(recipe.title)
-        recordPaidDownload(recipe, filenameUsed)
-        await saveFile(recipe)
-      }
+      const filenameUsed = souvenirFilename(recipe.title)
+      await keepDownload(recipe, filenameUsed)
+      await saveFile(recipe, roads)
       close()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not download the map.')
+    } finally {
+      setKeeping(false)
     }
   }
 
   const heading = !account
     ? 'Sign in to continue'
-    : intent === 'buy' || (!match && (account.credits < 1) && recipe)
+    : intent === 'buy' || (!match && account.credits < 1 && recipe)
       ? 'Buy credits'
       : match
         ? 'Download again'
@@ -138,7 +141,7 @@ export function DownloadSheet({ open, intent, recipe, onClose }: Props) {
 
         {!account && (
           <SignInForm
-            lead="Preview and styling stay free. Sign in before you buy credits or take a file home. No password — we email a link, or use Google."
+            lead="Preview and styling stay free. Sign in before you buy credits or keep a file. No password — we email a link, or use Google."
           />
         )}
 
@@ -146,10 +149,10 @@ export function DownloadSheet({ open, intent, recipe, onClose }: Props) {
           <>
             <p className="hint">
               {account.email} · {account.credits} credit
-              {account.credits === 1 ? '' : 's'}. A download uses 1 credit.
+              {account.credits === 1 ? '' : 's'}. Keeping a new map uses 1 credit.
               {paddleConfigured()
-                ? ' Checkout is Paddle sandbox — test cards only. Download is still free.'
-                : ' Card charges are not live yet; a pack only adds credits on this browser.'}
+                ? ' Checkout is Paddle sandbox — test cards only. Live charges are off.'
+                : ' Card checkout is not connected on this server yet.'}
             </p>
             <ul className="pack-row">
               {CREDIT_PACKS.map((pack) => (
@@ -176,13 +179,22 @@ export function DownloadSheet({ open, intent, recipe, onClose }: Props) {
             <p className="hint">
               {match
                 ? `${match.title} is already on your account. Download again is free — no credit used.`
-                : `Download ${recipe.title} as ${filename}? You will have ${leftover} credit${leftover === 1 ? '' : 's'} left. We save this recipe so a later copy of the same map is free. Change the trip or styling and the next download spends a credit.`}
+                : `Keep ${recipe.title} as ${filename}? You will have ${leftover} credit${leftover === 1 ? '' : 's'} left. The same trip and style can be downloaded again for free. Change the trip or styling and the next keep spends a credit.`}
             </p>
             <div className="sheet-actions">
-              <button type="button" className="primary" onClick={confirmDownload}>
-                {match ? 'Download again' : 'Use 1 credit and download'}
+              <button
+                type="button"
+                className="primary"
+                disabled={keeping}
+                onClick={() => void confirmDownload()}
+              >
+                {keeping
+                  ? 'Keeping…'
+                  : match
+                    ? 'Download again'
+                    : 'Use 1 credit and download'}
               </button>
-              <button type="button" className="ghost" onClick={close}>
+              <button type="button" className="ghost" onClick={close} disabled={keeping}>
                 Cancel
               </button>
             </div>

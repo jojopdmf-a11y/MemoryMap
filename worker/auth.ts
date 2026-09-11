@@ -1,9 +1,14 @@
+import { ensureAccount, publicAccount } from './ledger.ts'
+import { cookieHeader, signSession } from './session.ts'
+import type { SouvenirStore } from './souvenir.ts'
+
 export type AuthEnv = {
   AUTH_SECRET?: string
   RESEND_API_KEY?: string
   RESEND_FROM?: string
   GOOGLE_CLIENT_ID?: string
   ALLOW_DEV_LINKS?: string
+  SOUVENIRS?: SouvenirStore
 }
 
 const LINK_TTL_MS = 30 * 60 * 1000
@@ -13,8 +18,46 @@ const MAX_BODY = 4096
 function json(data: unknown, status = 200): Response {
   return new Response(JSON.stringify(data), {
     status,
-    headers: { 'Content-Type': 'application/json; charset=utf-8' },
+    headers: {
+      'Content-Type': 'application/json; charset=utf-8',
+      'Cache-Control': 'no-store',
+    },
   })
+}
+
+async function signedIn(
+  request: Request,
+  env: AuthEnv,
+  email: string,
+): Promise<Response> {
+  if (!env.AUTH_SECRET) {
+    return json({ error: 'Email sign-in is not connected yet.' }, 503)
+  }
+  try {
+    const account = await ensureAccount(env, email)
+    const token = await signSession(email, env.AUTH_SECRET)
+    return new Response(
+      JSON.stringify(publicAccount(account)),
+      {
+        status: 200,
+        headers: {
+          'Content-Type': 'application/json; charset=utf-8',
+          'Cache-Control': 'no-store',
+          'Set-Cookie': cookieHeader(token, request),
+        },
+      },
+    )
+  } catch (err) {
+    return json(
+      {
+        error:
+          err instanceof Error
+            ? err.message
+            : 'Could not open that account.',
+      },
+      503,
+    )
+  }
 }
 
 function b64url(value: string): string {
@@ -195,7 +238,7 @@ async function redeem(request: Request, env: AuthEnv): Promise<Response> {
   }
   try {
     const email = await readMagicToken(String(body.token ?? ''), env.AUTH_SECRET)
-    return json({ email })
+    return signedIn(request, env, email)
   } catch (err) {
     return json(
       {
@@ -248,7 +291,7 @@ async function googleSignIn(request: Request, env: AuthEnv): Promise<Response> {
     if (!verified || !email) {
       return json({ error: 'Google did not share a verified email.' }, 401)
     }
-    return json({ email })
+    return signedIn(request, env, email)
   }
 
   if (accessToken) {
@@ -268,7 +311,7 @@ async function googleSignIn(request: Request, env: AuthEnv): Promise<Response> {
     if (!email || !verified) {
       return json({ error: 'Google did not share a verified email.' }, 401)
     }
-    return json({ email })
+    return signedIn(request, env, email)
   }
 
   return json({ error: 'Google sign-in failed.' }, 400)

@@ -2,11 +2,11 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { AdSlot } from './components/AdSlot'
 import { AccountMenu } from './components/AccountMenu'
 import { CreditsDock } from './components/CreditsDock'
+import { DownloadSheet } from './components/DownloadSheet'
 import { DropZone, SheetPicker } from './components/DropZone'
 import { FeedbackNote } from './components/FeedbackNote'
 import { PreviewMap } from './components/PreviewMap'
 import { StopTable } from './components/StopTable'
-import { saveSouvenir } from './download'
 import {
   createBlankStop,
   displayDate,
@@ -22,12 +22,10 @@ import {
   type IngestResult,
   type SheetChoice,
 } from './source'
-import { exportableStops, souvenirFilename } from './trip'
+import { exportableStops } from './trip'
 import { SiteFooter } from './components/SiteFooter'
 import { StyleBar } from './components/StyleBar'
 import { DEFAULT_FIELDS, DEFAULT_LOOK, resolveLabelMode, type CardField, type Look } from './look'
-import { htmlForSouvenir } from './souvenir'
-import { recordBrowserDownload } from './accountStore'
 import type { Stop } from './types'
 import './App.css'
 
@@ -47,6 +45,7 @@ export default function App() {
   const [showLocations, setShowLocations] = useState(true)
   const [driveLegs, setDriveLegs] = useState<LatLng[][] | null>(null)
   const [tracing, setTracing] = useState(false)
+  const [downloadOpen, setDownloadOpen] = useState(false)
   const geoGen = useRef(0)
   const stopsRef = useRef<Stop[] | null>(null)
 
@@ -292,30 +291,22 @@ export default function App() {
     })
   }
 
-  async function downloadMap() {
-    if (!ready) return
-    try {
-      const tripTitle = title.trim() || 'Untitled trip'
-      const recipeLook = {
-        ...DEFAULT_LOOK,
-        ...look,
-        fields: { ...DEFAULT_FIELDS, ...look.fields },
+  const recipeLook = {
+    ...DEFAULT_LOOK,
+    ...look,
+    fields: { ...DEFAULT_FIELDS, ...look.fields },
+  }
+  const souvenirRecipe = ready
+    ? {
+        title: title.trim() || 'Untitled trip',
+        stops: plotted,
+        look: recipeLook,
       }
-      const filename = souvenirFilename(tripTitle)
-      await saveSouvenir(filename, (hosted) =>
-        htmlForSouvenir(tripTitle, plotted, recipeLook, hosted, driveLegs),
-      )
-      recordBrowserDownload(
-        { title: tripTitle, stops: plotted, look: recipeLook },
-        filename,
-      )
-    } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : 'Could not download the souvenir file.',
-      )
-    }
+    : null
+
+  function downloadMap() {
+    if (!ready) return
+    setDownloadOpen(true)
   }
 
   return (
@@ -447,7 +438,7 @@ export default function App() {
                     ? 'Tracing the drive… zoom and play stay available.'
                     : !ready
                     ? 'Skip or fix stops without coordinates to download.'
-                    : `${plotted.length} stop${plotted.length === 1 ? '' : 's'} ready. Download is free.`
+                    : `${plotted.length} stop${plotted.length === 1 ? '' : 's'} ready. Keeping the file uses 1 credit.`
               }
             />
             <StopTable
@@ -481,6 +472,13 @@ export default function App() {
       )}
       <AdSlot variant="footer" />
       <SiteFooter />
+      <DownloadSheet
+        open={downloadOpen}
+        intent="download"
+        recipe={souvenirRecipe}
+        roads={driveLegs}
+        onClose={() => setDownloadOpen(false)}
+      />
     </div>
   )
 }

@@ -11,13 +11,21 @@ export function prefersHostedSouvenir(): boolean {
   return navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1
 }
 
-export async function publishSouvenir(html: string): Promise<string | null> {
+export async function publishSouvenir(
+  html: string,
+  fingerprint: string,
+): Promise<string | null> {
+  if (!fingerprint.trim()) return null
   try {
-    const res = await fetch('/api/souvenir', {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/html; charset=utf-8' },
-      body: html,
-    })
+    const res = await fetch(
+      `/api/souvenir?fingerprint=${encodeURIComponent(fingerprint)}`,
+      {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'text/html; charset=utf-8' },
+        body: html,
+      },
+    )
     if (!res.ok) return null
     const data = (await res.json()) as { url?: string }
     if (!data.url) return null
@@ -78,9 +86,10 @@ export function downloadText(
 export async function saveSouvenir(
   filename: string,
   build: (hostedUrl: string) => string | Promise<string>,
+  fingerprint: string,
 ): Promise<void> {
   const draft = await Promise.resolve(build(''))
-  const hosted = await publishSouvenir(draft)
+  const hosted = await publishSouvenir(draft, fingerprint)
   const html = hosted ? await Promise.resolve(build(hosted)) : draft
   if (prefersHostedSouvenir()) {
     if (hosted) {

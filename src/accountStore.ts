@@ -1,6 +1,5 @@
 import { useSyncExternalStore } from 'react'
 import { redeemMagicToken } from './authApi'
-import { type CreditPack } from './commerce'
 import {
   normalizeRecipe,
   recipeFingerprint,
@@ -60,17 +59,10 @@ const listeners = new Set<() => void>()
 let persisted = readStore()
 let notice: string | null = null
 let snapshot = makeSnapshot()
+let downloadLock = false
 
 function nowIso(): string {
   return new Date().toISOString()
-}
-
-function uid(prefix: string): string {
-  return `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`
-}
-
-function normalizeEmail(email: string): string {
-  return email.trim().toLowerCase()
 }
 
 function emptyStore(): Persisted {
@@ -86,7 +78,9 @@ function readStore(): Persisted {
       accounts: Array.isArray(parsed.accounts) ? parsed.accounts : [],
       pendingLinks: Array.isArray(parsed.pendingLinks) ? parsed.pendingLinks : [],
       sessionAccountId:
-        typeof parsed.sessionAccountId === 'string' ? parsed.sessionAccountId : null,
+        typeof parsed.sessionAccountId === 'string'
+          ? parsed.sessionAccountId
+          : null,
     }
   } catch {
     return emptyStore()
@@ -130,118 +124,155 @@ export function useAccount(): AccountSnapshot {
   return useSyncExternalStore(subscribe, getSnapshot, getSnapshot)
 }
 
-function upsertAccount(email: string): AccountRecord {
-  const normalized = normalizeEmail(email)
-  const existing = persisted.accounts.find((item) => item.email === normalized)
-  if (existing) return existing
-  const created: AccountRecord = {
-    id: uid('acct'),
-    email: normalized,
-    createdAt: nowIso(),
-    credits: 0,
-    purchases: [],
-    library: [],
+function asPurchase(value: unknown): Purchase | null {
+  if (!value || typeof value !== 'object') return null
+  const row = value as Partial<Purchase>
+  if (typeof row.id !== 'string' || typeof row.packId !== 'string') return null
+  return {
+    id: row.id,
+    packId: row.packId,
+    credits: Number(row.credits) || 0,
+    usd: Number(row.usd) || 0,
+    createdAt: typeof row.createdAt === 'string' ? row.createdAt : nowIso(),
+    source: row.source === 'local' ? 'local' : 'checkout',
   }
-  persisted = { ...persisted, accounts: [...persisted.accounts, created] }
-  return created
 }
 
-function replaceAccount(next: AccountRecord) {
+function asLibraryItem(value: unknown): LibraryItem | null {
+  if (!value || typeof value !== 'object') return null
+  const row = value as Partial<LibraryItem>
+  if (
+    typeof row.id !== 'string' ||
+    typeof row.fingerprint !== 'string' ||
+    !row.recipe ||
+    typeof row.recipe !== 'object'
+  ) {
+    return null
+  }
+  return {
+    id: row.id,
+    title: typeof row.title === 'string' ? row.title : 'Untitled trip',
+    filename:
+      typeof row.filename === 'string' ? row.filename : 'MemoryMap-trip.html',
+    fingerprint: row.fingerprint,
+    recipe: row.recipe as SouvenirRecipe,
+    createdAt: typeof row.createdAt === 'string' ? row.createdAt : nowIso(),
+    lastDownloadedAt:
+      typeof row.lastDownloadedAt === 'string'
+        ? row.lastDownloadedAt
+        : nowIso(),
+    downloadCount: Number(row.downloadCount) || 1,
+  }
+}
+
+function applyServerAccount(data: Record<string, unknown>): AccountRecord {
+  const email = String(data.email ?? '')
+    .trim()
+    .toLowerCase()
+  if (!email) throw new Error('Sign in to continue.')
+  const account: AccountRecord = {
+    id: email,
+    email,
+    createdAt:
+      typeof data.createdAt === 'string' ? data.createdAt : nowIso(),
+    credits: Number.isFinite(Number(data.credits))
+      ? Math.max(0, Number(data.credits))
+      : 0,
+    purchases: Array.isArray(data.purchases)
+      ? data.purchases.map(asPurchase).filter((item): item is Purchase => Boolean(item))
+      : [],
+    library: Array.isArray(data.library)
+      ? data.library
+          .map(asLibraryItem)
+          .filter((item): item is LibraryItem => Boolean(item))
+      : [],
+  }
   persisted = {
     ...persisted,
-    accounts: persisted.accounts.map((item) => (item.id === next.id ? next : item)),
+    accounts: [
+      ...persisted.accounts.filter((item) => item.email !== email),
+      account,
+    ],
+    sessionAccountId: account.id,
+  }
+  emit()
+  return account
+}
+
+function clearSession() {
+  persisted = { ...persisted, sessionAccountId: null }
+  emit()
+}
+
+async function readJson(res: Response): Promise<Record<string, unknown>> {
+  try {
+    return (await res.json()) as Record<string, unknown>
+  } catch {
+    return {}
+  }
+}
+
+export async function refreshAccount(): Promise<AccountRecord | null> {
+  try {
+    const res = await fetch('/api/account/me', { credentials: 'same-origin' })
+    if (res.status === 401) {
+      clearSession()
+      return null
+    }
+    const data = await readJson(res)
+    if (!res.ok) {
+      return snapshot.account
+    }
+    return applyServerAccount(data)
+  } catch {
+    return snapshot.account
   }
 }
 
 export async function consumeSignInFromUrl(): Promise<boolean> {
   const url = new URL(window.location.href)
   const token = url.searchParams.get('signin')
-  if (!token) return false
-  url.searchParams.delete('signin')
-  window.history.replaceState({}, '', `${url.pathname}${url.search}${url.hash}`)
-  try {
-    const email = await redeemMagicToken(token)
-    signInWithEmail(email)
-    notice = `Signed in as ${email}.`
+  if (token) {
+    url.searchParams.delete('signin')
+    window.history.replaceState({}, '', `${url.pathname}${url.search}${url.hash}`)
+    try {
+      await redeemMagicToken(token)
+    } catch (err) {
+      notice =
+        err instanceof Error ? err.message : 'That sign-in link is not valid.'
+      emit(false)
+      await refreshAccount()
+      return false
+    }
+  }
+  const account = await refreshAccount()
+  if (token && account) {
+    notice = `Signed in as ${account.email}.`
     emit(false)
     return true
-  } catch (err) {
-    notice =
-      err instanceof Error ? err.message : 'That sign-in link is not valid.'
-    emit(false)
-    return false
   }
+  return Boolean(account)
 }
 
-export function signInWithEmail(email: string): AccountRecord {
-  const account = upsertAccount(email)
-  persisted = { ...persisted, sessionAccountId: account.id }
+export async function signOut() {
+  try {
+    await fetch('/api/account/logout', {
+      method: 'POST',
+      credentials: 'same-origin',
+    })
+  } catch {
+    // Cookie clear is best-effort; local session still ends.
+  }
   notice = null
-  emit()
-  return account
-}
-
-export function signOut() {
-  persisted = { ...persisted, sessionAccountId: null }
-  notice = null
-  emit()
+  clearSession()
 }
 
 export function requireAccount(): AccountRecord {
-  const account =
-    persisted.accounts.find((item) => item.id === persisted.sessionAccountId) ??
-    null
+  const account = snapshot.account
   if (!account) {
     throw new Error('Sign in before buying credits or downloading a map.')
   }
   return account
-}
-
-export function buyPack(pack: CreditPack, source: Purchase['source'] = 'local'): AccountRecord {
-  const account = requireAccount()
-  const next: AccountRecord = {
-    ...account,
-    credits: account.credits + pack.credits,
-    purchases: [
-      {
-        id: uid('pay'),
-        packId: pack.id,
-        credits: pack.credits,
-        usd: pack.usd,
-        createdAt: nowIso(),
-        source,
-      },
-      ...account.purchases,
-    ],
-  }
-  replaceAccount(next)
-  emit()
-  return next
-}
-
-export function applyCheckoutGrant(pack: CreditPack, transactionId: string): AccountRecord {
-  const account = requireAccount()
-  if (account.purchases.some((item) => item.id === transactionId)) {
-    return account
-  }
-  const next: AccountRecord = {
-    ...account,
-    credits: account.credits + pack.credits,
-    purchases: [
-      {
-        id: transactionId,
-        packId: pack.id,
-        credits: pack.credits,
-        usd: pack.usd,
-        createdAt: nowIso(),
-        source: 'checkout',
-      },
-      ...account.purchases,
-    ],
-  }
-  replaceAccount(next)
-  emit()
-  return next
 }
 
 export function findLibraryMatch(fingerprint: string): LibraryItem | null {
@@ -250,84 +281,47 @@ export function findLibraryMatch(fingerprint: string): LibraryItem | null {
   return account.library.find((item) => item.fingerprint === fingerprint) ?? null
 }
 
-export function recordBrowserDownload(
+export async function keepDownload(
   recipe: SouvenirRecipe,
   filename: string,
-): LibraryItem | null {
-  const account = snapshot.account
-  if (!account) return null
-  const normalized = normalizeRecipe(recipe)
-  const fingerprint = recipeFingerprint(normalized)
-  const existing = account.library.find((item) => item.fingerprint === fingerprint)
-  if (existing) return completeFreeRedownload(existing.id)
-
-  const item: LibraryItem = {
-    id: uid('map'),
-    title: normalized.title,
-    filename,
-    fingerprint,
-    recipe: normalized,
-    createdAt: nowIso(),
-    lastDownloadedAt: nowIso(),
-    downloadCount: 1,
+): Promise<{ spent: boolean; account: AccountRecord }> {
+  requireAccount()
+  if (downloadLock) {
+    throw new Error('Already keeping this map.')
   }
-  replaceAccount({
-    ...account,
-    library: [item, ...account.library],
-  })
-  emit()
-  return item
-}
-
-export function recordPaidDownload(
-  recipe: SouvenirRecipe,
-  filename: string,
-): LibraryItem {
-  const account = requireAccount()
-  const normalized = normalizeRecipe(recipe)
-  const fingerprint = recipeFingerprint(normalized)
-  const existing = account.library.find((item) => item.fingerprint === fingerprint)
-  if (existing) return completeFreeRedownload(existing.id)
-
-  if (account.credits < 1) {
-    throw new Error('Buy a credit pack to download this map.')
+  downloadLock = true
+  try {
+    const normalized = normalizeRecipe(recipe)
+    const fingerprint = recipeFingerprint(normalized)
+    const res = await fetch('/api/account/download', {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        fingerprint,
+        title: normalized.title,
+        filename,
+        recipe: normalized,
+      }),
+    })
+    const data = await readJson(res)
+    if (!res.ok) {
+      await refreshAccount()
+      const err = new Error(
+        typeof data.error === 'string'
+          ? data.error
+          : 'Could not keep that map.',
+      ) as Error & { code?: string }
+      if (typeof data.code === 'string') err.code = data.code
+      throw err
+    }
+    return {
+      spent: data.spent === true,
+      account: applyServerAccount(data),
+    }
+  } finally {
+    downloadLock = false
   }
-  const item: LibraryItem = {
-    id: uid('map'),
-    title: normalized.title,
-    filename,
-    fingerprint,
-    recipe: normalized,
-    createdAt: nowIso(),
-    lastDownloadedAt: nowIso(),
-    downloadCount: 1,
-  }
-  replaceAccount({
-    ...account,
-    credits: account.credits - 1,
-    library: [item, ...account.library],
-  })
-  emit()
-  return item
-}
-
-export function completeFreeRedownload(id: string): LibraryItem {
-  const account = requireAccount()
-  const existing = account.library.find((item) => item.id === id)
-  if (!existing) {
-    throw new Error('That saved map is no longer on this account.')
-  }
-  const item: LibraryItem = {
-    ...existing,
-    lastDownloadedAt: nowIso(),
-    downloadCount: existing.downloadCount + 1,
-  }
-  replaceAccount({
-    ...account,
-    library: account.library.map((row) => (row.id === id ? item : row)),
-  })
-  emit()
-  return item
 }
 
 export function formatWhen(iso: string): string {
