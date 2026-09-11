@@ -186,3 +186,23 @@ li + li {
 .site-foot p {
   margin: 0;
 }
+
+pre {
+  overflow-x: auto;
+  margin: 0 0 1rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--paper) 70%, white);
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.9em;
+}
+
+pre code {
+  font-size: 1em;
+}
