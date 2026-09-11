@@ -912,6 +912,18 @@
   border-radius: var(--radius-sm);
 }
 
+a.ghost {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+  font-family: inherit;
+  line-height: 1.2;
+}
+
+a.ghost:hover {
+  color: var(--terra);
+}
+
 .primary {
   background: var(--terra);
   border-color: var(--terra);

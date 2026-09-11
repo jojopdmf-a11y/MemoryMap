@@ -7,6 +7,8 @@ export function SiteFooter() {
       <span aria-hidden="true">·</span>
       <a href={CONTACT_MAILTO}>{CONTACT_EMAIL}</a>
       <span aria-hidden="true">·</span>
+      <a href="/guides/">Guides</a>
+      <span aria-hidden="true">·</span>
       <a href="/privacy">Privacy</a>
     </footer>
   )
