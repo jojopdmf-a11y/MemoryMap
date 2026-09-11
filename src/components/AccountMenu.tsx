@@ -1,12 +1,19 @@
 import { useEffect, useId, useRef, useState } from 'react'
 import {
+  claimPreviewCredits,
   formatWhen,
   keepDownload,
   setAccountNotice,
   signOut,
   useAccount,
 } from '../accountStore'
-import { CREDIT_PACKS, paddleConfigured, type CreditPack } from '../commerce'
+import {
+  CREDIT_PACKS,
+  PADDLE_SANDBOX,
+  PREVIEW_GRANT_CREDITS,
+  paddleConfigured,
+  type CreditPack,
+} from '../commerce'
 import { saveSouvenir } from '../download'
 import { htmlForSouvenir } from '../souvenir'
 import { recipeFingerprint } from '../recipe'
@@ -43,6 +50,24 @@ export function AccountMenu() {
       document.removeEventListener('keydown', onKey)
     }
   }, [open])
+
+  async function addPreviewCredits() {
+    if (!account) return
+    setError(null)
+    setBuying(true)
+    try {
+      const next = await claimPreviewCredits()
+      setAccountNotice(
+        `Added ${PREVIEW_GRANT_CREDITS} preview credits. No charge while MemoryMap is in public preview. You now have ${next.credits}.`,
+      )
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : 'Could not add preview credits.',
+      )
+    } finally {
+      setBuying(false)
+    }
+  }
 
   async function buy(pack: CreditPack) {
     if (!account) return
@@ -131,11 +156,35 @@ export function AccountMenu() {
                 Play stay free. Keeping a new map uses 1 credit. The same trip
                 and style can be downloaded again for free. Credits live on your
                 MemoryMap account, not only this browser.
+                {PADDLE_SANDBOX
+                  ? ' During this public preview you can add credits at no charge.'
+                  : ''}
                 {account.credits > 0
                   ? ` You have ${account.credits} credit${account.credits === 1 ? '' : 's'}.`
                   : ''}
               </p>
-              {paddleConfigured() && (
+              {PADDLE_SANDBOX && account.credits < 1 && (
+                <div className="history-block">
+                  <p className="kicker">Preview credits</p>
+                  <p className="hint">
+                    Live card charges are off. Add {PREVIEW_GRANT_CREDITS}{' '}
+                    credits at no charge, then keep a map.
+                  </p>
+                  <div className="sheet-actions">
+                    <button
+                      type="button"
+                      className="primary"
+                      disabled={buying}
+                      onClick={() => void addPreviewCredits()}
+                    >
+                      {buying
+                        ? 'Adding credits…'
+                        : `Add ${PREVIEW_GRANT_CREDITS} preview credits`}
+                    </button>
+                  </div>
+                </div>
+              )}
+              {!PADDLE_SANDBOX && paddleConfigured() && (
                 <div className="history-block">
                   <p className="kicker">Paddle sandbox</p>
                   <p className="hint">
@@ -213,7 +262,7 @@ export function AccountMenu() {
             </>
           ) : (
             <SignInForm
-              lead="No password. We’ll email a link, or continue with Google. Anyone can do this — we don’t create accounts by hand."
+              lead="No password. We’ll email a link, or continue with Google. Anyone can do this — we don’t create accounts by hand. During this public preview, credits are free to add after you sign in."
               onSignedIn={() => {
                 setAccountNotice(null)
                 setOpen(true)

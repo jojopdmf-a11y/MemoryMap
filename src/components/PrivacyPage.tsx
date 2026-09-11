@@ -24,9 +24,10 @@ export function PrivacyPage() {
         <h1>Privacy</h1>
         <p>
           {SITE_NAME} is a public preview. Mapping and Play are free. Keeping
-          the souvenir file uses 1 credit. Sign-in is required to keep a file or
-          buy credits. Paddle sandbox checkout is for test packs; live charges
-          are off. This page describes what happens to that information today.
+          the souvenir file uses 1 credit. Sign-in is required to keep a file.
+          During this preview, signed-in people can add credits at no charge.
+          Live card charges are off. This page describes what happens to that
+          information today.
         </p>
 
         <h2>What stays on your computer</h2>
@@ -65,12 +66,12 @@ export function PrivacyPage() {
 
         <h2>Payments</h2>
         <p>
-          Preview does not require a card. If you buy a credit pack, checkout
-          is handled by Paddle, our merchant of record. Card details go to Paddle,
-          not to MemoryMap. We receive your email, the pack you bought, and a
-          Paddle transaction id so we can add credits to your account. The
-          current connection is Paddle sandbox, so those checkouts are for
-          testing and are not live charges.
+          Preview does not require a card. During this public preview, signed-in
+          people can add credits to their account at no charge. Those credits
+          still live on our servers, keyed by email, and keeping a new map uses
+          one of them. When live charges are on, credit packs will be sold
+          through Paddle, our merchant of record. Card details go to Paddle, not
+          to MemoryMap.
         </p>
         <p>
           If you write to{' '}

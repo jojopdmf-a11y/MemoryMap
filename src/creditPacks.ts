@@ -1,5 +1,6 @@
 export const PADDLE_CLIENT_TOKEN = 'test_672372ebb1891ee2d818a7bc293'
-export const PADDLE_SANDBOX = true
+export const PADDLE_SANDBOX: boolean = true
+export const PREVIEW_GRANT_CREDITS = 3
 
 export const CREDIT_PACKS = [
   {

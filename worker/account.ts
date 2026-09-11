@@ -1,4 +1,5 @@
 import type { AuthEnv } from './auth.ts'
+import { PREVIEW_GRANT_CREDITS } from '../src/creditPacks.ts'
 import {
   applyPurchase,
   ensureAccount,
@@ -8,7 +9,9 @@ import {
 } from './ledger.ts'
 import { cookieHeader, emailFromRequest } from './session.ts'
 
-export type AccountEnv = AuthEnv & LedgerEnv
+export type AccountEnv = AuthEnv & LedgerEnv & {
+  PADDLE_SANDBOX?: string
+}
 
 function json(data: unknown, status = 200): Response {
   return new Response(JSON.stringify(data), {
@@ -99,6 +102,38 @@ export async function handleAccount(
               ? err.message
               : 'Could not keep that map.',
           code,
+        },
+        statusFor(err),
+      )
+    }
+  }
+
+  if (url.pathname === '/api/account/preview-grant' && request.method === 'POST') {
+    if (env.PADDLE_SANDBOX === '0') {
+      return json(
+        { error: 'Preview credits are not available once live charges are on.' },
+        400,
+      )
+    }
+    try {
+      const email = await emailFromRequest(request, env.AUTH_SECRET)
+      const existing = await ensureAccount(env, email)
+      if (existing.credits > 0) {
+        return json(publicAccount(existing))
+      }
+      const account = await applyPurchase(env, email, {
+        id: `preview-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`,
+        packId: 'preview',
+        credits: PREVIEW_GRANT_CREDITS,
+        usd: 0,
+        createdAt: new Date().toISOString(),
+      })
+      return json(publicAccount(account))
+    } catch (err) {
+      return json(
+        {
+          error:
+            err instanceof Error ? err.message : 'Could not add preview credits.',
         },
         statusFor(err),
       )

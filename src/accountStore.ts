@@ -281,6 +281,24 @@ export function findLibraryMatch(fingerprint: string): LibraryItem | null {
   return account.library.find((item) => item.fingerprint === fingerprint) ?? null
 }
 
+export async function claimPreviewCredits(): Promise<AccountRecord> {
+  requireAccount()
+  const res = await fetch('/api/account/preview-grant', {
+    method: 'POST',
+    credentials: 'same-origin',
+  })
+  const data = await readJson(res)
+  if (!res.ok) {
+    await refreshAccount()
+    throw new Error(
+      typeof data.error === 'string'
+        ? data.error
+        : 'Could not add preview credits.',
+    )
+  }
+  return applyServerAccount(data)
+}
+
 export async function keepDownload(
   recipe: SouvenirRecipe,
   filename: string,
