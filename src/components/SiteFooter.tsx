@@ -1,4 +1,5 @@
 import { CONTACT_EMAIL, CONTACT_MAILTO } from '../site'
+import { InstagramLink } from './InstagramLink'
 
 export function SiteFooter() {
   return (
@@ -10,6 +11,8 @@ export function SiteFooter() {
       <a href="/guides/">Guides</a>
       <span aria-hidden="true">·</span>
       <a href="/privacy">Privacy</a>
+      <span aria-hidden="true">·</span>
+      <InstagramLink />
     </footer>
   )
 }

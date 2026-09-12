@@ -2,7 +2,7 @@ import leafletCss from 'leaflet/dist/leaflet.css?raw'
 import leafletJs from 'leaflet/dist/leaflet.js?raw'
 import { TILES, THEME_VARS, type Look } from './look'
 import { traceDriveLegs, type LatLng } from './route'
-import { CONTACT_EMAIL, CONTACT_MAILTO } from './site'
+import { CONTACT_EMAIL, CONTACT_MAILTO, INSTAGRAM_URL } from './site'
 import { dateRangeLabel } from './trip'
 import type { ExportStop } from './types'
 
@@ -834,6 +834,14 @@ body {
   text-transform: uppercase;
   color: var(--terra);
 }
+.mm-kicker a {
+  color: inherit;
+  text-decoration: none;
+}
+.mm-kicker a:hover {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
 .mm-chrome h1 {
   margin: 0;
   font-size: clamp(22px, 4vw, 32px);
@@ -917,6 +925,13 @@ body {
   padding: 8px 20px 16px;
   font-size: 11px;
   color: var(--muted);
+}
+.mm-credit a {
+  color: inherit;
+  text-underline-offset: 2px;
+}
+.mm-credit a:hover {
+  color: var(--terra);
 }
 .mm-note {
   display: flex;
@@ -1171,7 +1186,7 @@ body {
   </div>
   <header class="mm-chrome">
     <div>
-      <p class="mm-kicker">MemoryMap</p>
+      <p class="mm-kicker">MemoryMap · <a href="${escapeHtml(INSTAGRAM_URL)}" target="_blank" rel="noopener noreferrer">Instagram</a></p>
       <h1>${escapeHtml(title)}</h1>
       <p class="mm-range">${escapeHtml([range, count].filter(Boolean).join(' · '))}</p>
     </div>
@@ -1188,7 +1203,7 @@ body {
     <input id="mm-scrub" type="range" min="0" max="${stops.length}" value="0" aria-label="Scrub through the route" />
   </label>
   <ol class="mm-list" id="mm-list"></ol>
-  <p class="mm-credit">A MemoryMap souvenir · tiles need the internet</p>
+  <p class="mm-credit">A MemoryMap souvenir · <a href="${escapeHtml(INSTAGRAM_URL)}" target="_blank" rel="noopener noreferrer">Instagram</a> · tiles need the internet</p>
   <script type="application/json" id="memorymap-trip">${payload}</script>
   <script>${leafletJs}</script>
   <script>${RUNTIME}</script>

@@ -1,7 +1,9 @@
 import { useState } from 'react'
 import { SAMPLE_TRIPS, type SampleTrip } from '../sample'
+import { INSTAGRAM_HANDLE } from '../site'
 import type { SheetChoice } from '../source'
 import { AdSlot } from './AdSlot'
+import { InstagramLink } from './InstagramLink'
 import { ManualTripForm } from './ManualTripForm'
 
 type Props = {
@@ -53,6 +55,9 @@ export function DropZone({
             <h1 className="brand-mark">MemoryMap</h1>
             <p className="tagline">
               Visualize Your Voyages, Treasure Your Travels.
+            </p>
+            <p className="hero-instagram">
+              <InstagramLink>Instagram @{INSTAGRAM_HANDLE}</InstagramLink>
             </p>
           </div>
           <p className="lede">

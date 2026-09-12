@@ -527,6 +527,23 @@
   line-height: 1.15;
 }
 
+.hero-instagram {
+  margin: 12px 0 0;
+  font-family: var(--sans);
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+
+.hero-instagram a {
+  color: inherit;
+  text-underline-offset: 3px;
+}
+
+.hero-instagram a:hover {
+  color: var(--terra);
+}
+
 .brand-lockup::after {
   content: '';
   width: 3.4rem;
