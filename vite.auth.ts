@@ -54,6 +54,7 @@ function localAuthEnv(): AuthEnv & {
     AUTH_SECRET: process.env.AUTH_SECRET || 'memorymap-dev-auth-secret',
     RESEND_API_KEY: process.env.RESEND_API_KEY,
     RESEND_FROM: process.env.RESEND_FROM,
+    FEEDBACK_TO: process.env.FEEDBACK_TO,
     GOOGLE_CLIENT_ID:
       process.env.GOOGLE_CLIENT_ID || process.env.VITE_GOOGLE_CLIENT_ID,
     ALLOW_DEV_LINKS: process.env.ALLOW_DEV_LINKS ?? '1',

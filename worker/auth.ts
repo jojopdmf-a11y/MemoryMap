@@ -6,6 +6,7 @@ export type AuthEnv = {
   AUTH_SECRET?: string
   RESEND_API_KEY?: string
   RESEND_FROM?: string
+  FEEDBACK_TO?: string
   GOOGLE_CLIENT_ID?: string
   ALLOW_DEV_LINKS?: string
   SOUVENIRS?: SouvenirStore
