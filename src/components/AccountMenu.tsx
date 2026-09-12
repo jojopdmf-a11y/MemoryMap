@@ -1,11 +1,13 @@
 import { useEffect, useId, useRef, useState } from 'react'
 import {
   claimPreviewCredits,
+  fetchFeedbackNotes,
   formatWhen,
   keepDownload,
   setAccountNotice,
   signOut,
   useAccount,
+  type FeedbackInboxNote,
 } from '../accountStore'
 import {
   CREDIT_PACKS,
@@ -29,6 +31,8 @@ export function AccountMenu() {
   const [open, setOpen] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [buying, setBuying] = useState(false)
+  const [notes, setNotes] = useState<FeedbackInboxNote[] | null>(null)
+  const [notesError, setNotesError] = useState<string | null>(null)
   const rootRef = useRef<HTMLDivElement>(null)
   const panelId = useId()
 
@@ -50,6 +54,26 @@ export function AccountMenu() {
       document.removeEventListener('keydown', onKey)
     }
   }, [open])
+
+  useEffect(() => {
+    if (!open || !account?.inbox) return
+    let cancelled = false
+    setNotesError(null)
+    void fetchFeedbackNotes()
+      .then((rows) => {
+        if (!cancelled) setNotes(rows)
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          setNotesError(
+            err instanceof Error ? err.message : 'Could not load feedback notes.',
+          )
+        }
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [open, account?.inbox])
 
   async function addPreviewCredits() {
     if (!account) return
@@ -211,6 +235,38 @@ export function AccountMenu() {
                       </li>
                     ))}
                   </ul>
+                </div>
+              )}
+              {account.inbox && (
+                <div className="history-block">
+                  <p className="kicker">Feedback notes</p>
+                  {notesError && (
+                    <p className="hint" role="alert">
+                      {notesError}
+                    </p>
+                  )}
+                  {notes === null && !notesError ? (
+                    <p className="hint">Loading notes…</p>
+                  ) : notes && notes.length === 0 ? (
+                    <p className="hint">
+                      No form notes stored yet. Older notes from before this
+                      list only exist in Resend.
+                    </p>
+                  ) : (
+                    <ul className="history-list note-list">
+                      {(notes ?? []).map((note) => (
+                        <li key={note.id}>
+                          <div>
+                            <strong>
+                              {formatWhen(note.createdAt) || 'Just now'}
+                              {note.email ? ` · ${note.email}` : ''}
+                            </strong>
+                            <p>{note.comment}</p>
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
               )}
               <div className="history-block">

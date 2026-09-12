@@ -1,4 +1,5 @@
 import { ensureAccount, publicAccount } from './ledger.ts'
+import { isFeedbackInbox } from './feedback.ts'
 import { cookieHeader, signSession } from './session.ts'
 import type { SouvenirStore } from './souvenir.ts'
 
@@ -38,7 +39,10 @@ async function signedIn(
     const account = await ensureAccount(env, email)
     const token = await signSession(email, env.AUTH_SECRET)
     return new Response(
-      JSON.stringify(publicAccount(account)),
+      JSON.stringify({
+        ...publicAccount(account),
+        inbox: isFeedbackInbox(email, env),
+      }),
       {
         status: 200,
         headers: {

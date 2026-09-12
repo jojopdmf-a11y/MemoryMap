@@ -358,6 +358,23 @@
   padding: 7px 10px;
 }
 
+.note-list {
+  max-height: 280px;
+}
+
+.note-list li {
+  display: block;
+  align-items: start;
+}
+
+.note-list p {
+  margin: 6px 0 0;
+  white-space: pre-wrap;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--ink);
+}
+
 .tagline {
   margin: 4px 0 0;
   color: var(--muted);

@@ -7,13 +7,20 @@ export type FeedbackEnv = {
   SOUVENIRS?: SouvenirStore
 }
 
-type StoredFeedback = {
+export type StoredFeedback = {
   id: string
   createdAt: string
   comment: string
   email: string
   source: string
   emailed: boolean
+  mail?: {
+    from: string
+    to: string[]
+    status: number
+    id?: string
+    error?: string
+  }
 }
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -49,27 +56,9 @@ function uid(): string {
   return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`
 }
 
-function addressOf(from: string): string {
-  return (from.match(/<([^>]+)>/)?.[1] ?? from).trim().toLowerCase()
-}
-
-function inboxOwner(env: FeedbackEnv): string | null {
-  const email = env.FEEDBACK_TO?.trim().toLowerCase() ?? ''
-  return EMAIL_RE.test(email) ? email : null
-}
-
-function recipients(env: FeedbackEnv): string[] {
-  const owner = inboxOwner(env)
-  if (owner) return [owner]
-  return [CONTACT_TO]
-}
-
-function sendingFrom(env: FeedbackEnv, to: string[]): string {
-  const configured =
-    env.RESEND_FROM?.trim() || 'MemoryMap <hello@memorymap.world>'
-  const fromAddress = addressOf(configured)
-  if (to.some((item) => item === fromAddress)) return NOTES_FROM
-  return configured
+export function isFeedbackInbox(email: string, env: FeedbackEnv): boolean {
+  const owner = env.FEEDBACK_TO?.trim().toLowerCase() ?? ''
+  return EMAIL_RE.test(owner) && email.trim().toLowerCase() === owner
 }
 
 async function persistNote(
@@ -95,15 +84,61 @@ async function persistNote(
   return true
 }
 
+export async function listFeedbackNotes(
+  env: FeedbackEnv,
+): Promise<StoredFeedback[]> {
+  if (!env.SOUVENIRS) return []
+  const rawIndex = await env.SOUVENIRS.get(INDEX_KEY)
+  if (!rawIndex) return []
+  let ids: string[] = []
+  try {
+    const parsed = JSON.parse(rawIndex) as unknown
+    if (Array.isArray(parsed)) {
+      ids = parsed.filter((item): item is string => typeof item === 'string')
+    }
+  } catch {
+    return []
+  }
+  const notes: StoredFeedback[] = []
+  for (const id of ids.slice(0, NOTE_CAP)) {
+    const raw = await env.SOUVENIRS.get(`${NOTE_PREFIX}${id}`)
+    if (!raw) continue
+    try {
+      const parsed = JSON.parse(raw) as Partial<StoredFeedback>
+      if (typeof parsed.comment !== 'string') continue
+      notes.push({
+        id: typeof parsed.id === 'string' ? parsed.id : id,
+        createdAt:
+          typeof parsed.createdAt === 'string'
+            ? parsed.createdAt
+            : new Date().toISOString(),
+        comment: parsed.comment,
+        email: typeof parsed.email === 'string' ? parsed.email : '',
+        source: typeof parsed.source === 'string' ? parsed.source : '',
+        emailed: Boolean(parsed.emailed),
+        mail: parsed.mail,
+      })
+    } catch {
+      continue
+    }
+  }
+  return notes
+}
+
 async function sendMail(
   env: FeedbackEnv,
   comment: string,
   email: string,
   source: string,
-): Promise<boolean> {
-  if (!env.RESEND_API_KEY) return false
-  const to = recipients(env)
-  const from = sendingFrom(env, to)
+): Promise<StoredFeedback['mail'] & { ok: boolean }> {
+  if (!env.RESEND_API_KEY) {
+    return { ok: false, from: NOTES_FROM, to: [CONTACT_TO], status: 0 }
+  }
+  // Send to hello@ from a different local-part. Cloudflare Email Routing
+  // drops mail from hello@ to hello@, and AOL has been dropping Resend
+  // when it is addressed there directly.
+  const from = NOTES_FROM
+  const to = [CONTACT_TO]
   const replyLine = email
     ? `They asked for a reply at ${email}.`
     : 'They did not leave an email.'
@@ -127,24 +162,29 @@ async function sendMail(
     },
     body: JSON.stringify(payload),
   })
-  if (res.ok) return true
-
-  // notes@ is unverified on some Resend setups. Retry from hello@ to the
-  // forwarded inbox, never from hello@ to hello@ (Cloudflare drops that loop).
-  const owner = inboxOwner(env)
-  const configured = env.RESEND_FROM?.trim()
-  if (!owner || !configured || addressOf(configured) === owner) return false
-  payload.from = configured
-  payload.to = [owner]
-  const retry = await fetch('https://api.resend.com/emails', {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${env.RESEND_API_KEY}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(payload),
-  })
-  return retry.ok
+  const raw = await res.text()
+  let parsed: { id?: string; message?: string; error?: { message?: string } } =
+    {}
+  try {
+    parsed = JSON.parse(raw) as typeof parsed
+  } catch {
+    parsed = {}
+  }
+  const error =
+    parsed.error?.message ||
+    parsed.message ||
+    (res.ok ? undefined : raw.slice(0, 300))
+  console.log(
+    `feedback-mail status=${res.status} from=${from} to=${to.join(',')} id=${parsed.id ?? ''} error=${error ?? ''}`,
+  )
+  return {
+    ok: res.ok,
+    from,
+    to,
+    status: res.status,
+    id: parsed.id,
+    error,
+  }
 }
 
 export async function handleFeedback(
@@ -191,11 +231,22 @@ export async function handleFeedback(
   }
 
   const source = String(body.source ?? '').trim()
-  let emailed = false
+  let mail: StoredFeedback['mail'] & { ok: boolean } = {
+    ok: false,
+    from: NOTES_FROM,
+    to: [CONTACT_TO],
+    status: 0,
+  }
   try {
-    emailed = await sendMail(env, comment, email, source)
+    mail = await sendMail(env, comment, email, source)
   } catch {
-    emailed = false
+    mail = {
+      ok: false,
+      from: NOTES_FROM,
+      to: [CONTACT_TO],
+      status: 0,
+      error: 'send failed',
+    }
   }
 
   const note: StoredFeedback = {
@@ -204,13 +255,26 @@ export async function handleFeedback(
     comment,
     email,
     source,
-    emailed,
+    emailed: mail.ok,
+    mail: {
+      from: mail.from,
+      to: mail.to,
+      status: mail.status,
+      id: mail.id,
+      error: mail.error,
+    },
   }
   try {
     await persistNote(env, note)
   } catch {
-    // Mail already went out. A missed KV copy should not fail the visitor.
+    // Keep going. Email success is what the visitor cares about.
   }
 
+  if (!mail.ok) {
+    return json(
+      { error: 'Could not send that note. Try hello@memorymap.world.' },
+      502,
+    )
+  }
   return json({ ok: true })
 }

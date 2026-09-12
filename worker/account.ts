@@ -1,16 +1,28 @@
 import type { AuthEnv } from './auth.ts'
 import { PREVIEW_GRANT_CREDITS } from '../src/creditPacks.ts'
 import {
+  isFeedbackInbox,
+  listFeedbackNotes,
+} from './feedback.ts'
+import {
   applyPurchase,
   ensureAccount,
   keepMap,
   publicAccount,
+  type LedgerAccount,
   type LedgerEnv,
 } from './ledger.ts'
 import { cookieHeader, emailFromRequest } from './session.ts'
 
 export type AccountEnv = AuthEnv & LedgerEnv & {
   PADDLE_SANDBOX?: string
+}
+
+function accountPayload(account: LedgerAccount, env: AccountEnv) {
+  return {
+    ...publicAccount(account),
+    inbox: isFeedbackInbox(account.email, env),
+  }
 }
 
 function json(data: unknown, status = 200): Response {
@@ -46,7 +58,7 @@ export async function handleAccount(
     try {
       const email = await emailFromRequest(request, env.AUTH_SECRET)
       const account = await ensureAccount(env, email)
-      return json(publicAccount(account))
+      return json(accountPayload(account, env))
     } catch (err) {
       return json(
         {
@@ -91,7 +103,7 @@ export async function handleAccount(
       })
       return json({
         spent: result.spent,
-        ...publicAccount(result.account),
+        ...accountPayload(result.account, env),
       })
     } catch (err) {
       const code = (err as { code?: string } | null)?.code
@@ -119,7 +131,7 @@ export async function handleAccount(
       const email = await emailFromRequest(request, env.AUTH_SECRET)
       const existing = await ensureAccount(env, email)
       if (existing.credits > 0) {
-        return json(publicAccount(existing))
+        return json(accountPayload(existing, env))
       }
       const account = await applyPurchase(env, email, {
         id: `preview-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`,
@@ -128,7 +140,7 @@ export async function handleAccount(
         usd: 0,
         createdAt: new Date().toISOString(),
       })
-      return json(publicAccount(account))
+      return json(accountPayload(account, env))
     } catch (err) {
       return json(
         {
@@ -153,12 +165,40 @@ export async function handleAccount(
         usd: 0,
         createdAt: new Date().toISOString(),
       })
-      return json(publicAccount(account))
+      return json(accountPayload(account, env))
     } catch (err) {
       return json(
         {
           error:
             err instanceof Error ? err.message : 'Could not add credits.',
+        },
+        statusFor(err),
+      )
+    }
+  }
+
+  if (url.pathname === '/api/account/feedback-notes' && request.method === 'GET') {
+    try {
+      const email = await emailFromRequest(request, env.AUTH_SECRET)
+      if (!isFeedbackInbox(email, env)) {
+        return json({ error: 'Not found.' }, 404)
+      }
+      const notes = await listFeedbackNotes(env)
+      return json({
+        notes: notes.map((note) => ({
+          id: note.id,
+          createdAt: note.createdAt,
+          comment: note.comment,
+          email: note.email,
+          source: note.source,
+          emailed: note.emailed,
+        })),
+      })
+    } catch (err) {
+      return json(
+        {
+          error:
+            err instanceof Error ? err.message : 'Sign in to continue.',
         },
         statusFor(err),
       )

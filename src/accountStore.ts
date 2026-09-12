@@ -35,6 +35,7 @@ export type AccountRecord = {
   credits: number
   purchases: Purchase[]
   library: LibraryItem[]
+  inbox: boolean
 }
 
 type PendingLink = {
@@ -186,6 +187,7 @@ function applyServerAccount(data: Record<string, unknown>): AccountRecord {
           .map(asLibraryItem)
           .filter((item): item is LibraryItem => Boolean(item))
       : [],
+    inbox: Boolean(data.inbox),
   }
   persisted = {
     ...persisted,
@@ -349,5 +351,47 @@ export function formatWhen(iso: string): string {
     month: 'short',
     day: 'numeric',
     year: 'numeric',
+  })
+}
+
+export type FeedbackInboxNote = {
+  id: string
+  createdAt: string
+  comment: string
+  email: string
+  source: string
+  emailed: boolean
+}
+
+export async function fetchFeedbackNotes(): Promise<FeedbackInboxNote[]> {
+  const res = await fetch('/api/account/feedback-notes', {
+    credentials: 'same-origin',
+  })
+  const data = await readJson(res)
+  if (!res.ok) {
+    throw new Error(
+      typeof data.error === 'string'
+        ? data.error
+        : 'Could not load feedback notes.',
+    )
+  }
+  if (!Array.isArray(data.notes)) return []
+  return data.notes.flatMap((row) => {
+    if (!row || typeof row !== 'object') return []
+    const note = row as Partial<FeedbackInboxNote>
+    if (typeof note.id !== 'string' || typeof note.comment !== 'string') {
+      return []
+    }
+    return [
+      {
+        id: note.id,
+        createdAt:
+          typeof note.createdAt === 'string' ? note.createdAt : nowIso(),
+        comment: note.comment,
+        email: typeof note.email === 'string' ? note.email : '',
+        source: typeof note.source === 'string' ? note.source : '',
+        emailed: Boolean(note.emailed),
+      },
+    ]
   })
 }
