@@ -157,8 +157,11 @@ async function sendResend(
   email: string,
   link: string,
 ): Promise<void> {
+  const owner = env.FEEDBACK_TO?.trim().toLowerCase() ?? ''
   const from =
-    env.RESEND_FROM?.trim() || 'MemoryMap <onboarding@resend.dev>'
+    email.trim().toLowerCase() === owner
+      ? 'MemoryMap <onboarding@resend.dev>'
+      : env.RESEND_FROM?.trim() || 'MemoryMap <onboarding@resend.dev>'
   const res = await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: {

@@ -63,6 +63,8 @@ People sign themselves in. You do not create users. Two accounts you open once, 
 
 Until Resend is connected, the live **Email me a link** button will say email isn’t connected yet.
 
+To test sign-in mail on the live site, use the same address as `FEEDBACK_TO`. That mailbox gets the link from `onboarding@resend.dev` (the From that actually arrives). Other addresses still use `RESEND_FROM`. Locally, `ALLOW_DEV_LINKS=1` also prints the link on the page so you can click it without waiting for mail.
+
 ### Google
 
 1. In [Google Cloud Console](https://console.cloud.google.com/apis/credentials) create an OAuth client ID of type **Web application**.
