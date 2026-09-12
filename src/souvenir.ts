@@ -257,6 +257,7 @@ const RUNTIME = `
     var fill = "rgba(" + rgb.r + ", " + rgb.g + ", " + rgb.b + ", 0.5)";
     var lum = (0.2126 * rgb.r + 0.7152 * rgb.g + 0.0722 * rgb.b) / 255;
     el.style.setProperty("--label-fill", fill);
+    el.style.backgroundColor = fill;
     el.style.setProperty("--label-ink", lum > 0.62 ? "#16302c" : "#eef5f2");
     el.classList.toggle("is-active", active);
     el.classList.toggle("is-fading", fading);
@@ -752,11 +753,11 @@ body {
 .leaflet-tooltip.mm-label {
   --label-fill: rgba(31, 122, 106, 0.5);
   --label-ink: #eef5f2;
-  background: var(--label-fill);
+  background: var(--label-fill) !important;
   color: var(--label-ink);
   border: 1px solid var(--label-fill);
   border-radius: 6px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.16);
+  box-shadow: none;
   font: 600 13px Palatino, Georgia, serif;
   padding: 4px 8px;
   white-space: nowrap;

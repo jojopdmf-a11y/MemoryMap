@@ -1682,11 +1682,11 @@ a.ghost:hover {
 .leaflet-tooltip.mm-label {
   --label-fill: rgba(31, 122, 106, 0.5);
   --label-ink: #eef5f2;
-  background: var(--label-fill);
+  background: var(--label-fill) !important;
   color: var(--label-ink);
   border: 1px solid var(--label-fill);
   border-radius: 6px;
-  box-shadow: 0 2px 8px color-mix(in srgb, var(--ink) 16%, transparent);
+  box-shadow: none;
   font-family: var(--serif);
   font-size: 13px;
   font-weight: 600;

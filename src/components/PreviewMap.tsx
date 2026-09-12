@@ -288,6 +288,7 @@ function paintLabel(
 ) {
   const fill = pinFill(pinColor, labelFillAlpha(tone))
   el.style.setProperty('--label-fill', fill)
+  el.style.backgroundColor = fill
   el.style.setProperty('--label-ink', pinInk(pinColor))
   el.classList.toggle('is-active', mode !== 'hidden' && tone === 'active')
   el.classList.toggle('is-fading', mode === 'play' && tone === 'fading')
