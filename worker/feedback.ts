@@ -30,7 +30,7 @@ const CONTACT_TO = 'hello@memorymap.world'
 const INDEX_KEY = 'feedback:v1:index'
 const NOTE_PREFIX = 'feedback:v1:note:'
 const NOTE_CAP = 200
-const NOTES_FROM = 'MemoryMap <notes@memorymap.world>'
+const RESEND_TEST_FROM = 'MemoryMap <onboarding@resend.dev>'
 const CORS = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
@@ -132,13 +132,15 @@ async function sendMail(
   source: string,
 ): Promise<StoredFeedback['mail'] & { ok: boolean }> {
   if (!env.RESEND_API_KEY) {
-    return { ok: false, from: NOTES_FROM, to: [CONTACT_TO], status: 0 }
+    return { ok: false, from: RESEND_TEST_FROM, to: [CONTACT_TO], status: 0 }
   }
-  // Send to hello@ from a different local-part. Cloudflare Email Routing
-  // drops mail from hello@ to hello@, and AOL has been dropping Resend
-  // when it is addressed there directly.
-  const from = NOTES_FROM
-  const to = [CONTACT_TO]
+  // Resend's testing From can only deliver to the account mailbox. Sending
+  // from @memorymap.world is accepted, then dropped by Cloudflare/AOL.
+  const owner = env.FEEDBACK_TO?.trim().toLowerCase() ?? ''
+  const to = EMAIL_RE.test(owner) ? [owner] : [CONTACT_TO]
+  const from = EMAIL_RE.test(owner)
+    ? RESEND_TEST_FROM
+    : env.RESEND_FROM?.trim() || RESEND_TEST_FROM
   const replyLine = email
     ? `They asked for a reply at ${email}.`
     : 'They did not leave an email.'
@@ -233,7 +235,7 @@ export async function handleFeedback(
   const source = String(body.source ?? '').trim()
   let mail: StoredFeedback['mail'] & { ok: boolean } = {
     ok: false,
-    from: NOTES_FROM,
+    from: RESEND_TEST_FROM,
     to: [CONTACT_TO],
     status: 0,
   }
@@ -242,7 +244,7 @@ export async function handleFeedback(
   } catch {
     mail = {
       ok: false,
-      from: NOTES_FROM,
+      from: RESEND_TEST_FROM,
       to: [CONTACT_TO],
       status: 0,
       error: 'send failed',

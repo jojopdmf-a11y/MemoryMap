@@ -59,7 +59,7 @@ People sign themselves in. You do not create users. Two accounts you open once, 
    - `AUTH_SECRET` — a long random string, marked secret
    - `RESEND_API_KEY` — your Resend API key, marked secret
    - `RESEND_FROM` — `MemoryMap <hello@memorymap.world>` after the domain is verified
-   - `FEEDBACK_TO` — your sign-in email, marked secret. That account can read form notes under Account. Mail still goes to `hello@memorymap.world`.
+   - `FEEDBACK_TO` — your sign-in email, marked secret. Form notes are emailed there from Resend’s test sender (`onboarding@resend.dev`) until `memorymap.world` mail actually lands. That account can also read notes under Account.
 
 Until Resend is connected, the live **Email me a link** button will say email isn’t connected yet.
 
@@ -135,6 +135,6 @@ npx wrangler deploy
 
 If Git deploy ever breaks, reconnect the repo in Cloudflare: Workers & Pages → `memorymap` → Settings → Builds.
 
-`hello@memorymap.world` is forwarded with Cloudflare Email Routing. Form notes are sent from `notes@memorymap.world` to `hello@` so Cloudflare does not drop a hello-to-hello loop. A copy is also stored so you can read notes while signed in.
+`hello@memorymap.world` is forwarded with Cloudflare Email Routing for people who write you directly. The in-app form cannot use that path yet: Resend mail from `@memorymap.world` is accepted, then dropped. Form notes are emailed from `onboarding@resend.dev` to `FEEDBACK_TO`, and a copy is stored so you can read them under Account.
 
 After nameservers move off Porkbun, keep the Cloudflare Email Routing MX records. Porkbun forwarding will not keep working on Cloudflare DNS unless you copy those MX records.
