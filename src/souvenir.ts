@@ -703,7 +703,8 @@ body {
   align-content: start;
   gap: 6px;
 }
-.mm-play-rail button {
+.mm-play-rail button,
+.mm-play-rail a.mm-instagram {
   font-family: inherit;
   font-size: 14px;
   padding: 8px 10px;
@@ -715,6 +716,16 @@ body {
   width: 100%;
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
+}
+.mm-play-rail a.mm-instagram {
+  display: block;
+  box-sizing: border-box;
+  text-align: center;
+  text-decoration: none;
+}
+.mm-play-rail a.mm-instagram:hover {
+  color: var(--terra);
+  border-color: var(--terra);
 }
 .mm-play-rail button#mm-play {
   background: var(--terra);
@@ -835,10 +846,7 @@ body {
   color: var(--terra);
 }
 .mm-kicker a {
-  color: inherit;
-  text-decoration: none;
-}
-.mm-kicker a:hover {
+  color: var(--terra);
   text-decoration: underline;
   text-underline-offset: 2px;
 }
@@ -927,11 +935,9 @@ body {
   color: var(--muted);
 }
 .mm-credit a {
-  color: inherit;
-  text-underline-offset: 2px;
-}
-.mm-credit a:hover {
   color: var(--terra);
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
 .mm-note {
   display: flex;
@@ -1138,13 +1144,14 @@ body {
 </head>
 <body>
   <div class="mm-workspace">
-    <nav class="mm-play-rail" aria-label="Playback">
+    <nav class="mm-play-rail" aria-label="Map controls">
       <button type="button" id="mm-play" aria-pressed="false">Play tour</button>
       <button type="button" id="mm-reset">Reset</button>
       <button type="button" id="mm-locations" aria-pressed="false" disabled title="Available after the tour finishes">Locations</button>
       <button type="button" id="mm-share">Share</button>
       <button type="button" id="mm-copy">Copy link</button>
       <button type="button" id="mm-save">Save file</button>
+      <a class="mm-instagram" href="${escapeHtml(INSTAGRAM_URL)}" target="_blank" rel="noopener noreferrer">Instagram</a>
     </nav>
     <div class="mm-stage">
       <div id="map"></div>
