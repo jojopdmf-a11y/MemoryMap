@@ -52,6 +52,7 @@ const RUNTIME = `
   L.tileLayer(tiles.url, layerOpts).addTo(map);
   function kickMap() {
     try { map.invalidateSize(); } catch (err) {}
+    try { layoutLabels(); } catch (err) {}
   }
   kickMap();
   window.addEventListener("load", kickMap);
@@ -59,6 +60,8 @@ const RUNTIME = `
   window.addEventListener("resize", kickMap);
   window.setTimeout(kickMap, 200);
   window.setTimeout(kickMap, 800);
+  map.on("zoomend", layoutLabels);
+  map.on("moveend", layoutLabels);
 
   var layer = L.layerGroup().addTo(map);
   var markers = [];
@@ -251,14 +254,74 @@ const RUNTIME = `
     var el = tip.getElement && tip.getElement();
     if (!el) return;
     var rgb = pinRgb(look.pinColor);
-    var alpha = active ? 0.72 : 0.5;
-    var fill = "rgba(" + rgb.r + ", " + rgb.g + ", " + rgb.b + ", " + alpha + ")";
+    var fill = "rgba(" + rgb.r + ", " + rgb.g + ", " + rgb.b + ", 0.5)";
     var lum = (0.2126 * rgb.r + 0.7152 * rgb.g + 0.0722 * rgb.b) / 255;
     el.style.setProperty("--label-fill", fill);
     el.style.setProperty("--label-ink", lum > 0.62 ? "#16302c" : "#eef5f2");
     el.classList.toggle("is-active", active);
     el.classList.toggle("is-fading", fading);
     el.classList.toggle("is-hidden", hidden);
+    el.classList.remove("is-crowded");
+  }
+
+  var LABEL_DIRS = [
+    { direction: "right", offset: [10, 0] },
+    { direction: "left", offset: [-10, 0] },
+    { direction: "top", offset: [0, -12] },
+    { direction: "bottom", offset: [0, 12] }
+  ];
+
+  function layoutLabels() {
+    if (!markers) return;
+    var mapBox = map.getContainer().getBoundingClientRect();
+    var placed = [];
+    var mode = tourDone() ? (showLocations ? "all" : "hidden") : "play";
+    for (var i = markers.length - 1; i >= 0; i--) {
+      var m = markers[i];
+      var tip = m.getTooltip && m.getTooltip();
+      var el = tip && tip.getElement && tip.getElement();
+      if (!el || !tip) continue;
+      var age = revealed - (i + 1);
+      var fading = mode === "play" && age >= 2;
+      var hidden = mode === "hidden";
+      var shown = !hidden && !fading;
+      el.classList.remove("is-crowded");
+      if (!shown) continue;
+      tip.setOpacity(1);
+      var found = false;
+      for (var d = 0; d < LABEL_DIRS.length; d++) {
+        var dir = LABEL_DIRS[d];
+        tip.options.direction = dir.direction;
+        tip.options.offset = L.point(dir.offset[0], dir.offset[1]);
+        if (typeof tip._updatePosition === "function") tip._updatePosition();
+        var rect = el.getBoundingClientRect();
+        if (rect.width < 2 || rect.height < 2) continue;
+        var hit = false;
+        for (var p = 0; p < placed.length; p++) {
+          if (rectsOverlap(rect, placed[p])) { hit = true; break; }
+        }
+        var inside =
+          rect.left >= mapBox.left + 6 &&
+          rect.right <= mapBox.right - 6 &&
+          rect.top >= mapBox.top + 6 &&
+          rect.bottom <= mapBox.bottom - 6;
+        if (!hit && inside) {
+          placed.push(rect);
+          found = true;
+          break;
+        }
+      }
+      if (!found) {
+        el.classList.add("is-crowded");
+        tip.setOpacity(0);
+      }
+    }
+  }
+
+  function rectsOverlap(a, b, gap) {
+    gap = gap == null ? 6 : gap;
+    return a.left < b.right + gap && a.right + gap > b.left &&
+      a.top < b.bottom + gap && a.bottom + gap > b.top;
   }
 
   function syncLocationsBtn() {
@@ -371,6 +434,9 @@ const RUNTIME = `
       list.scrollTop = Math.max(0, top);
     }
     syncLocationsBtn();
+    requestAnimationFrame(function () {
+      requestAnimationFrame(layoutLabels);
+    });
   }
 
   playBtn.addEventListener("click", function () {
@@ -621,7 +687,7 @@ body {
 .mm-stage {
   position: relative;
   flex: 0 0 auto;
-  width: min(calc((100vh - 16px) * 16 / 10), calc(100vw - 16px - 9.75rem));
+  width: min(calc((100vh - 16px) * 16 / 10), calc(100vw - 16px - 19rem));
   aspect-ratio: 16 / 10;
   height: auto;
   margin: 0;
@@ -629,6 +695,37 @@ body {
   overflow: hidden;
   border-radius: 16px;
 }
+.mm-play-rail {
+  flex: 0 0 8.75rem;
+  width: 8.75rem;
+  display: grid;
+  align-content: start;
+  gap: 6px;
+}
+.mm-play-rail button {
+  font-family: inherit;
+  font-size: 14px;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--ink);
+  cursor: pointer;
+  border-radius: 10px;
+  width: 100%;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+.mm-play-rail button#mm-play {
+  background: var(--terra);
+  color: var(--paper);
+  border-color: var(--terra);
+}
+.mm-play-rail button#mm-locations[aria-pressed="true"] {
+  background: var(--terra);
+  color: var(--paper);
+  border-color: var(--terra);
+}
+.mm-play-rail button:disabled { opacity: 0.4; cursor: default; }
 .mm-rail {
   flex: 0 0 9.5rem;
   width: 9.5rem;
@@ -641,7 +738,7 @@ body {
   width: auto;
 }
 .mm-workspace.is-note-gone .mm-stage {
-  width: min(calc((100vh - 16px) * 16 / 10), calc(100vw - 16px - 5.5rem));
+  width: min(calc((100vh - 16px) * 16 / 10), calc(100vw - 16px - 14.5rem));
 }
 #map {
   position: absolute;
@@ -653,7 +750,7 @@ body {
 }
 .leaflet-container { font-family: inherit; background: var(--map-bg); }
 .leaflet-tooltip.mm-label {
-  --label-fill: rgba(31, 122, 106, 0.72);
+  --label-fill: rgba(31, 122, 106, 0.5);
   --label-ink: #eef5f2;
   background: var(--label-fill);
   color: var(--label-ink);
@@ -668,11 +765,15 @@ body {
 .leaflet-tooltip.mm-label.is-fading {
   pointer-events: none;
 }
-.leaflet-tooltip.mm-label.is-hidden {
+.leaflet-tooltip.mm-label.is-hidden,
+.leaflet-tooltip.mm-label.is-crowded {
   pointer-events: none;
   opacity: 0 !important;
 }
 .leaflet-tooltip-right.mm-label::before { border-right-color: var(--label-fill); }
+.leaflet-tooltip-left.mm-label::before { border-left-color: var(--label-fill); }
+.leaflet-tooltip-top.mm-label::before { border-top-color: var(--label-fill); }
+.leaflet-tooltip-bottom.mm-label::before { border-bottom-color: var(--label-fill); }
 .mm-date {
   position: absolute;
   z-index: 600;
@@ -722,8 +823,8 @@ body {
   grid-template-columns: 1fr auto;
   gap: 12px 20px;
   align-items: end;
-  padding: 14px 20px 12px;
-  border-bottom: 1px solid var(--line);
+  padding: 14px 20px 8px;
+  border-bottom: none;
 }
 .mm-kicker {
   margin: 0 0 4px;
@@ -765,42 +866,12 @@ body {
 }
 .mm-now-title { margin: 0; font-size: 16px; }
 .mm-now-meta { margin: 2px 0 0; color: var(--muted); font-size: 13px; }
-.mm-controls {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  align-items: center;
-  grid-column: 1 / -1;
-}
-.mm-controls button {
-  font-family: inherit;
-  font-size: 14px;
-  padding: 8px 12px;
-  border: 1px solid var(--line);
-  background: transparent;
-  color: var(--ink);
-  cursor: pointer;
-  border-radius: 10px;
-  touch-action: manipulation;
-  -webkit-tap-highlight-color: transparent;
-}
-.mm-controls button#mm-play {
-  background: var(--terra);
-  color: var(--paper);
-  border-color: var(--terra);
-}
-.mm-controls button#mm-locations[aria-pressed="true"] {
-  background: var(--terra);
-  color: var(--paper);
-  border-color: var(--terra);
-}
-.mm-controls button:disabled { opacity: 0.4; cursor: default; }
 .mm-scrub-wrap {
   display: flex;
   align-items: center;
   gap: 10px;
-  flex: 1 1 180px;
-  min-width: 140px;
+  padding: 0 20px 12px;
+  border-bottom: 1px solid var(--line);
   font-size: 13px;
   color: var(--muted);
 }
@@ -1025,6 +1096,11 @@ body {
     flex-direction: column;
     align-items: center;
   }
+  .mm-play-rail {
+    flex: none;
+    width: min(100%, 22rem);
+    grid-template-columns: repeat(3, 1fr);
+  }
   .mm-stage {
     width: min(100%, calc((100vh - 16px) * 16 / 10));
   }
@@ -1046,6 +1122,14 @@ body {
 </head>
 <body>
   <div class="mm-workspace">
+    <nav class="mm-play-rail" aria-label="Playback">
+      <button type="button" id="mm-play" aria-pressed="false">Play tour</button>
+      <button type="button" id="mm-reset">Reset</button>
+      <button type="button" id="mm-locations" aria-pressed="false" disabled title="Available after the tour finishes">Locations</button>
+      <button type="button" id="mm-share">Share</button>
+      <button type="button" id="mm-copy">Copy link</button>
+      <button type="button" id="mm-save">Save file</button>
+    </nav>
     <div class="mm-stage">
       <div id="map"></div>
       <aside class="mm-date" id="mm-date" hidden>
@@ -1097,19 +1181,11 @@ body {
         <p class="mm-now-meta" id="mm-now-meta">${escapeHtml(count)} waiting</p>
       </div>
     </div>
-    <div class="mm-controls">
-      <button type="button" id="mm-play" aria-pressed="false">Play tour</button>
-      <button type="button" id="mm-reset">Reset</button>
-      <button type="button" id="mm-locations" aria-pressed="false" disabled title="Available after the tour finishes">Locations</button>
-      <label class="mm-scrub-wrap">
-        <span id="mm-scrub-label">0 / ${stops.length}</span>
-        <input id="mm-scrub" type="range" min="0" max="${stops.length}" value="0" aria-label="Scrub through the route" />
-      </label>
-      <button type="button" id="mm-share">Share</button>
-      <button type="button" id="mm-copy">Copy link</button>
-      <button type="button" id="mm-save">Save file</button>
-    </div>
   </header>
+  <label class="mm-scrub-wrap">
+    <span id="mm-scrub-label">0 / ${stops.length}</span>
+    <input id="mm-scrub" type="range" min="0" max="${stops.length}" value="0" aria-label="Scrub through the route" />
+  </label>
   <ol class="mm-list" id="mm-list"></ol>
   <p class="mm-credit">A MemoryMap souvenir · tiles need the internet</p>
   <script type="application/json" id="memorymap-trip">${payload}</script>

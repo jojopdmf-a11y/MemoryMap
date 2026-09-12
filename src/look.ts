@@ -231,8 +231,7 @@ export function labelOpacity(tone: LabelTone, mode: LabelMode = 'play'): number 
   return 1
 }
 
-export function labelFillAlpha(tone: LabelTone): number {
-  if (tone === 'active') return 0.72
+export function labelFillAlpha(_tone: LabelTone): number {
   return 0.5
 }
 

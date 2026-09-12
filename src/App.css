@@ -1680,7 +1680,7 @@ a.ghost:hover {
 }
 
 .leaflet-tooltip.mm-label {
-  --label-fill: rgba(31, 122, 106, 0.72);
+  --label-fill: rgba(31, 122, 106, 0.5);
   --label-ink: #eef5f2;
   background: var(--label-fill);
   color: var(--label-ink);
@@ -1697,16 +1697,27 @@ a.ghost:hover {
 }
 
 .leaflet-tooltip.mm-label.is-fading,
-.leaflet-tooltip.mm-label.is-hidden {
+.leaflet-tooltip.mm-label.is-hidden,
+.leaflet-tooltip.mm-label.is-crowded {
   pointer-events: none;
 }
 
-.leaflet-tooltip.mm-label.is-hidden {
+.leaflet-tooltip.mm-label.is-hidden,
+.leaflet-tooltip.mm-label.is-crowded {
   opacity: 0 !important;
 }
 
 .leaflet-tooltip-right.mm-label::before {
   border-right-color: var(--label-fill);
+}
+.leaflet-tooltip-left.mm-label::before {
+  border-left-color: var(--label-fill);
+}
+.leaflet-tooltip-top.mm-label::before {
+  border-top-color: var(--label-fill);
+}
+.leaflet-tooltip-bottom.mm-label::before {
+  border-bottom-color: var(--label-fill);
 }
 
 .leaflet-container {

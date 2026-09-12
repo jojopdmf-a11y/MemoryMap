@@ -16,6 +16,7 @@ import {
   type Look,
 } from '../look'
 import { pathThroughStops, type LatLng } from '../route'
+import { layoutStopLabels } from '../labelLayout'
 import type { Stop } from '../types'
 
 type Props = {
@@ -233,6 +234,40 @@ export function PreviewMap({
       layer.removeLayer(pathRef.current)
       pathRef.current = null
     }
+
+    const runLayout = () => {
+      if (!mapRef.current) return
+      const items = [...visible]
+        .reverse()
+        .map((stop, reverseIndex) => {
+          const index = visible.length - 1 - reverseIndex
+          const marker = markersRef.current.get(stop.id)
+          if (!marker) return null
+          const tone = labelTone(index, revealed, labelMode)
+          const shown =
+            Boolean(pinLabelText(
+              {
+                title: stop.title,
+                date: stop.date ? formatDate(stop.date, stop.dateRaw) : stop.dateRaw,
+                place: stop.place,
+                notes: stop.notes,
+              },
+              look.fields,
+            )) &&
+            labelMode !== 'hidden' &&
+            tone !== 'fading'
+          return { marker, visible: shown }
+        })
+        .filter((row): row is { marker: L.Marker; visible: boolean } => Boolean(row))
+      layoutStopLabels(map, items)
+    }
+    requestAnimationFrame(() => requestAnimationFrame(runLayout))
+    map.on('zoomend', runLayout)
+    map.on('moveend', runLayout)
+    return () => {
+      map.off('zoomend', runLayout)
+      map.off('moveend', runLayout)
+    }
   }, [stops, look, revealed, roads, labelMode])
 
   return (
@@ -257,6 +292,7 @@ function paintLabel(
   el.classList.toggle('is-active', mode !== 'hidden' && tone === 'active')
   el.classList.toggle('is-fading', mode === 'play' && tone === 'fading')
   el.classList.toggle('is-hidden', mode === 'hidden')
+  el.classList.remove('is-crowded')
 }
 
 function syncTooltip(
