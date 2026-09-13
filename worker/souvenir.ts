@@ -1,5 +1,7 @@
 import { hasKeptFingerprint } from './ledger.ts'
 import { emailFromRequest, sessionTokenFromRequest } from './session.ts'
+import { souvenirShareImage } from './shareCard.ts'
+import { withShareMeta } from './shareMeta.ts'
 
 export type SouvenirStore = {
   get: (key: string) => Promise<string | null>
@@ -52,6 +54,23 @@ export async function handleSouvenir(
   env: SouvenirEnv,
 ): Promise<Response | null> {
   const url = new URL(request.url)
+  const card = url.pathname.match(/^\/s\/([0-9a-f]{32})\/og\.png$/)
+  if (card) {
+    if (request.method !== 'GET' && request.method !== 'HEAD') {
+      return json({ error: 'Not found.' }, 404)
+    }
+    const id = card[1]
+    if (!ID_RE.test(id) || !env.SOUVENIRS) {
+      return json({ error: 'That map is not here.' }, 404)
+    }
+    const html = await env.SOUVENIRS.get(id)
+    if (!html) return json({ error: 'That map is not here.' }, 404)
+    const image = await souvenirShareImage(html)
+    if (request.method === 'HEAD') {
+      return new Response(null, { status: image.status, headers: image.headers })
+    }
+    return image
+  }
   const view = url.pathname.match(/^\/s\/([0-9a-f]{32})\/?$/)
   if (view) {
     if (request.method !== 'GET' && request.method !== 'HEAD') {
@@ -63,7 +82,19 @@ export async function handleSouvenir(
     }
     const html = await env.SOUVENIRS.get(id)
     if (!html) return json({ error: 'That map is not here.' }, 404)
-    return souvenirResponse(html)
+    const canonical = new URL(`/s/${id}`, url.origin).href
+    const image = new URL(`/s/${id}/og.png`, url.origin).href
+    const page = withShareMeta(html, canonical, image)
+    if (request.method === 'HEAD') {
+      return new Response(null, {
+        status: 200,
+        headers: {
+          'Content-Type': 'text/html; charset=utf-8',
+          'Cache-Control': 'public, max-age=300',
+        },
+      })
+    }
+    return souvenirResponse(page)
   }
 
   if (url.pathname !== '/api/souvenir') return null

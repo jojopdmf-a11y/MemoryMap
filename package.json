@@ -14,6 +14,7 @@
     "deploy": "npm run build && npx wrangler deploy"
   },
   "dependencies": {
+    "cf-workers-og": "^3.0.1",
     "leaflet": "^1.9.4",
     "papaparse": "^5.7.0",
     "react": "^19.2.8",
