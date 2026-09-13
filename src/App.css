@@ -1783,13 +1783,12 @@ a.ghost:hover {
   }
 
   .map-guide {
-    max-width: 36em;
-    justify-self: center;
+    display: none;
   }
 
   .map-feedback {
     max-width: 22rem;
-    align-self: center;
+    align-self: stretch;
     order: 3;
   }
 
@@ -1803,13 +1802,29 @@ a.ghost:hover {
 
   .map-stage .map-panel,
   .map-panel {
+    order: 1;
     width: 100%;
     aspect-ratio: 4 / 5;
     min-height: 280px;
   }
 
-  .topbar {
-    padding: 12px 16px 10px;
+  .app:not(.is-landing) .topbar {
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+  }
+
+  .app:not(.is-landing) .topbar-brand .tagline {
+    display: none;
+  }
+
+  .app:not(.is-landing) .topbar-guides {
+    display: none;
+  }
+
+  .app:not(.is-landing) .topbar-tools {
+    flex-wrap: nowrap;
+    gap: 8px;
   }
 
   .style-bar {

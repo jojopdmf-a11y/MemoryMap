@@ -340,7 +340,7 @@ export default function App() {
           <p className="tagline">Visualize Your Voyages, Treasure Your Travels.</p>
         </div>
         <div className="topbar-tools">
-          <a className="ghost" href="/guides/">
+          <a className="ghost topbar-guides" href="/guides/">
             Guides
           </a>
           {stops && (
