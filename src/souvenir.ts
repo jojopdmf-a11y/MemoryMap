@@ -1137,7 +1137,11 @@ body {
 }
 @media (max-width: 640px) {
   .mm-workspace { padding: 16px 12px 0; }
-  .mm-stage { width: calc(100% - 24px); min-height: 180px; }
+  .mm-stage {
+    width: calc(100% - 24px);
+    aspect-ratio: 4 / 5;
+    min-height: 280px;
+  }
   .mm-chrome { grid-template-columns: 1fr; }
 }
   </style>

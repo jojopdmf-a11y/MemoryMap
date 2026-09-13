@@ -78,12 +78,21 @@ export function DropZone({
                 e.target.value = ''
               }}
             />
-            <strong>{importing ? 'Reading spreadsheet…' : 'Drop a spreadsheet here'}</strong>
+            <strong className="drop-copy-wide">
+              {importing ? 'Reading spreadsheet…' : 'Drop a spreadsheet here'}
+            </strong>
+            <strong className="drop-copy-narrow">
+              {importing ? 'Reading spreadsheet…' : 'Choose a spreadsheet'}
+            </strong>
             <span>CSV or Excel · Numbers files need an Excel/CSV export</span>
-            <p className="drop-format">
+            <p className="drop-format drop-format-full">
               First row is the headers. Include a date and a place — city or
               street address, or city, state, and country. Title and notes are
               optional. Latitude and longitude are optional too; we can look up
+              the names.
+            </p>
+            <p className="drop-format drop-format-short">
+              First row is headers. Include a date and a place. We can look up
               the names.
             </p>
           </label>
