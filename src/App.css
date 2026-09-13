@@ -1962,8 +1962,25 @@ a.ghost:hover {
     padding: 8px 16px 36px;
   }
 
+  .landing-stage {
+    display: flex;
+    flex-direction: column;
+  }
+
   .brand-hero {
     margin-bottom: 16px;
+    order: 1;
+  }
+
+  .sample-trips {
+    overflow: visible;
+    margin: 0 0 22px;
+    padding-inline: 0;
+    order: 2;
+  }
+
+  .trip-start {
+    order: 3;
   }
 
   .brand-mark {
@@ -2011,12 +2028,6 @@ a.ghost:hover {
 
   .sheets-form {
     margin-top: 20px;
-  }
-
-  .sample-trips {
-    overflow: visible;
-    margin-inline: 0;
-    padding-inline: 0;
   }
 
   .sample-trip-grid {
