@@ -1,12 +1,16 @@
 /**
  * MemoryMap Template — Apps Script
  *
- * 1. In THIS spreadsheet: Extensions → Apps Script
- * 2. Delete any old code, paste THIS whole file, Save (disk icon)
- * 3. In the toolbar, choose function onOpen → click Run
- * 4. When Google asks, Allow permissions
- * 5. Close Apps Script, reload the spreadsheet tab
- * 6. Menu bar should show: MemoryMap → Send to MemoryMap
+ * Install once on the master template:
+ * 1. Extensions → Apps Script → paste this file → Save
+ * 2. Run onOpen once and Allow permissions
+ * 3. Reload the Sheet → MemoryMap menu appears
+ *
+ * Add a clickable button on the Sheet:
+ * 1. Insert → Drawing → make a rounded rectangle, text "Send to MemoryMap" → Save and Close
+ * 2. Click the drawing → ⋮ (three dots) → Assign script
+ * 3. Type exactly: sendToMemoryMap   (no spaces, no parentheses) → OK
+ * 4. Click the button to test (first click may ask for permission again)
  *
  * You do NOT need Deploy.
  */
