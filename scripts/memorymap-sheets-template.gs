@@ -30,8 +30,11 @@ function writeMemoryMapLink_() {
   var dest =
     'https://memorymap.world/?sheet=' + encodeURIComponent(ss.getUrl())
 
-  // Clear the old tip cell if a previous version wrote there.
-  sheet.getRange('G2').clearContent()
+  // Clean up leftovers from older script versions that used column G.
+  sheet.getRange('G1:G10').clearContent().clearFormat()
+  if (sheet.getMaxColumns() >= 7) {
+    sheet.hideColumns(7)
+  }
 
   var link = sheet.getRange(LINK_CELL)
   link.setFormula(
