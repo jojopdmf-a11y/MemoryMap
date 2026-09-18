@@ -289,9 +289,9 @@ export function DropZone({
             </a>
             <p>
               Opens Google Sheets and makes your own copy. Fill Date and
-              Location for each stop, share as “Anyone with the link can view,”
-              then paste that link below — or use Send to MemoryMap in the
-              Sheet.
+              Location for each stop, set Share → Anyone with the link → Viewer,
+              then click Open in MemoryMap in the Sheet (or paste the link
+              below).
             </p>
           </div>
           <form

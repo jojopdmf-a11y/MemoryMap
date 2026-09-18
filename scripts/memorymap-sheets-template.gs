@@ -1,57 +1,55 @@
 /**
- * MemoryMap Template — Apps Script
+ * MemoryMap Template — seamless return link (no permission prompts)
  *
- * Install once on the master template:
- * 1. Extensions → Apps Script → paste this file → Save
- * 2. Run onOpen once and Allow permissions
- * 3. Reload the Sheet → MemoryMap menu appears
+ * How it works:
+ * Google "simple" onOpen can edit THIS spreadsheet without asking the user
+ * to Allow anything. It writes a normal HYPERLINK into a cell. Clicking that
+ * cell opens MemoryMap with ?sheet=… — no menu, no Assign script, no DriveApp.
  *
- * Add a clickable button on the Sheet:
- * 1. Insert → Drawing → make a rounded rectangle, text "Send to MemoryMap" → Save and Close
- * 2. Click the drawing → ⋮ (three dots) → Assign script
- * 3. Type exactly: sendToMemoryMap   (no spaces, no parentheses) → OK
- * 4. Click the button to test (first click may ask for permission again)
+ * Install on the master template:
+ * 1. Extensions → Apps Script → replace Code.gs with this file → Save
+ * 2. Reload the spreadsheet once (optional: run onOpen from the editor)
+ * 3. You should see an "Open in MemoryMap" link (default: cell H2)
+ * 4. Remove any old drawing that used Assign script → sendToMemoryMap
  *
- * You do NOT need Deploy.
+ * Every visitor who File → Make a copy gets their own link auto-filled for
+ * their copy when they open it.
+ *
+ * You do NOT need Deploy. You do NOT need to Run → Allow.
  */
 
+var LINK_SHEET = 0 // first tab
+var LINK_CELL = 'H2'
+
 function onOpen() {
-  SpreadsheetApp.getUi()
-    .createMenu('MemoryMap')
-    .addItem('Send to MemoryMap', 'sendToMemoryMap')
-    .addToUi()
+  writeMemoryMapLink_()
 }
 
-function sendToMemoryMap() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet()
-  const ui = SpreadsheetApp.getUi()
+/** Safe to run manually from the Apps Script editor while testing. */
+function writeMemoryMapLink() {
+  writeMemoryMapLink_()
+}
 
-  // Prefer link-sharing so MemoryMap can read the file.
-  try {
-    DriveApp.getFileById(ss.getId()).setSharing(
-      DriveApp.Access.ANYONE_WITH_LINK,
-      DriveApp.Permission.VIEW,
-    )
-  } catch (err) {
-    ui.alert(
-      'Before sending: click Share → General access → Anyone with the link → Viewer. Then run Send to MemoryMap again.',
-    )
-    return
-  }
+function writeMemoryMapLink_() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet()
+  var sheet = ss.getSheets()[LINK_SHEET]
+  if (!sheet) return
 
-  const dest =
+  var dest =
     'https://memorymap.world/?sheet=' + encodeURIComponent(ss.getUrl())
 
-  // Popup blockers often kill window.open from Apps Script. Show a real link to click.
-  const html = HtmlService.createHtmlOutput(
-    '<div style="font:15px/1.4 Helvetica,Arial,sans-serif;padding:8px 4px">' +
-      '<p style="margin:0 0 14px">Your Sheet is ready. Click below to open it in MemoryMap:</p>' +
-      '<p style="margin:0"><a href="' +
-      dest.replace(/"/g, '&quot;') +
-      '" target="_blank" style="display:inline-block;padding:10px 16px;background:#1f7a6a;color:#fff;text-decoration:none;border-radius:8px;font-weight:700">Open in MemoryMap</a></p>' +
-      '</div>',
+  // Plain Sheets hyperlink — clicks like any other link, no script auth.
+  sheet.getRange(LINK_CELL).setFormula(
+    '=HYPERLINK("' + dest.replace(/"/g, '""') + '","Open in MemoryMap")',
   )
-    .setWidth(360)
-    .setHeight(140)
-  ui.showModalDialog(html, 'MemoryMap')
+  sheet.getRange(LINK_CELL).setFontWeight('bold').setFontColor('#1f7a6a')
+
+  // One-line reminder next to it (optional).
+  var noteCell = sheet.getRange('H3')
+  if (noteCell.getValue() === '' || /share|viewer|location/i.test(String(noteCell.getValue()))) {
+    noteCell.setValue(
+      'Tip: Share → Anyone with the link → Viewer, then click Open in MemoryMap. Each stop needs a Location.',
+    )
+    noteCell.setWrap(true).setFontColor('#5b706c')
+  }
 }
