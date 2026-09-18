@@ -1,0 +1,4 @@
+date,place,state,country,title,notes,lat,lng
+2025-01-12,Miami,FL,United States,Home port,Optional notes. Leave lat/lng blank to look up the place.,,
+2025-01-14,Nassau,New Providence,Bahamas,Nassau,,,
+2025-01-16,,,,,Fill the rest of your stops below. Date + place are enough.,,

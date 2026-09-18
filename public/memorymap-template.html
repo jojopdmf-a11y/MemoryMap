@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>MemoryMap spreadsheet template (preview)</title>
+    <style>
+      :root {
+        --paper: #eef5f2;
+        --ink: #16302c;
+        --muted: #5b706c;
+        --terra: #1f7a6a;
+        --line: rgba(22, 48, 44, 0.12);
+        --serif: Palatino, 'Palatino Linotype', Georgia, serif;
+        --sans: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      }
+      body {
+        margin: 0;
+        min-height: 100svh;
+        background: var(--paper);
+        color: var(--ink);
+        font-family: var(--sans);
+      }
+      main {
+        width: min(920px, calc(100% - 40px));
+        margin: 40px auto;
+      }
+      .kicker {
+        margin: 0 0 8px;
+        font-size: 11px;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: var(--terra);
+      }
+      h1 {
+        margin: 0 0 10px;
+        font-family: var(--serif);
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+      p {
+        margin: 0 0 16px;
+        color: var(--muted);
+        line-height: 1.45;
+      }
+      a {
+        color: var(--terra);
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+        font-size: 14px;
+      }
+      th,
+      td {
+        border: 1px solid var(--line);
+        padding: 8px 10px;
+        text-align: left;
+      }
+      th {
+        background: color-mix(in srgb, var(--terra) 12%, white);
+        font-size: 12px;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+      .actions {
+        display: flex;
+        gap: 14px;
+        margin: 18px 0 22px;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <p class="kicker">Layout preview</p>
+      <h1>Trip template</h1>
+      <p>
+        This stands in for the Google Sheet. When the new landing ships, this
+        link will open a MemoryMap template you can copy, fill, then paste back
+        on the homepage.
+      </p>
+      <p class="actions">
+        <a href="/memorymap-template.csv">Download CSV</a>
+        <a href="/landing-preview">Back to landing preview</a>
+      </p>
+      <table>
+        <thead>
+          <tr>
+            <th>date</th>
+            <th>place</th>
+            <th>state</th>
+            <th>country</th>
+            <th>title</th>
+            <th>notes</th>
+            <th>lat</th>
+            <th>lng</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>2025-01-12</td>
+            <td>Miami</td>
+            <td>FL</td>
+            <td>United States</td>
+            <td>Home port</td>
+            <td>Optional</td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <td>2025-01-14</td>
+            <td>Nassau</td>
+            <td></td>
+            <td>Bahamas</td>
+            <td>Nassau</td>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td>Add your stops. Date + place are enough.</td>
+            <td></td>
+            <td></td>
+          </tr>
+        </tbody>
+      </table>
+    </main>
+  </body>
+</html>
