@@ -42,14 +42,16 @@ function sendToMemoryMap() {
   const dest =
     'https://memorymap.world/?sheet=' + encodeURIComponent(ss.getUrl())
 
-  // Apps Script can't navigate the Sheet tab directly; open MemoryMap in a dialog jump.
+  // Popup blockers often kill window.open from Apps Script. Show a real link to click.
   const html = HtmlService.createHtmlOutput(
-    '<p style="font:14px sans-serif;margin:12px">Opening MemoryMap…</p>' +
-      '<script>window.open(' +
-      JSON.stringify(dest) +
-      ', "_blank");google.script.host.close();</script>',
+    '<div style="font:15px/1.4 Helvetica,Arial,sans-serif;padding:8px 4px">' +
+      '<p style="margin:0 0 14px">Your Sheet is ready. Click below to open it in MemoryMap:</p>' +
+      '<p style="margin:0"><a href="' +
+      dest.replace(/"/g, '&quot;') +
+      '" target="_blank" style="display:inline-block;padding:10px 16px;background:#1f7a6a;color:#fff;text-decoration:none;border-radius:8px;font-weight:700">Open in MemoryMap</a></p>' +
+      '</div>',
   )
-    .setWidth(280)
-    .setHeight(80)
+    .setWidth(360)
+    .setHeight(140)
   ui.showModalDialog(html, 'MemoryMap')
 }

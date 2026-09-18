@@ -288,9 +288,10 @@ export function DropZone({
               MemoryMap Template
             </a>
             <p>
-              Opens Google Sheets and makes your own copy. Fill the stops, share
-              as “Anyone with the link can view,” then paste that link below — or
-              use Send to MemoryMap in the Sheet menu.
+              Opens Google Sheets and makes your own copy. Fill Date and
+              Location for each stop, share as “Anyone with the link can view,”
+              then paste that link below — or use Send to MemoryMap in the
+              Sheet.
             </p>
           </div>
           <form

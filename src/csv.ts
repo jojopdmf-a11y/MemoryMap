@@ -306,28 +306,46 @@ export function parseCsv(text: string): ParseResult {
     return { ok: false, error: 'This spreadsheet has headers but no stop rows.' }
   }
 
-  const stops: Stop[] = rows.map((row, index) => {
-    const dateRaw = cell(row, fields.date)
-    const place = composedPlace(row, fields)
-    const title = cell(row, fields.title) || cell(row, fields.ship)
-    const notes = cell(row, fields.notes)
-    const lat = parseCoord(cell(row, fields.lat), 'lat')
-    const lng = parseCoord(cell(row, fields.lng), 'lng')
-    const bothCoords = lat != null && lng != null
+  const stops: Stop[] = rows
+    .map((row, index) => {
+      const dateRaw = cell(row, fields.date)
+      const place = composedPlace(row, fields)
+      const title = cell(row, fields.title) || cell(row, fields.ship)
+      const notes = cell(row, fields.notes)
+      const lat = parseCoord(cell(row, fields.lat), 'lat')
+      const lng = parseCoord(cell(row, fields.lng), 'lng')
+      const bothCoords = lat != null && lng != null
+      return {
+        id: `stop-${index}-${Math.random().toString(36).slice(2, 8)}`,
+        sourceRow: index + 2,
+        title,
+        dateRaw,
+        date: parseDate(dateRaw),
+        place,
+        lat: bothCoords ? lat : null,
+        lng: bothCoords ? lng : null,
+        notes,
+        status: initialStatus(
+          bothCoords ? lat : null,
+          bothCoords ? lng : null,
+          place,
+        ),
+        dismissed: false,
+      }
+    })
+    .filter(
+      (stop) =>
+        stop.place.trim() !== '' ||
+        (stop.lat != null && stop.lng != null),
+    )
+
+  if (stops.length === 0) {
     return {
-      id: `stop-${index}-${Math.random().toString(36).slice(2, 8)}`,
-      sourceRow: index + 2,
-      title,
-      dateRaw,
-      date: parseDate(dateRaw),
-      place,
-      lat: bothCoords ? lat : null,
-      lng: bothCoords ? lng : null,
-      notes,
-      status: initialStatus(bothCoords ? lat : null, bothCoords ? lng : null, place),
-      dismissed: false,
+      ok: false,
+      error:
+        'No stops with a location yet. Fill the Location column (and Date helps). Trip Name alone is not enough to map.',
     }
-  })
+  }
 
   stops.sort((a, b) => {
     if (a.date && b.date) return a.date.getTime() - b.date.getTime()
