@@ -118,7 +118,7 @@
 .lp-form {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 4px;
   min-height: 0;
   flex: 1;
 }
@@ -126,8 +126,8 @@
 .lp-label {
   display: none;
   flex-direction: column;
-  gap: 4px;
-  font-size: 12px;
+  gap: 2px;
+  font-size: 11px;
   color: var(--muted);
 }
 
@@ -138,10 +138,10 @@
 .lp-label input,
 .lp-stop input,
 .lp-sheets input {
-  font-size: 15px;
+  font-size: 14px;
   width: 100%;
   min-width: 0;
-  padding: 8px 10px;
+  padding: 5px 8px;
   border: 1px solid var(--line);
   background: color-mix(in srgb, var(--paper) 78%, transparent);
   color: var(--ink);
@@ -151,28 +151,29 @@
 
 .lp-stops {
   display: grid;
-  gap: 8px;
+  gap: 4px;
   min-height: 0;
   overflow: auto;
   flex: 1;
+  align-content: start;
 }
 
 .lp-stop {
   display: grid;
-  grid-template-columns: minmax(7.5rem, 0.7fr) minmax(0, 1.3fr);
-  gap: 8px;
+  grid-template-columns: minmax(7rem, 0.7fr) minmax(0, 1.3fr);
+  gap: 6px;
   align-items: end;
 }
 
 .lp-board.is-route-open .lp-stop {
-  grid-template-columns: minmax(7.5rem, 0.7fr) minmax(0, 1.4fr) minmax(0, 0.8fr) minmax(0, 0.9fr) auto;
+  grid-template-columns: minmax(7rem, 0.7fr) minmax(0, 1.4fr) minmax(0, 0.8fr) minmax(0, 0.9fr) auto;
 }
 
 .lp-stop label {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  font-size: 12px;
+  gap: 2px;
+  font-size: 11px;
   color: var(--muted);
 }
 
@@ -201,6 +202,8 @@
   flex-wrap: wrap;
   gap: 8px;
   align-items: center;
+  margin-top: 14px;
+  padding-top: 4px;
 }
 
 .lp-samples-grid {
@@ -276,17 +279,25 @@
 }
 
 .lp-sheet {
+  display: grid;
+  grid-template-rows: auto repeat(3, minmax(0, 1fr));
   gap: 10px;
 }
 
+.lp-drop,
+.lp-template,
+.lp-sheets {
+  min-height: 0;
+  height: 100%;
+  box-sizing: border-box;
+}
+
 .lp-drop {
-  flex: 1.15;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 4px;
-  min-height: 0;
   padding: 12px;
   border: 1px dashed color-mix(in srgb, var(--ink) 28%, transparent);
   background: color-mix(in srgb, var(--paper) 70%, white);
@@ -313,10 +324,11 @@
 }
 
 .lp-template {
-  flex: 0 0 auto;
-  display: grid;
-  gap: 4px;
-  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 6px;
+  padding: 12px;
   border: 1px solid var(--line);
   border-radius: var(--radius-sm);
   background: color-mix(in srgb, var(--terra) 7%, white);
@@ -336,8 +348,14 @@
 }
 
 .lp-sheets {
-  display: grid;
-  gap: 6px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--paper) 70%, white);
 }
 
 .lp-sheets p {
@@ -350,6 +368,7 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 8px;
+  align-items: center;
 }
 
 .lp-error {
@@ -432,7 +451,15 @@
     grid-auto-rows: 120px;
   }
 
-  .lp-drop {
-    min-height: 140px;
+  .lp-sheet {
+    grid-template-rows: auto;
+    height: auto;
+  }
+
+  .lp-drop,
+  .lp-template,
+  .lp-sheets {
+    height: auto;
+    min-height: 120px;
   }
 }
