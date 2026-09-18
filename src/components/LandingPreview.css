@@ -176,11 +176,13 @@
   color: var(--muted);
 }
 
-.lp-extra {
+.lp-stop .lp-extra,
+.lp-actions .lp-extra {
   display: none;
 }
 
-.lp-board.is-route-open .lp-extra {
+.lp-board.is-route-open .lp-stop .lp-extra,
+.lp-board.is-route-open .lp-actions .lp-extra {
   display: flex;
 }
 
