@@ -369,12 +369,14 @@
 .lp-template {
   display: flex;
   flex-direction: column;
+  align-items: center;
   justify-content: center;
   gap: 6px;
   padding: 12px;
   border: 1px solid var(--line);
   border-radius: var(--radius-sm);
   background: color-mix(in srgb, var(--terra) 7%, white);
+  text-align: center;
 }
 
 .lp-template a {
@@ -385,6 +387,7 @@
 
 .lp-template p {
   margin: 0;
+  max-width: 22em;
   font-size: 12px;
   color: var(--muted);
   line-height: 1.35;
