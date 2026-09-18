@@ -496,8 +496,8 @@ export default function App() {
           </section>
         </main>
       )}
-      <AdSlot variant="footer" />
-      <SiteFooter />
+      {(stops || sheetChoices) && <AdSlot variant="footer" />}
+      {(stops || sheetChoices) && <SiteFooter />}
       <DownloadSheet
         open={downloadOpen}
         intent="download"

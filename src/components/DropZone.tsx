@@ -1,10 +1,16 @@
 import { useState } from 'react'
+import {
+  emptyManualStop,
+  filledManualStops,
+  manualStopsToCsv,
+  type ManualStopDraft,
+} from '../csv'
 import { SAMPLE_TRIPS, type SampleTrip } from '../sample'
 import { INSTAGRAM_HANDLE } from '../site'
 import type { SheetChoice } from '../source'
-import { AdSlot } from './AdSlot'
 import { InstagramLink } from './InstagramLink'
-import { ManualTripForm } from './ManualTripForm'
+import { PlaceSuggest } from './PlaceSuggest'
+import './Landing.css'
 
 type Props = {
   importing: boolean
@@ -14,6 +20,12 @@ type Props = {
   onSample: (trip: SampleTrip) => void
 }
 
+function firstBias(rows: ManualStopDraft[]) {
+  const hit = rows.find((row) => row.lat != null && row.lng != null)
+  if (hit?.lat == null || hit.lng == null) return undefined
+  return { lat: hit.lat, lng: hit.lng }
+}
+
 export function DropZone({
   importing,
   onFile,
@@ -21,54 +33,241 @@ export function DropZone({
   onManual,
   onSample,
 }: Props) {
+  const [routeOpen, setRouteOpen] = useState(false)
+  const [label, setLabel] = useState('')
+  const [rows, setRows] = useState<ManualStopDraft[]>([
+    emptyManualStop(),
+    emptyManualStop(),
+    emptyManualStop(),
+    emptyManualStop(),
+  ])
   const [url, setUrl] = useState('')
+  const [localError, setLocalError] = useState<string | null>(null)
+
+  function updateRow(index: number, patch: Partial<ManualStopDraft>) {
+    setRows((current) =>
+      current.map((row, i) => (i === index ? { ...row, ...patch } : row)),
+    )
+  }
 
   function takeFile(file: File | undefined) {
     if (!file) return
+    setLocalError(null)
     onFile(file)
   }
 
+  function plotManual() {
+    const filled = filledManualStops(rows)
+    if (filled.length === 0 || !filled.some((row) => row.city.trim())) {
+      setLocalError('Add at least one city or street address.')
+      setRouteOpen(true)
+      return
+    }
+    setLocalError(null)
+    onManual(manualStopsToCsv(rows), label.trim() || 'Untitled trip')
+  }
+
   return (
-    <section
-      className="dropzone"
-      onDragOver={(e) => {
-        e.preventDefault()
-        e.dataTransfer.dropEffect = 'copy'
-      }}
-      onDrop={(e) => {
-        e.preventDefault()
-        const dropped = e.dataTransfer.getData('text/uri-list') || e.dataTransfer.getData('text/plain')
-        if (dropped && /docs\.google\.com\/spreadsheets/.test(dropped)) {
-          onSheetsUrl(dropped)
-          return
-        }
-        takeFile(e.dataTransfer.files[0])
-      }}
-    >
-      <div className="landing-stage">
-        <div className="landing-map-wash" aria-hidden="true">
-          <div className="landing-map" />
-        </div>
-        <header className="brand-hero">
-          <div className="brand-lockup">
-            <p className="kicker">Public preview</p>
-            <h1 className="brand-mark">MemoryMap</h1>
-            <p className="tagline">
-              Visualize Your Voyages, Treasure Your Travels.
-            </p>
-            <p className="hero-instagram">
-              <InstagramLink>Instagram @{INSTAGRAM_HANDLE}</InstagramLink>
-            </p>
-          </div>
-          <p className="lede">
-            This is a public preview. Drop a file, paste a Google Sheets link, or
-            enter the stops. Mapping, Play, and download are free. Sign in only
-            if you want the map saved on your account. Live card charges are
-            off.
+    <section className="lp">
+      <header className="lp-head">
+        <div className="lp-brand">
+          <p className="kicker">Public preview · no login needed</p>
+          <h1 className="lp-mark">MemoryMap</h1>
+          <p className="lp-tagline">
+            Visualize Your Voyages, Treasure Your Travels.
           </p>
-        </header>
-        <div className="trip-start">
-          <label className="drop-target">
+          <p className="lp-instagram">
+            <InstagramLink>Instagram @{INSTAGRAM_HANDLE}</InstagramLink>
+          </p>
+        </div>
+      </header>
+
+      <div className={`lp-board${routeOpen ? ' is-route-open' : ''}`}>
+        <article
+          className="lp-panel lp-route"
+          onClick={() => {
+            if (!routeOpen) setRouteOpen(true)
+          }}
+        >
+          <h2>Input your route</h2>
+          <form
+            className="lp-form"
+            onSubmit={(e) => {
+              e.preventDefault()
+              plotManual()
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <label className="lp-label">
+              Trip name
+              <input
+                value={label}
+                disabled={importing}
+                placeholder="Mediterranean cruise…"
+                onChange={(e) => setLabel(e.target.value)}
+              />
+            </label>
+            <div className="lp-stops" role="group" aria-label="Trip stops">
+              {rows.map((row, index) => (
+                <div className="lp-stop" key={index}>
+                  <label>
+                    Date
+                    <input
+                      type="date"
+                      value={row.date}
+                      disabled={importing}
+                      onFocus={() => setRouteOpen(true)}
+                      onChange={(e) =>
+                        updateRow(index, { date: e.target.value })
+                      }
+                    />
+                  </label>
+                  <label>
+                    Place
+                    <PlaceSuggest
+                      value={row.city}
+                      disabled={importing}
+                      placeholder="City or street address"
+                      ariaLabel={`Place for stop ${index + 1}`}
+                      hint={[row.state, row.country]
+                        .filter((part) => part.trim())
+                        .join(', ')}
+                      bias={firstBias(rows)}
+                      onChange={(city) =>
+                        updateRow(index, { city, lat: null, lng: null })
+                      }
+                      onPick={(hit) =>
+                        updateRow(index, {
+                          city:
+                            hit.kind === 'city'
+                              ? hit.name
+                              : hit.name || hit.label,
+                          state: hit.state?.trim() ?? '',
+                          country: hit.country?.trim() ?? '',
+                          lat: hit.lat,
+                          lng: hit.lng,
+                        })
+                      }
+                    />
+                  </label>
+                  <label className="lp-extra">
+                    State
+                    <input
+                      value={row.state}
+                      disabled={importing}
+                      placeholder="Optional"
+                      onChange={(e) =>
+                        updateRow(index, { state: e.target.value })
+                      }
+                    />
+                  </label>
+                  <label className="lp-extra">
+                    Country
+                    <input
+                      value={row.country}
+                      disabled={importing}
+                      placeholder="Optional"
+                      onChange={(e) =>
+                        updateRow(index, { country: e.target.value })
+                      }
+                    />
+                  </label>
+                  <button
+                    type="button"
+                    className="ghost lp-extra"
+                    disabled={importing || rows.length <= 1}
+                    onClick={() =>
+                      setRows((current) =>
+                        current.filter((_, i) => i !== index),
+                      )
+                    }
+                  >
+                    Remove
+                  </button>
+                </div>
+              ))}
+            </div>
+            <p className="lp-expand-hint">
+              Click this panel to add state, country, and a trip name.
+            </p>
+            {localError && (
+              <p className="lp-error" role="alert">
+                {localError}
+              </p>
+            )}
+            <div className="lp-actions">
+              <button
+                type="button"
+                className="ghost"
+                disabled={importing}
+                onClick={() =>
+                  setRows((current) => [...current, emptyManualStop()])
+                }
+              >
+                Add stop
+              </button>
+              <button type="submit" className="primary" disabled={importing}>
+                Map this route
+              </button>
+              {routeOpen && (
+                <button
+                  type="button"
+                  className="linkish"
+                  onClick={() => setRouteOpen(false)}
+                >
+                  Show less
+                </button>
+              )}
+            </div>
+          </form>
+        </article>
+
+        <section className="lp-panel lp-samples" aria-labelledby="lp-samples-h">
+          <h2 id="lp-samples-h">Try a sample</h2>
+          <ul className="lp-samples-grid">
+            {SAMPLE_TRIPS.map((trip) => (
+              <li key={trip.id}>
+                <button
+                  type="button"
+                  className="lp-sample"
+                  disabled={importing}
+                  onClick={() => onSample(trip)}
+                >
+                  <span
+                    className={`lp-thumb is-${trip.id}`}
+                    aria-hidden="true"
+                  />
+                  <span>
+                    <strong>{trip.title}</strong>
+                    <span>{trip.blurb}</span>
+                  </span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        <section className="lp-panel lp-sheet">
+          <h2>Drop a spreadsheet</h2>
+          <label
+            className="lp-drop"
+            onDragOver={(e) => {
+              e.preventDefault()
+              e.dataTransfer.dropEffect = 'copy'
+            }}
+            onDrop={(e) => {
+              e.preventDefault()
+              const dropped =
+                e.dataTransfer.getData('text/uri-list') ||
+                e.dataTransfer.getData('text/plain')
+              if (dropped && /docs\.google\.com\/spreadsheets/.test(dropped)) {
+                setLocalError(null)
+                onSheetsUrl(dropped)
+                return
+              }
+              takeFile(e.dataTransfer.files[0])
+            }}
+          >
             <input
               type="file"
               accept=".csv,.tsv,.xlsx,.xls,.ods,text/csv,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
@@ -78,33 +277,36 @@ export function DropZone({
                 e.target.value = ''
               }}
             />
-            <strong className="drop-copy-wide">
+            <strong>
               {importing ? 'Reading spreadsheet…' : 'Drop a spreadsheet here'}
             </strong>
-            <strong className="drop-copy-narrow">
-              {importing ? 'Reading spreadsheet…' : 'Choose a spreadsheet'}
-            </strong>
-            <span>CSV or Excel · Numbers files need an Excel/CSV export</span>
-            <p className="drop-format drop-format-full">
-              First row is the headers. Include a date and a place — city or
-              street address, or city, state, and country. Title and notes are
-              optional. Latitude and longitude are optional too; we can look up
-              the names.
-            </p>
-            <p className="drop-format drop-format-short">
+            <span>CSV or Excel · Numbers needs an Excel/CSV export</span>
+            <p>
               First row is headers. Include a date and a place. We can look up
               the names.
             </p>
           </label>
+          <div className="lp-template">
+            <a href="/memorymap-template.html" target="_blank" rel="noreferrer">
+              Open the spreadsheet template
+            </a>
+            <p>
+              Copy the headers and sample rows into Google Sheets or Excel, fill
+              your stops, then paste a share link below (or drop the file).
+            </p>
+          </div>
           <form
-            className="sheets-form"
+            className="lp-sheets"
             onSubmit={(e) => {
               e.preventDefault()
-              if (url.trim()) onSheetsUrl(url.trim())
+              if (url.trim()) {
+                setLocalError(null)
+                onSheetsUrl(url.trim())
+              }
             }}
           >
-            <p className="entry-heading">Paste a Google Sheets link here</p>
-            <label className="sheets-url">
+            <p>Paste a Google Sheets link</p>
+            <div className="lp-sheets-row">
               <input
                 type="url"
                 value={url}
@@ -113,42 +315,17 @@ export function DropZone({
                 placeholder="https://docs.google.com/spreadsheets/d/…"
                 onChange={(e) => setUrl(e.target.value)}
               />
-            </label>
-            <button type="submit" className="primary" disabled={importing || !url.trim()}>
-              Load sheet
-            </button>
-            <p className="hint">
-              Share as “Anyone with the link can view”, or download Excel and drop
-              it. For a specific tab, open that tab before copying the link.
-            </p>
+              <button
+                type="submit"
+                className="primary"
+                disabled={importing || !url.trim()}
+              >
+                Load
+              </button>
+            </div>
           </form>
-          <ManualTripForm importing={importing} onSubmit={onManual} />
-        </div>
-        <section className="sample-trips" aria-labelledby="sample-trips-heading">
-          <h2 id="sample-trips-heading">No spreadsheet handy? Try a sample.</h2>
-          <p className="sample-trips-lead">
-            Play with a cruise, a train, a road trip, a trail, or a tour of
-            Asia — same map as your own file.
-          </p>
-          <ul className="sample-trip-grid">
-            {SAMPLE_TRIPS.map((trip) => (
-              <li key={trip.id}>
-                <button
-                  type="button"
-                  className="sample-trip-card"
-                  disabled={importing}
-                  onClick={() => onSample(trip)}
-                >
-                  <span className="sample-trip-try">Try</span>
-                  <strong>{trip.title}</strong>
-                  <span className="sample-trip-blurb">{trip.blurb}</span>
-                </button>
-              </li>
-            ))}
-          </ul>
         </section>
       </div>
-      <AdSlot variant="inline" />
     </section>
   )
 }
@@ -172,7 +349,11 @@ export function SheetPicker({ title, sheets, onPick, onCancel }: SheetPickerProp
       <ul className="sheet-list">
         {sheets.map((sheet) => (
           <li key={sheet.name}>
-            <button type="button" className="sheet-pick" onClick={() => onPick(sheet)}>
+            <button
+              type="button"
+              className="sheet-pick"
+              onClick={() => onPick(sheet)}
+            >
               <strong>{sheet.name}</strong>
               <span>
                 {sheet.stopCount} stop{sheet.stopCount === 1 ? '' : 's'}

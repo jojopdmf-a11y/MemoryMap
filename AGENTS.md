@@ -46,7 +46,8 @@ This session’s origin remote is the Cloud Agent git host. Also push `github` (
 - Contact: `hello@memorymap.world`. Sole prop. EIN is for Paddle/tax only — never on the website.
 - Secrets stay in `.dev.vars` (gitignored) or Cloudflare Worker secrets: `AUTH_SECRET`, `RESEND_*`, `FEEDBACK_TO`, `GOOGLE_CLIENT_ID`, `PADDLE_API_KEY`, `PADDLE_WEBHOOK_SECRET`. The Paddle.js client token in `src/creditPacks.ts` is public (`test_…`).
 - Paddle MCP (sandbox) is in `.cursor/mcp.json`. It needs `PADDLE_SANDBOX_API_KEY` in the agent environment; a chat that started without that MCP will not grow the tools mid-run.
-- Phone layout: landing stacks at 560px; map page at 720px puts the map first (no overlapping topbar). Souvenir share URLs `/s/{32-hex}` must keep Open Graph tags and `/s/{id}/og.png`.
+- Phone layout: landing stacks the three panels under 900px; map page at 720px puts the map first (no overlapping topbar). Souvenir share URLs `/s/{32-hex}` must keep Open Graph tags and `/s/{id}/og.png`.
+- Desktop landing is three above-the-fold panels (typed route, samples, spreadsheet). Keep it one viewport when possible; do not restore the old long single-column landing.
 
 ## Cursor Environment vs Project
 

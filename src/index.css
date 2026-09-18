@@ -100,6 +100,32 @@ body {
   overflow-y: auto;
 }
 
+#root:has(.app.is-landing) {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+#root:has(.app.is-landing) > .preview-banner {
+  flex-shrink: 0;
+}
+
+#root:has(.app.is-landing) > .app.is-landing {
+  flex: 1;
+  min-height: 0;
+}
+
+@media (max-width: 900px) {
+  #root:has(.app.is-landing) {
+    overflow-y: auto;
+  }
+
+  #root:has(.app.is-landing) > .app.is-landing {
+    height: auto;
+    overflow: visible;
+  }
+}
+
 body {
   font-family: var(--serif);
   color: var(--ink);

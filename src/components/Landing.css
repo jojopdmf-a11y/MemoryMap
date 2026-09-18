@@ -1,23 +1,10 @@
 .lp {
-  height: 100svh;
-  height: 100dvh;
+  height: 100%;
+  min-height: 0;
   display: grid;
-  grid-template-rows: auto auto minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr);
   overflow: hidden;
-  background: var(--paper);
   color: var(--ink);
-}
-
-.lp-note {
-  margin: 0;
-  padding: 7px 16px;
-  font-family: var(--sans);
-  font-size: 12px;
-  letter-spacing: 0.02em;
-  text-align: center;
-  color: var(--terra);
-  background: color-mix(in srgb, var(--terra) 12%, var(--paper));
-  border-bottom: 1px solid color-mix(in srgb, var(--terra) 28%, transparent);
 }
 
 .lp-head {
@@ -42,13 +29,7 @@
 }
 
 .lp-tools {
-  position: absolute;
-  top: 8px;
-  right: 16px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  z-index: 5;
+  display: none;
 }
 
 .lp-brand {
@@ -432,39 +413,6 @@
   color: var(--terra);
 }
 
-.lp-mapview {
-  height: 100svh;
-  height: 100dvh;
-  display: grid;
-  grid-template-rows: auto minmax(0, 1fr);
-  overflow: hidden;
-}
-
-.lp-mapbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 10px 16px;
-  border-bottom: 1px solid var(--line);
-  background: color-mix(in srgb, var(--paper) 92%, white);
-}
-
-.lp-mapbar strong {
-  font-family: var(--serif);
-  font-size: 18px;
-}
-
-.lp-mapstage {
-  min-height: 0;
-  height: 100%;
-}
-
-.lp-mapstage .preview-map {
-  height: 100%;
-  min-height: 0;
-}
-
 .lp-stop .place-suggest {
   display: block;
   min-width: 0;
@@ -477,16 +425,9 @@
 @media (max-width: 900px) {
   .lp {
     height: auto;
-    min-height: 100svh;
-    overflow: auto;
-    grid-template-rows: auto auto auto;
-  }
-
-  .lp-tools {
-    position: static;
-    justify-content: flex-end;
-    width: 100%;
-    margin-bottom: 4px;
+    min-height: 0;
+    overflow: visible;
+    grid-template-rows: auto auto;
   }
 
   .lp-board,
