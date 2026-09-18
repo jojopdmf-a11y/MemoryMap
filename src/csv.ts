@@ -39,6 +39,8 @@ const FIELD_ALIASES: Record<string, FieldKey> = {
   region: 'region',
   country: 'country',
   title: 'title',
+  tripname: 'title',
+  trip: 'title',
   name: 'title',
   label: 'title',
   stop: 'title',
@@ -208,13 +210,65 @@ function composedPlace(
   return joined || explicit
 }
 
+function scoreHeaderRow(cells: string[]): number {
+  const fields = mapHeaders(cells)
+  let score = 0
+  if (fields.date) score += 2
+  if (fields.place || fields.city) score += 2
+  if (fields.lat && fields.lng) score += 2
+  if (fields.title) score += 1
+  if (fields.notes) score += 1
+  if (fields.region || fields.country) score += 1
+  return score
+}
+
+/** Skip banner rows (e.g. "MemoryMap Template") and start at the real header. */
+function csvFromHeaderRow(text: string): string {
+  const table = Papa.parse<string[]>(text, {
+    header: false,
+    skipEmptyLines: 'greedy',
+  })
+  const rows = table.data.filter((row) =>
+    row.some((cell) => String(cell ?? '').trim() !== ''),
+  )
+  if (rows.length === 0) return text
+
+  let bestIndex = 0
+  let bestScore = -1
+  const scan = Math.min(rows.length, 8)
+  for (let i = 0; i < scan; i++) {
+    const score = scoreHeaderRow(rows[i].map((cell) => String(cell ?? '')))
+    if (score > bestScore) {
+      bestScore = score
+      bestIndex = i
+    }
+  }
+  if (bestScore < 2) return text
+
+  return rows
+    .slice(bestIndex)
+    .map((row) =>
+      row
+        .map((cell) => {
+          const value = String(cell ?? '')
+          if (/[",\n\r]/.test(value)) {
+            return `"${value.replace(/"/g, '""')}"`
+          }
+          return value
+        })
+        .join(','),
+    )
+    .join('\n')
+}
+
 export function parseCsv(text: string): ParseResult {
   const stripped = text.replace(/^\uFEFF/, '').trim()
   if (!stripped) {
     return { ok: false, error: 'This file is empty. Add a header row and at least one stop.' }
   }
 
-  const parsed = Papa.parse<Record<string, string>>(stripped, {
+  const withHeader = csvFromHeaderRow(stripped)
+  const parsed = Papa.parse<Record<string, string>>(withHeader, {
     header: true,
     skipEmptyLines: 'greedy',
     transformHeader: (h) => h.trim(),
