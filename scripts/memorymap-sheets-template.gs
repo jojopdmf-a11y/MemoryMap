@@ -5,15 +5,13 @@
  * 1. Extensions → Apps Script → replace Code.gs with this file → Save
  * 2. In the toolbar, choose function writeMemoryMapLink → Run
  *    (You may Allow once as the owner. Visitors who Make a copy do not.)
- * 3. Back on the Sheet, look at cell G1 — “Open in MemoryMap”
+ * 3. Back on the Sheet, cell F1 should show “Open in MemoryMap” centered
  * 4. Reload the tab; onOpen keeps that link up to date for each copy
  *
  * Remove any old drawing button / MemoryMap menu — not needed anymore.
  */
 
-// First tab, cell G1 (to the right of the title — no need to hunt for column H)
-var LINK_CELL = 'G1'
-var TIP_CELL = 'G2'
+var LINK_CELL = 'F1'
 
 function onOpen() {
   writeMemoryMapLink_()
@@ -32,6 +30,9 @@ function writeMemoryMapLink_() {
   var dest =
     'https://memorymap.world/?sheet=' + encodeURIComponent(ss.getUrl())
 
+  // Clear the old tip cell if a previous version wrote there.
+  sheet.getRange('G2').clearContent()
+
   var link = sheet.getRange(LINK_CELL)
   link.setFormula(
     '=HYPERLINK("' + dest.replace(/"/g, '""') + '","Open in MemoryMap")',
@@ -41,14 +42,6 @@ function writeMemoryMapLink_() {
     .setFontSize(12)
     .setFontWeight('bold')
     .setFontColor('#1f7a6a')
-    .setHorizontalAlignment('left')
-
-  var tip = sheet.getRange(TIP_CELL)
-  tip.setValue(
-    'Share → Anyone with the link → Viewer, then click the link above. Each stop needs a Location.',
-  )
-  tip.setWrap(true).setFontColor('#5b706c').setFontSize(10)
-
-  // Make sure column G is wide enough to read.
-  sheet.setColumnWidth(7, 200)
+    .setHorizontalAlignment('center')
+    .setVerticalAlignment('middle')
 }
