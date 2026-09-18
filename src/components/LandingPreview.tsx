@@ -16,9 +16,11 @@ import {
 import { DEFAULT_FIELDS, DEFAULT_LOOK, type Look } from '../look'
 import type { Stop } from '../types'
 import { AccountMenu } from './AccountMenu'
+import { InstagramLink } from './InstagramLink'
 import { PlaceSuggest } from './PlaceSuggest'
 import { PreviewMap } from './PreviewMap'
 import { SheetPicker } from './DropZone'
+import { INSTAGRAM_HANDLE } from '../site'
 import './LandingPreview.css'
 
 function firstBias(rows: ManualStopDraft[]) {
@@ -171,8 +173,16 @@ export function LandingPreview() {
           </a>
           <AccountMenu />
         </div>
-        <p className="kicker">Public preview</p>
-        <h1>MemoryMap</h1>
+        <div className="lp-brand">
+          <p className="kicker">Public preview · no login needed</p>
+          <h1 className="lp-mark">MemoryMap</h1>
+          <p className="lp-tagline">
+            Visualize Your Voyages, Treasure Your Travels.
+          </p>
+          <p className="lp-instagram">
+            <InstagramLink>Instagram @{INSTAGRAM_HANDLE}</InstagramLink>
+          </p>
+        </div>
       </header>
 
       <div className={`lp-board${routeOpen ? ' is-route-open' : ''}`}>

@@ -24,13 +24,26 @@
   position: relative;
   display: grid;
   justify-items: center;
-  gap: 2px;
-  padding: 10px 20px 8px;
+  gap: 0;
+  padding: 8px 20px 6px;
+  overflow: hidden;
+}
+
+.lp-head::before {
+  content: '';
+  position: absolute;
+  inset: -18% calc(50% - 50vw) -40%;
+  z-index: 0;
+  pointer-events: none;
+  background: color-mix(in srgb, var(--terra) 58%, var(--flare));
+  opacity: 0.18;
+  -webkit-mask: url('/world-ghost.svg') 50% 18% / cover no-repeat;
+  mask: url('/world-ghost.svg') 50% 18% / cover no-repeat;
 }
 
 .lp-tools {
   position: absolute;
-  top: 10px;
+  top: 8px;
   right: 16px;
   display: flex;
   align-items: center;
@@ -38,27 +51,69 @@
   z-index: 5;
 }
 
-.lp-head .kicker {
-  margin: 0;
+.lp-brand {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
 }
 
-.lp-head h1 {
+.lp-head .kicker {
+  margin: 0 0 6px;
+}
+
+.lp-mark {
   margin: 0;
   font-family: var(--serif);
-  font-size: clamp(36px, 5.2vw, 54px);
+  font-size: clamp(40px, 7vw, 68px);
   font-weight: 600;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.2em;
+  padding-inline-start: 0.2em;
   text-transform: uppercase;
   color: var(--terra);
-  line-height: 1;
+  line-height: 0.92;
+  text-shadow:
+    0 1px 0 color-mix(in srgb, var(--paper) 78%, white),
+    0 -1px 0 color-mix(in srgb, var(--terra) 28%, var(--ink)),
+    0 2px 1px color-mix(in srgb, var(--ink) 8%, transparent),
+    0 8px 18px color-mix(in srgb, var(--terra) 26%, transparent);
 }
 
-.lp-head h1::after {
+.lp-tagline {
+  margin: 0.08em 0 0;
+  font-family: var(--serif);
+  font-size: clamp(14px, 2vw, 17px);
+  font-style: italic;
+  letter-spacing: 0.085em;
+  padding-inline-start: 0.22em;
+  color: var(--flare);
+  line-height: 1.15;
+}
+
+.lp-instagram {
+  margin: 8px 0 0;
+  font-family: var(--sans);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+
+.lp-instagram a {
+  color: inherit;
+  text-underline-offset: 3px;
+}
+
+.lp-instagram a:hover {
+  color: var(--terra);
+}
+
+.lp-brand::after {
   content: '';
-  display: block;
-  width: 3.2rem;
+  width: 3.4rem;
   height: 1px;
-  margin: 8px auto 0;
+  margin: 10px 0 0;
   background: color-mix(in srgb, var(--flare) 58%, transparent);
 }
 
