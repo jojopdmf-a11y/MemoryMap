@@ -168,6 +168,24 @@ export default function App() {
     void ingest(ingestGoogleSheetsUrl(url))
   }
 
+  useEffect(() => {
+    const page = new URL(window.location.href)
+    const sheet =
+      page.searchParams.get('sheet')?.trim() ||
+      page.searchParams.get('sheets')?.trim()
+    if (!sheet) return
+    page.searchParams.delete('sheet')
+    page.searchParams.delete('sheets')
+    window.history.replaceState(
+      {},
+      '',
+      `${page.pathname}${page.search}${page.hash}`,
+    )
+    void ingest(ingestGoogleSheetsUrl(sheet))
+    // Run once on first load when arriving from the Google Sheet button.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   async function ingest(job: Promise<IngestResult>) {
     setImporting(true)
     setError(null)

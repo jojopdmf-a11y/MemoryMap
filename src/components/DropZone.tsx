@@ -6,7 +6,7 @@ import {
   type ManualStopDraft,
 } from '../csv'
 import { SAMPLE_TRIPS, type SampleTrip } from '../sample'
-import { INSTAGRAM_HANDLE } from '../site'
+import { INSTAGRAM_HANDLE, SHEETS_TEMPLATE_COPY_URL } from '../site'
 import type { SheetChoice } from '../source'
 import { InstagramLink } from './InstagramLink'
 import { PlaceSuggest } from './PlaceSuggest'
@@ -280,12 +280,17 @@ export function DropZone({
             </p>
           </label>
           <div className="lp-template">
-            <a href="/memorymap-template.html" target="_blank" rel="noreferrer">
-              Open the spreadsheet template
+            <a
+              href={SHEETS_TEMPLATE_COPY_URL}
+              target="_blank"
+              rel="noreferrer"
+            >
+              MemoryMap Template
             </a>
             <p>
-              Copy the headers and sample rows into Google Sheets or Excel, fill
-              your stops, then paste a share link below (or drop the file).
+              Opens Google Sheets and makes your own copy. Fill the stops, share
+              as “Anyone with the link can view,” then paste that link below — or
+              use Send to MemoryMap in the Sheet menu.
             </p>
           </div>
           <form
