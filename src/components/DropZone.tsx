@@ -83,30 +83,26 @@ export function DropZone({
       </header>
 
       <div className={`lp-board${routeOpen ? ' is-route-open' : ''}`}>
-        <article
-          className="lp-panel lp-route"
-          onClick={() => {
-            if (!routeOpen) setRouteOpen(true)
-          }}
-        >
-          <h2>Input your route</h2>
+        <article className="lp-panel lp-route">
           <form
             className="lp-form"
             onSubmit={(e) => {
               e.preventDefault()
               plotManual()
             }}
-            onClick={(e) => e.stopPropagation()}
           >
-            <label className="lp-label">
-              Trip name
-              <input
-                value={label}
-                disabled={importing}
-                placeholder="Mediterranean cruise…"
-                onChange={(e) => setLabel(e.target.value)}
-              />
-            </label>
+            <div className="lp-route-head">
+              <h2>Input your route</h2>
+              <label className="lp-trip-name">
+                <span className="visually-hidden">Trip name</span>
+                <input
+                  value={label}
+                  disabled={importing}
+                  placeholder="Trip name"
+                  onChange={(e) => setLabel(e.target.value)}
+                />
+              </label>
+            </div>
             <div className="lp-stops" role="group" aria-label="Trip stops">
               {rows.map((row, index) => (
                 <div className="lp-stop" key={index}>
@@ -116,7 +112,6 @@ export function DropZone({
                       type="date"
                       value={row.date}
                       disabled={importing}
-                      onFocus={() => setRouteOpen(true)}
                       onChange={(e) =>
                         updateRow(index, { date: e.target.value })
                       }
@@ -187,15 +182,22 @@ export function DropZone({
                 </div>
               ))}
             </div>
-            <p className="lp-expand-hint">
-              Click this panel to add state, country, and a trip name.
-            </p>
             {localError && (
               <p className="lp-error" role="alert">
                 {localError}
               </p>
             )}
             <div className="lp-actions">
+              <button
+                type="button"
+                className="ghost"
+                disabled={importing}
+                onClick={() => setRouteOpen((open) => !open)}
+              >
+                {routeOpen
+                  ? 'Hide state and country'
+                  : 'Click here to add state and country'}
+              </button>
               <button
                 type="button"
                 className="ghost"
@@ -209,15 +211,6 @@ export function DropZone({
               <button type="submit" className="primary" disabled={importing}>
                 Map this route
               </button>
-              {routeOpen && (
-                <button
-                  type="button"
-                  className="linkish"
-                  onClick={() => setRouteOpen(false)}
-                >
-                  Show less
-                </button>
-              )}
             </div>
           </form>
         </article>

@@ -132,12 +132,44 @@
   letter-spacing: 0.01em;
 }
 
-.lp-route {
-  cursor: pointer;
+.lp-route-head {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
 }
 
-.lp-board.is-route-open .lp-route {
-  cursor: default;
+.lp-route-head h2 {
+  white-space: nowrap;
+}
+
+.lp-trip-name {
+  display: block;
+  min-width: 0;
+}
+
+.lp-trip-name input {
+  font-size: 14px;
+  width: 100%;
+  min-width: 0;
+  padding: 5px 8px;
+  border: 1px solid var(--line);
+  background: color-mix(in srgb, var(--paper) 78%, transparent);
+  color: var(--ink);
+  border-radius: var(--radius-xs);
+  font-family: var(--sans);
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 .lp-samples {
@@ -159,19 +191,6 @@
   flex: 1;
 }
 
-.lp-label {
-  display: none;
-  flex-direction: column;
-  gap: 2px;
-  font-size: 11px;
-  color: var(--muted);
-}
-
-.lp-board.is-route-open .lp-label {
-  display: flex;
-}
-
-.lp-label input,
 .lp-stop input,
 .lp-sheets input {
   font-size: 14px;
@@ -213,24 +232,12 @@
   color: var(--muted);
 }
 
-.lp-stop .lp-extra,
-.lp-actions .lp-extra {
+.lp-stop .lp-extra {
   display: none;
 }
 
-.lp-board.is-route-open .lp-stop .lp-extra,
-.lp-board.is-route-open .lp-actions .lp-extra {
+.lp-board.is-route-open .lp-stop .lp-extra {
   display: flex;
-}
-
-.lp-expand-hint {
-  margin: 0;
-  font-size: 12px;
-  color: var(--muted);
-}
-
-.lp-board.is-route-open .lp-expand-hint {
-  display: none;
 }
 
 .lp-actions {
