@@ -1,22 +1,39 @@
 import type { Marker, Tooltip } from 'leaflet'
 import L from 'leaflet'
 
-export const LABEL_DIRECTIONS = [
-  { direction: 'right' as const, offset: [14, 0] as [number, number] },
-  { direction: 'left' as const, offset: [-14, 0] as [number, number] },
-  { direction: 'top' as const, offset: [0, -16] as [number, number] },
-  { direction: 'bottom' as const, offset: [0, 16] as [number, number] },
-  { direction: 'right' as const, offset: [18, -16] as [number, number] },
-  { direction: 'right' as const, offset: [18, 16] as [number, number] },
-  { direction: 'left' as const, offset: [-18, -16] as [number, number] },
-  { direction: 'left' as const, offset: [-18, 16] as [number, number] },
-  { direction: 'top' as const, offset: [-16, -18] as [number, number] },
-  { direction: 'top' as const, offset: [16, -18] as [number, number] },
-  { direction: 'bottom' as const, offset: [-16, 18] as [number, number] },
-  { direction: 'bottom' as const, offset: [16, 18] as [number, number] },
-]
+type Dir = {
+  direction: 'right' | 'left' | 'top' | 'bottom'
+  offset: [number, number]
+}
 
-type Dir = (typeof LABEL_DIRECTIONS)[number]
+/** Candidate offsets at a few radii so cards can step clear of the route. */
+function buildDirections(): Dir[] {
+  const dirs: Dir[] = []
+  const radii = [16, 24, 34, 46]
+  for (const r of radii) {
+    const ring: Array<[Dir['direction'], number, number]> = [
+      ['right', r, 0],
+      ['left', -r, 0],
+      ['top', 0, -r],
+      ['bottom', 0, r],
+      ['right', r, -r * 0.75],
+      ['right', r, r * 0.75],
+      ['left', -r, -r * 0.75],
+      ['left', -r, r * 0.75],
+      ['top', -r * 0.75, -r],
+      ['top', r * 0.75, -r],
+      ['bottom', -r * 0.75, r],
+      ['bottom', r * 0.75, r],
+    ]
+    for (const [direction, x, y] of ring) {
+      dirs.push({ direction, offset: [Math.round(x), Math.round(y)] })
+    }
+  }
+  return dirs
+}
+
+export const LABEL_DIRECTIONS = buildDirections()
+
 type PathLatLng =
   | [number, number]
   | [number, number, number?]
@@ -145,21 +162,54 @@ function pathToSegments(map: L.Map, path: PathLatLng[]): Seg[] {
   return segs
 }
 
+/** Move an endpoint that sits on a pin out along the segment past pinClear. */
+function clipEndpoint(
+  x: number,
+  y: number,
+  ox: number,
+  oy: number,
+  pinX: number,
+  pinY: number,
+  pinClear: number,
+): { x: number; y: number } {
+  if (Math.hypot(x - pinX, y - pinY) >= pinClear) return { x, y }
+  const dx = ox - x
+  const dy = oy - y
+  const len = Math.hypot(dx, dy)
+  if (len < 1) return { x, y }
+  // Walk from the far end toward the pin and stop at pinClear from the pin.
+  const fx = ox
+  const fy = oy
+  const tx = pinX - fx
+  const ty = pinY - fy
+  const tlen = Math.hypot(tx, ty)
+  if (tlen < 1) return { x: fx, y: fy }
+  const keep = Math.max(0, tlen - pinClear)
+  return { x: fx + (tx / tlen) * keep, y: fy + (ty / tlen) * keep }
+}
+
 function rectHitsPath(
   rect: DOMRect,
   segments: Seg[],
   pinX: number,
   pinY: number,
-  pad = 10,
-  pinClear = 22,
+  pad = 18,
+  pinClear = 28,
 ): boolean {
+  // Pad for the visible stroke (~3–4px) plus a little breathing room.
   const fat = expandRect(rect, pad)
   for (const seg of segments) {
-    const d1 = Math.hypot(seg.x1 - pinX, seg.y1 - pinY)
-    const d2 = Math.hypot(seg.x2 - pinX, seg.y2 - pinY)
-    // Ignore the short stubs that end in the pin itself.
-    if (d1 < pinClear && d2 < pinClear) continue
-    if (segmentHitsRect(seg.x1, seg.y1, seg.x2, seg.y2, fat)) return true
+    const a = clipEndpoint(seg.x1, seg.y1, seg.x2, seg.y2, pinX, pinY, pinClear)
+    const b = clipEndpoint(seg.x2, seg.y2, seg.x1, seg.y1, pinX, pinY, pinClear)
+    if (a.x === b.x && a.y === b.y) continue
+    // Whole remaining stub still hugs this pin — ignore.
+    if (
+      Math.hypot(a.x - pinX, a.y - pinY) < pinClear &&
+      Math.hypot(b.x - pinX, b.y - pinY) < pinClear
+    ) {
+      continue
+    }
+    if (segmentHitsRect(a.x, a.y, b.x, b.y, fat)) return true
   }
   return false
 }
@@ -202,36 +252,30 @@ export function layoutStopLabels(
     const pinX = origin.left + pin.x
     const pinY = origin.top + pin.y
 
-    let found = false
+    type Cand = { dir: Dir; rect: DOMRect; hitLabel: boolean; hitPath: boolean }
+    const candidates: Cand[] = []
     for (const dir of LABEL_DIRECTIONS) {
       applyDirection(item.marker, dir)
       const rect = el.getBoundingClientRect()
       if (rect.width < 2 || rect.height < 2) continue
-      const hitLabel = placed.some((box) => rectsOverlap(rect, box))
-      if (hitLabel) continue
       if (!rectInside(rect, mapBox)) continue
-      if (segments.length > 0 && rectHitsPath(rect, segments, pinX, pinY)) {
-        continue
-      }
-      placed.push(rect)
-      found = true
-      break
+      const hitLabel = placed.some((box) => rectsOverlap(rect, box))
+      const hitPath =
+        segments.length > 0 && rectHitsPath(rect, segments, pinX, pinY)
+      candidates.push({ dir, rect, hitLabel, hitPath })
     }
-    if (!found) {
-      // Last resort: avoid other labels + stay on map, even if near the path.
-      for (const dir of LABEL_DIRECTIONS) {
-        applyDirection(item.marker, dir)
-        const rect = el.getBoundingClientRect()
-        if (rect.width < 2 || rect.height < 2) continue
-        const hitLabel = placed.some((box) => rectsOverlap(rect, box))
-        if (!hitLabel && rectInside(rect, mapBox)) {
-          placed.push(rect)
-          found = true
-          break
-        }
-      }
-    }
-    if (!found) {
+
+    const pick =
+      candidates.find((c) => !c.hitLabel && !c.hitPath) ||
+      // Prefer staying off the route even if two cards are a bit close.
+      candidates.find((c) => !c.hitPath) ||
+      candidates.find((c) => !c.hitLabel) ||
+      candidates[0]
+
+    if (pick) {
+      applyDirection(item.marker, pick.dir)
+      placed.push(pick.rect)
+    } else {
       el.classList.add('is-crowded')
       tip.setOpacity(0)
     }

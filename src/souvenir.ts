@@ -265,20 +265,34 @@ const RUNTIME = `
     el.classList.remove("is-crowded");
   }
 
-  var LABEL_DIRS = [
-    { direction: "right", offset: [14, 0] },
-    { direction: "left", offset: [-14, 0] },
-    { direction: "top", offset: [0, -16] },
-    { direction: "bottom", offset: [0, 16] },
-    { direction: "right", offset: [18, -16] },
-    { direction: "right", offset: [18, 16] },
-    { direction: "left", offset: [-18, -16] },
-    { direction: "left", offset: [-18, 16] },
-    { direction: "top", offset: [-16, -18] },
-    { direction: "top", offset: [16, -18] },
-    { direction: "bottom", offset: [-16, 18] },
-    { direction: "bottom", offset: [16, 18] }
-  ];
+  var LABEL_DIRS = (function () {
+    var dirs = [];
+    var radii = [16, 24, 34, 46];
+    for (var ri = 0; ri < radii.length; ri++) {
+      var r = radii[ri];
+      var ring = [
+        ["right", r, 0],
+        ["left", -r, 0],
+        ["top", 0, -r],
+        ["bottom", 0, r],
+        ["right", r, -r * 0.75],
+        ["right", r, r * 0.75],
+        ["left", -r, -r * 0.75],
+        ["left", -r, r * 0.75],
+        ["top", -r * 0.75, -r],
+        ["top", r * 0.75, -r],
+        ["bottom", -r * 0.75, r],
+        ["bottom", r * 0.75, r]
+      ];
+      for (var k = 0; k < ring.length; k++) {
+        dirs.push({
+          direction: ring[k][0],
+          offset: [Math.round(ring[k][1]), Math.round(ring[k][2])]
+        });
+      }
+    }
+    return dirs;
+  })();
 
   function pathSegments() {
     var pts = pathThroughStops(revealed);
@@ -334,8 +348,19 @@ const RUNTIME = `
     return d1 * d2 <= 0 && d3 * d4 <= 0;
   }
 
+  function clipEndpoint(x, y, ox, oy, pinX, pinY, pinClear) {
+    if (Math.hypot(x - pinX, y - pinY) >= pinClear) return { x: x, y: y };
+    var fx = ox, fy = oy;
+    var tx = pinX - fx, ty = pinY - fy;
+    var tlen = Math.hypot(tx, ty);
+    if (tlen < 1) return { x: fx, y: fy };
+    var keep = Math.max(0, tlen - pinClear);
+    return { x: fx + (tx / tlen) * keep, y: fy + (ty / tlen) * keep };
+  }
+
   function rectHitsPath(rect, segs, pinX, pinY) {
-    var pad = 10;
+    var pad = 18;
+    var pinClear = 28;
     var fat = {
       left: rect.left - pad,
       right: rect.right + pad,
@@ -344,10 +369,14 @@ const RUNTIME = `
     };
     for (var i = 0; i < segs.length; i++) {
       var seg = segs[i];
-      var d1 = Math.hypot(seg.x1 - pinX, seg.y1 - pinY);
-      var d2 = Math.hypot(seg.x2 - pinX, seg.y2 - pinY);
-      if (d1 < 22 && d2 < 22) continue;
-      if (segmentHitsRect(seg.x1, seg.y1, seg.x2, seg.y2, fat)) return true;
+      var a = clipEndpoint(seg.x1, seg.y1, seg.x2, seg.y2, pinX, pinY, pinClear);
+      var b = clipEndpoint(seg.x2, seg.y2, seg.x1, seg.y1, pinX, pinY, pinClear);
+      if (a.x === b.x && a.y === b.y) continue;
+      if (
+        Math.hypot(a.x - pinX, a.y - pinY) < pinClear &&
+        Math.hypot(b.x - pinX, b.y - pinY) < pinClear
+      ) continue;
+      if (segmentHitsRect(a.x, a.y, b.x, b.y, fat)) return true;
     }
     return false;
   }
@@ -374,7 +403,7 @@ const RUNTIME = `
       var pin = map.latLngToContainerPoint(m.getLatLng());
       var pinX = origin.left + pin.x;
       var pinY = origin.top + pin.y;
-      var found = false;
+      var cands = [];
       for (var d = 0; d < LABEL_DIRS.length; d++) {
         var dir = LABEL_DIRS[d];
         tip.options.direction = dir.direction;
@@ -382,46 +411,40 @@ const RUNTIME = `
         if (typeof tip._updatePosition === "function") tip._updatePosition();
         var rect = el.getBoundingClientRect();
         if (rect.width < 2 || rect.height < 2) continue;
-        var hit = false;
-        for (var p = 0; p < placed.length; p++) {
-          if (rectsOverlap(rect, placed[p])) { hit = true; break; }
-        }
         var inside =
           rect.left >= mapBox.left + 6 &&
           rect.right <= mapBox.right - 6 &&
           rect.top >= mapBox.top + 6 &&
           rect.bottom <= mapBox.bottom - 6;
-        if (hit || !inside) continue;
-        if (segs.length && rectHitsPath(rect, segs, pinX, pinY)) continue;
-        placed.push(rect);
-        found = true;
-        break;
+        if (!inside) continue;
+        var hitLabel = false;
+        for (var p = 0; p < placed.length; p++) {
+          if (rectsOverlap(rect, placed[p])) { hitLabel = true; break; }
+        }
+        var hitPath = segs.length && rectHitsPath(rect, segs, pinX, pinY);
+        cands.push({ dir: dir, rect: rect, hitLabel: hitLabel, hitPath: hitPath });
       }
-      if (!found) {
-        for (var d2 = 0; d2 < LABEL_DIRS.length; d2++) {
-          var dir2 = LABEL_DIRS[d2];
-          tip.options.direction = dir2.direction;
-          tip.options.offset = L.point(dir2.offset[0], dir2.offset[1]);
-          if (typeof tip._updatePosition === "function") tip._updatePosition();
-          var rect2 = el.getBoundingClientRect();
-          if (rect2.width < 2 || rect2.height < 2) continue;
-          var hit2 = false;
-          for (var p2 = 0; p2 < placed.length; p2++) {
-            if (rectsOverlap(rect2, placed[p2])) { hit2 = true; break; }
-          }
-          var inside2 =
-            rect2.left >= mapBox.left + 6 &&
-            rect2.right <= mapBox.right - 6 &&
-            rect2.top >= mapBox.top + 6 &&
-            rect2.bottom <= mapBox.bottom - 6;
-          if (!hit2 && inside2) {
-            placed.push(rect2);
-            found = true;
-            break;
-          }
+      var pick = null;
+      for (var c1 = 0; c1 < cands.length; c1++) {
+        if (!cands[c1].hitLabel && !cands[c1].hitPath) { pick = cands[c1]; break; }
+      }
+      if (!pick) {
+        for (var c2 = 0; c2 < cands.length; c2++) {
+          if (!cands[c2].hitPath) { pick = cands[c2]; break; }
         }
       }
-      if (!found) {
+      if (!pick) {
+        for (var c3 = 0; c3 < cands.length; c3++) {
+          if (!cands[c3].hitLabel) { pick = cands[c3]; break; }
+        }
+      }
+      if (!pick && cands.length) pick = cands[0];
+      if (pick) {
+        tip.options.direction = pick.dir.direction;
+        tip.options.offset = L.point(pick.dir.offset[0], pick.dir.offset[1]);
+        if (typeof tip._updatePosition === "function") tip._updatePosition();
+        placed.push(pick.rect);
+      } else {
         el.classList.add("is-crowded");
         tip.setOpacity(0);
       }
