@@ -266,15 +266,97 @@ const RUNTIME = `
   }
 
   var LABEL_DIRS = [
-    { direction: "right", offset: [10, 0] },
-    { direction: "left", offset: [-10, 0] },
-    { direction: "top", offset: [0, -12] },
-    { direction: "bottom", offset: [0, 12] }
+    { direction: "right", offset: [14, 0] },
+    { direction: "left", offset: [-14, 0] },
+    { direction: "top", offset: [0, -16] },
+    { direction: "bottom", offset: [0, 16] },
+    { direction: "right", offset: [18, -16] },
+    { direction: "right", offset: [18, 16] },
+    { direction: "left", offset: [-18, -16] },
+    { direction: "left", offset: [-18, 16] },
+    { direction: "top", offset: [-16, -18] },
+    { direction: "top", offset: [16, -18] },
+    { direction: "bottom", offset: [-16, 18] },
+    { direction: "bottom", offset: [16, 18] }
   ];
+
+  function pathSegments() {
+    var pts = pathThroughStops(revealed);
+    if (!pts || pts.length < 2) return [];
+    var origin = map.getContainer().getBoundingClientRect();
+    var screen = pts.map(function (ll) {
+      var p = map.latLngToContainerPoint(ll);
+      return { x: origin.left + p.x, y: origin.top + p.y };
+    });
+    var step = screen.length > 80 ? Math.ceil(screen.length / 80) : 1;
+    var sampled = [];
+    for (var i = 0; i < screen.length; i += step) sampled.push(screen[i]);
+    if (sampled[sampled.length - 1] !== screen[screen.length - 1]) {
+      sampled.push(screen[screen.length - 1]);
+    }
+    var segs = [];
+    for (var s = 0; s < sampled.length - 1; s++) {
+      var a = sampled[s];
+      var b = sampled[s + 1];
+      if (a.x === b.x && a.y === b.y) continue;
+      segs.push({ x1: a.x, y1: a.y, x2: b.x, y2: b.y });
+    }
+    return segs;
+  }
+
+  function segmentHitsRect(x1, y1, x2, y2, r) {
+    if (
+      (x1 >= r.left && x1 <= r.right && y1 >= r.top && y1 <= r.bottom) ||
+      (x2 >= r.left && x2 <= r.right && y2 >= r.top && y2 <= r.bottom)
+    ) {
+      return true;
+    }
+    var edges = [
+      [r.left, r.top, r.right, r.top],
+      [r.right, r.top, r.right, r.bottom],
+      [r.right, r.bottom, r.left, r.bottom],
+      [r.left, r.bottom, r.left, r.top]
+    ];
+    for (var e = 0; e < edges.length; e++) {
+      var ed = edges[e];
+      if (segmentsCross(x1, y1, x2, y2, ed[0], ed[1], ed[2], ed[3])) return true;
+    }
+    return false;
+  }
+
+  function segmentsCross(ax, ay, bx, by, cx, cy, dx, dy) {
+    var abx = bx - ax, aby = by - ay;
+    var d1 = abx * (cy - ay) - aby * (cx - ax);
+    var d2 = abx * (dy - ay) - aby * (dx - ax);
+    var cdx = dx - cx, cdy = dy - cy;
+    var d3 = cdx * (ay - cy) - cdy * (ax - cx);
+    var d4 = cdx * (by - cy) - cdy * (bx - cx);
+    return d1 * d2 <= 0 && d3 * d4 <= 0;
+  }
+
+  function rectHitsPath(rect, segs, pinX, pinY) {
+    var pad = 10;
+    var fat = {
+      left: rect.left - pad,
+      right: rect.right + pad,
+      top: rect.top - pad,
+      bottom: rect.bottom + pad
+    };
+    for (var i = 0; i < segs.length; i++) {
+      var seg = segs[i];
+      var d1 = Math.hypot(seg.x1 - pinX, seg.y1 - pinY);
+      var d2 = Math.hypot(seg.x2 - pinX, seg.y2 - pinY);
+      if (d1 < 22 && d2 < 22) continue;
+      if (segmentHitsRect(seg.x1, seg.y1, seg.x2, seg.y2, fat)) return true;
+    }
+    return false;
+  }
 
   function layoutLabels() {
     if (!markers) return;
     var mapBox = map.getContainer().getBoundingClientRect();
+    var origin = mapBox;
+    var segs = look.path === "none" ? [] : pathSegments();
     var placed = [];
     var mode = tourDone() ? (showLocations ? "all" : "hidden") : "play";
     for (var i = markers.length - 1; i >= 0; i--) {
@@ -289,6 +371,9 @@ const RUNTIME = `
       el.classList.remove("is-crowded");
       if (!shown) continue;
       tip.setOpacity(1);
+      var pin = map.latLngToContainerPoint(m.getLatLng());
+      var pinX = origin.left + pin.x;
+      var pinY = origin.top + pin.y;
       var found = false;
       for (var d = 0; d < LABEL_DIRS.length; d++) {
         var dir = LABEL_DIRS[d];
@@ -306,10 +391,34 @@ const RUNTIME = `
           rect.right <= mapBox.right - 6 &&
           rect.top >= mapBox.top + 6 &&
           rect.bottom <= mapBox.bottom - 6;
-        if (!hit && inside) {
-          placed.push(rect);
-          found = true;
-          break;
+        if (hit || !inside) continue;
+        if (segs.length && rectHitsPath(rect, segs, pinX, pinY)) continue;
+        placed.push(rect);
+        found = true;
+        break;
+      }
+      if (!found) {
+        for (var d2 = 0; d2 < LABEL_DIRS.length; d2++) {
+          var dir2 = LABEL_DIRS[d2];
+          tip.options.direction = dir2.direction;
+          tip.options.offset = L.point(dir2.offset[0], dir2.offset[1]);
+          if (typeof tip._updatePosition === "function") tip._updatePosition();
+          var rect2 = el.getBoundingClientRect();
+          if (rect2.width < 2 || rect2.height < 2) continue;
+          var hit2 = false;
+          for (var p2 = 0; p2 < placed.length; p2++) {
+            if (rectsOverlap(rect2, placed[p2])) { hit2 = true; break; }
+          }
+          var inside2 =
+            rect2.left >= mapBox.left + 6 &&
+            rect2.right <= mapBox.right - 6 &&
+            rect2.top >= mapBox.top + 6 &&
+            rect2.bottom <= mapBox.bottom - 6;
+          if (!hit2 && inside2) {
+            placed.push(rect2);
+            found = true;
+            break;
+          }
         }
       }
       if (!found) {

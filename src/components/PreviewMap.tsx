@@ -259,7 +259,11 @@ export function PreviewMap({
           return { marker, visible: shown }
         })
         .filter((row): row is { marker: L.Marker; visible: boolean } => Boolean(row))
-      layoutStopLabels(map, items)
+      layoutStopLabels(
+          map,
+          items,
+          look.path !== 'none' ? visLatLngs : [],
+        )
     }
     requestAnimationFrame(() => requestAnimationFrame(runLayout))
     map.on('zoomend', runLayout)
