@@ -17,7 +17,10 @@ export const LABEL_DIRECTIONS = [
 ]
 
 type Dir = (typeof LABEL_DIRECTIONS)[number]
-type PathLatLng = [number, number] | { lat: number; lng: number }
+type PathLatLng =
+  | [number, number]
+  | [number, number, number?]
+  | { lat: number; lng: number }
 
 type Seg = { x1: number; y1: number; x2: number; y2: number }
 
