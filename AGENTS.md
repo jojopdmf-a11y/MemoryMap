@@ -13,7 +13,7 @@ npm ci
 npm run dev
 ```
 
-Vite binds **0.0.0.0:43123** (`strictPort`). Open that URL, pick a sample trip under `public/` (for example `caribbean-cruise.csv`), plot it, and use Play. Guest download stays free while Paddle is sandbox.
+Vite binds **0.0.0.0:43123** (`strictPort`). Open that URL, pick a sample trip under `public/` (for example `classic-road-trip.csv`), plot it, and use Play. Guest download stays free while Paddle is sandbox.
 
 Local auth (`vite.auth.ts`) uses in-memory KV. **Email me a link** prints the magic link on the page (`ALLOW_DEV_LINKS` defaults to `1`). Do not require Resend, Google, or Paddle secrets to exercise mapping.
 

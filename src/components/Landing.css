@@ -256,9 +256,10 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   grid-auto-rows: minmax(0, 1fr);
-  gap: 8px;
+  gap: 6px;
   flex: 1;
   min-height: 0;
+  overflow-y: auto;
 }
 
 .lp-sample {
@@ -266,8 +267,8 @@
   height: 100%;
   display: grid;
   grid-template-rows: minmax(0, 1fr) auto;
-  gap: 6px;
-  padding: 8px;
+  gap: 4px;
+  padding: 6px;
   border: 1px solid var(--line);
   background: color-mix(in srgb, var(--paper) 70%, white);
   border-radius: var(--radius-sm);
@@ -283,7 +284,7 @@
 }
 
 .lp-thumb {
-  min-height: 52px;
+  min-height: 36px;
   border-radius: 8px;
   background:
     radial-gradient(circle at 30% 40%, color-mix(in srgb, var(--flare) 28%, transparent), transparent 42%),
@@ -292,20 +293,26 @@
   mask: url('/world-ghost.svg') 50% 40% / 160% no-repeat;
 }
 
-.lp-thumb.is-caribbean {
-  background-color: #4aa3c4;
+.lp-thumb.is-silkroad {
+  background-color: #b08a4a;
 }
-.lp-thumb.is-europe {
-  background-color: #5b8f6a;
+.lp-thumb.is-oregon {
+  background-color: #6b8f4e;
 }
-.lp-thumb.is-nashville {
+.lp-thumb.is-roadtrip {
   background-color: #c4844a;
 }
-.lp-thumb.is-appalachian {
-  background-color: #3f6b4e;
+.lp-thumb.is-camino {
+  background-color: #8b6b4a;
 }
-.lp-thumb.is-asia {
-  background-color: #b45a4a;
+.lp-thumb.is-transsiberian {
+  background-color: #4a6b8f;
+}
+.lp-thumb.is-grandtour {
+  background-color: #5b8f6a;
+}
+.lp-thumb.is-appian {
+  background-color: #8f5b4a;
 }
 
 .lp-sample strong {
