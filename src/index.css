@@ -116,13 +116,26 @@ body {
 }
 
 @media (max-width: 900px) {
-  #root:has(.app.is-landing) {
+  html:has(.app.is-landing),
+  body:has(.app.is-landing) {
+    height: auto;
+    min-height: 100%;
+    overflow-x: clip;
     overflow-y: auto;
+  }
+
+  #root:has(.app.is-landing) {
+    height: auto;
+    min-height: 100%;
+    overflow: visible;
+    display: block;
   }
 
   #root:has(.app.is-landing) > .app.is-landing {
     height: auto;
+    min-height: 0;
     overflow: visible;
+    flex: none;
   }
 }
 

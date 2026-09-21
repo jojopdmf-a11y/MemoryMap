@@ -14,6 +14,15 @@
   flex-direction: column;
 }
 
+@media (max-width: 900px) {
+  .app.is-landing {
+    flex: none;
+    height: auto;
+    min-height: 100svh;
+    overflow: visible;
+  }
+}
+
 .kicker {
   margin: 0;
   font-size: 11px;
@@ -1975,53 +1984,36 @@ a.ghost:hover {
   }
 
   .app.is-landing .topbar {
-    position: relative;
-    padding: 8px 16px 0;
+    position: absolute;
+    padding: 10px 12px;
+    gap: 8px;
   }
 
-  .app.is-landing .dropzone {
-    padding: 8px 16px 36px;
+  .app.is-landing .topbar-tools {
+    flex-wrap: nowrap;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 8px;
   }
 
-  .landing-stage {
-    display: flex;
-    flex-direction: column;
+  .app.is-landing .topbar-guides {
+    flex-shrink: 0;
+    padding: 8px 10px;
+    font-size: 13px;
   }
 
-  .brand-hero {
-    margin-bottom: 16px;
-    order: 1;
+  .app.is-landing .account-chip {
+    padding: 8px 10px;
   }
 
-  .sample-trips {
-    overflow: visible;
-    margin: 0 0 22px;
-    padding-inline: 0;
-    order: 2;
+  .app.is-landing .account-who {
+    font-size: 13px;
   }
 
-  .trip-start {
-    order: 3;
-  }
-
-  .brand-mark {
-    font-size: clamp(28px, 8.4vw, 36px);
-    letter-spacing: 0.12em;
-    padding-inline-start: 0.12em;
-  }
-
-  .brand-hero .tagline {
-    font-size: 14px;
-    letter-spacing: 0.04em;
-    padding-inline-start: 0;
-    max-width: 16em;
-  }
-
-  .brand-hero .lede {
+  .app.is-landing .account-credits {
     display: none;
   }
 
-  .drop-copy-wide,
   .drop-format-full {
     display: none;
   }
