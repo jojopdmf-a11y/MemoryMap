@@ -395,3 +395,45 @@ export async function fetchFeedbackNotes(): Promise<FeedbackInboxNote[]> {
     ]
   })
 }
+
+export type LoginHistoryRow = {
+  id: string
+  createdAt: string
+  email: string
+  method: 'email' | 'google'
+  country: string
+}
+
+export async function fetchLoginHistory(): Promise<LoginHistoryRow[]> {
+  const res = await fetch('/api/account/login-history', {
+    credentials: 'same-origin',
+  })
+  const data = await readJson(res)
+  if (!res.ok) {
+    throw new Error(
+      typeof data.error === 'string'
+        ? data.error
+        : 'Could not load login history.',
+    )
+  }
+  if (!Array.isArray(data.logins)) return []
+  return data.logins.flatMap((row) => {
+    if (!row || typeof row !== 'object') return []
+    const item = row as Partial<LoginHistoryRow>
+    if (typeof item.id !== 'string' || typeof item.email !== 'string') {
+      return []
+    }
+    const method =
+      item.method === 'google' || item.method === 'email' ? item.method : 'email'
+    return [
+      {
+        id: item.id,
+        createdAt:
+          typeof item.createdAt === 'string' ? item.createdAt : nowIso(),
+        email: item.email,
+        method,
+        country: typeof item.country === 'string' ? item.country : '',
+      },
+    ]
+  })
+}

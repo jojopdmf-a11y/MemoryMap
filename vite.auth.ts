@@ -42,6 +42,9 @@ const localSouvenirStore: SouvenirStore = {
   async put(key, value, _options) {
     localSouvenirs.set(key, value)
   },
+  async delete(key) {
+    localSouvenirs.delete(key)
+  },
 }
 
 function localAuthEnv(): AuthEnv & {

@@ -1,5 +1,6 @@
 import type { AuthEnv } from './auth.ts'
 import { PREVIEW_GRANT_CREDITS } from '../src/creditPacks.ts'
+import { listLogins } from './audit.ts'
 import {
   isFeedbackInbox,
   listFeedbackNotes,
@@ -192,6 +193,33 @@ export async function handleAccount(
           email: note.email,
           source: note.source,
           emailed: note.emailed,
+        })),
+      })
+    } catch (err) {
+      return json(
+        {
+          error:
+            err instanceof Error ? err.message : 'Sign in to continue.',
+        },
+        statusFor(err),
+      )
+    }
+  }
+
+  if (url.pathname === '/api/account/login-history' && request.method === 'GET') {
+    try {
+      const email = await emailFromRequest(request, env.AUTH_SECRET)
+      if (!isFeedbackInbox(email, env)) {
+        return json({ error: 'Not found.' }, 404)
+      }
+      const logins = await listLogins(env)
+      return json({
+        logins: logins.map((row) => ({
+          id: row.id,
+          createdAt: row.createdAt,
+          email: row.email,
+          method: row.method,
+          country: row.country,
         })),
       })
     } catch (err) {

@@ -10,6 +10,7 @@ export type SouvenirStore = {
     value: string,
     options?: { expirationTtl?: number },
   ) => Promise<void>
+  delete?: (key: string) => Promise<void>
 }
 
 export type SouvenirEnv = {

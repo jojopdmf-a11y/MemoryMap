@@ -1,5 +1,6 @@
 import { ensureAccount, publicAccount } from './ledger.ts'
 import { isFeedbackInbox } from './feedback.ts'
+import { recordLogin } from './audit.ts'
 import { cookieHeader, signSession } from './session.ts'
 import type { SouvenirStore } from './souvenir.ts'
 
@@ -31,12 +32,18 @@ async function signedIn(
   request: Request,
   env: AuthEnv,
   email: string,
+  method: 'email' | 'google',
 ): Promise<Response> {
   if (!env.AUTH_SECRET) {
     return json({ error: 'Email sign-in is not connected yet.' }, 503)
   }
   try {
     const account = await ensureAccount(env, email)
+    try {
+      await recordLogin(env, request, email, method)
+    } catch {
+      // Login should still succeed if the audit write fails.
+    }
     const token = await signSession(email, env.AUTH_SECRET)
     return new Response(
       JSON.stringify({
@@ -246,7 +253,7 @@ async function redeem(request: Request, env: AuthEnv): Promise<Response> {
   }
   try {
     const email = await readMagicToken(String(body.token ?? ''), env.AUTH_SECRET)
-    return signedIn(request, env, email)
+    return signedIn(request, env, email, 'email')
   } catch (err) {
     return json(
       {
@@ -299,7 +306,7 @@ async function googleSignIn(request: Request, env: AuthEnv): Promise<Response> {
     if (!verified || !email) {
       return json({ error: 'Google did not share a verified email.' }, 401)
     }
-    return signedIn(request, env, email)
+    return signedIn(request, env, email, 'google')
   }
 
   if (accessToken) {
@@ -319,7 +326,7 @@ async function googleSignIn(request: Request, env: AuthEnv): Promise<Response> {
     if (!email || !verified) {
       return json({ error: 'Google did not share a verified email.' }, 401)
     }
-    return signedIn(request, env, email)
+    return signedIn(request, env, email, 'google')
   }
 
   return json({ error: 'Google sign-in failed.' }, 400)

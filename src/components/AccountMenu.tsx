@@ -2,12 +2,14 @@ import { useEffect, useId, useRef, useState } from 'react'
 import {
   claimPreviewCredits,
   fetchFeedbackNotes,
+  fetchLoginHistory,
   formatWhen,
   keepDownload,
   setAccountNotice,
   signOut,
   useAccount,
   type FeedbackInboxNote,
+  type LoginHistoryRow,
 } from '../accountStore'
 import {
   CREDIT_PACKS,
@@ -33,6 +35,8 @@ export function AccountMenu() {
   const [buying, setBuying] = useState(false)
   const [notes, setNotes] = useState<FeedbackInboxNote[] | null>(null)
   const [notesError, setNotesError] = useState<string | null>(null)
+  const [logins, setLogins] = useState<LoginHistoryRow[] | null>(null)
+  const [loginsError, setLoginsError] = useState<string | null>(null)
   const rootRef = useRef<HTMLDivElement>(null)
   const panelId = useId()
 
@@ -59,6 +63,7 @@ export function AccountMenu() {
     if (!open || !account?.inbox) return
     let cancelled = false
     setNotesError(null)
+    setLoginsError(null)
     void fetchFeedbackNotes()
       .then((rows) => {
         if (!cancelled) setNotes(rows)
@@ -67,6 +72,17 @@ export function AccountMenu() {
         if (!cancelled) {
           setNotesError(
             err instanceof Error ? err.message : 'Could not load feedback notes.',
+          )
+        }
+      })
+    void fetchLoginHistory()
+      .then((rows) => {
+        if (!cancelled) setLogins(rows)
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          setLoginsError(
+            err instanceof Error ? err.message : 'Could not load login history.',
           )
         }
       })
@@ -235,6 +251,57 @@ export function AccountMenu() {
                       </li>
                     ))}
                   </ul>
+                </div>
+              )}
+              {account.inbox && (
+                <div className="history-block">
+                  <p className="kicker">Recent logins</p>
+                  {loginsError && (
+                    <p className="hint" role="alert">
+                      {loginsError}
+                    </p>
+                  )}
+                  {logins === null && !loginsError ? (
+                    <p className="hint">Loading logins…</p>
+                  ) : logins && logins.length === 0 ? (
+                    <p className="hint">
+                      No successful logins recorded yet. New sign-ins show up
+                      here.
+                    </p>
+                  ) : (
+                    <ul className="history-list note-list">
+                      {(logins ?? []).slice(0, 40).map((row) => {
+                        const when = (() => {
+                          const date = new Date(row.createdAt)
+                          if (Number.isNaN(date.getTime())) {
+                            return formatWhen(row.createdAt) || 'Just now'
+                          }
+                          return date.toLocaleString('en-US', {
+                            month: 'short',
+                            day: 'numeric',
+                            hour: 'numeric',
+                            minute: '2-digit',
+                          })
+                        })()
+                        return (
+                          <li key={row.id}>
+                            <div>
+                              <strong>
+                                {when}
+                                {` · ${row.email}`}
+                              </strong>
+                              <p>
+                                {row.method === 'google'
+                                  ? 'Google'
+                                  : 'Email link'}
+                                {row.country ? ` · ${row.country}` : ''}
+                              </p>
+                            </div>
+                          </li>
+                        )
+                      })}
+                    </ul>
+                  )}
                 </div>
               )}
               {account.inbox && (
