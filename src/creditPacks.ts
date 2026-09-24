@@ -1,6 +1,8 @@
 export const PADDLE_CLIENT_TOKEN = 'test_672372ebb1891ee2d818a7bc293'
 export const PADDLE_SANDBOX: boolean = true
 export const PREVIEW_GRANT_CREDITS = 3
+/** Reserved until go-live; granted at signup during preview. Not spendable yet. */
+export const LAUNCH_CREDITS_GRANT = 5
 
 export const CREDIT_PACKS = [
   {

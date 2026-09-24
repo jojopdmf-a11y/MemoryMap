@@ -33,6 +33,7 @@ export type AccountRecord = {
   email: string
   createdAt: string
   credits: number
+  launchCredits: number
   purchases: Purchase[]
   library: LibraryItem[]
   inbox: boolean
@@ -178,6 +179,9 @@ function applyServerAccount(data: Record<string, unknown>): AccountRecord {
       typeof data.createdAt === 'string' ? data.createdAt : nowIso(),
     credits: Number.isFinite(Number(data.credits))
       ? Math.max(0, Number(data.credits))
+      : 0,
+    launchCredits: Number.isFinite(Number(data.launchCredits))
+      ? Math.max(0, Number(data.launchCredits))
       : 0,
     purchases: Array.isArray(data.purchases)
       ? data.purchases.map(asPurchase).filter((item): item is Purchase => Boolean(item))

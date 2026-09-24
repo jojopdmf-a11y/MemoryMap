@@ -25,7 +25,7 @@ import {
   DEFAULT_PAYMENT_LINK_HELP,
   openCreditCheckout,
 } from '../paddleCheckout'
-import { claimChrome, onChromeClaim } from '../chrome'
+import { claimChrome, onChromeClaim, onChromeOpen } from '../chrome'
 import { SignInForm } from './SignInForm'
 
 export function AccountMenu() {
@@ -41,6 +41,15 @@ export function AccountMenu() {
   const panelId = useId()
 
   useEffect(() => onChromeClaim('account', () => setOpen(false)), [])
+
+  useEffect(
+    () =>
+      onChromeOpen('account', () => {
+        claimChrome('account')
+        setOpen(true)
+      }),
+    [],
+  )
 
   useEffect(() => {
     if (!open) return
@@ -203,6 +212,13 @@ export function AccountMenu() {
                   ? ` You have ${account.credits} credit${account.credits === 1 ? '' : 's'}.`
                   : ''}
               </p>
+              {PADDLE_SANDBOX && (
+                <p className="account-launch-credits" role="status">
+                  {account.launchCredits} launch credit
+                  {account.launchCredits === 1 ? '' : 's'}, unlock when
+                  MemoryMap launches
+                </p>
+              )}
               {PADDLE_SANDBOX && account.credits < 1 && (
                 <div className="history-block">
                   <p className="kicker">Preview credits</p>

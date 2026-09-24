@@ -2,6 +2,8 @@ import type { SouvenirStore } from './souvenir.ts'
 
 export type LedgerEnv = {
   SOUVENIRS?: SouvenirStore
+  /** Preview when not exactly `"0"`. Matches wrangler `[vars] PADDLE_SANDBOX`. */
+  PADDLE_SANDBOX?: string
 }
 
 export type LedgerPurchase = {
@@ -27,12 +29,15 @@ export type LedgerAccount = {
   email: string
   createdAt: string
   credits: number
+  /** Reserved until go-live. Never spent by keep/download during preview. */
+  launchCredits: number
   purchases: LedgerPurchase[]
   library: LedgerLibraryItem[]
 }
 
 const ACCOUNT_PREFIX = 'acct:v1:'
 const LIBRARY_CAP = 40
+export const LAUNCH_CREDITS_GRANT = 5
 
 function nowIso(): string {
   return new Date().toISOString()
@@ -46,30 +51,55 @@ function accountKey(email: string): string {
   return `${ACCOUNT_PREFIX}${email.trim().toLowerCase()}`
 }
 
+function isPreview(env: LedgerEnv): boolean {
+  return env.PADDLE_SANDBOX !== '0'
+}
+
 function emptyAccount(email: string): LedgerAccount {
   return {
     email: email.trim().toLowerCase(),
     createdAt: nowIso(),
     credits: 0,
+    launchCredits: 0,
     purchases: [],
     library: [],
   }
 }
 
-function asAccount(raw: string | null, email: string): LedgerAccount {
-  if (!raw) return emptyAccount(email)
+function parseAccount(
+  raw: string | null,
+  email: string,
+): { account: LedgerAccount; launchCreditsDefined: boolean } {
+  if (!raw) {
+    return { account: emptyAccount(email), launchCreditsDefined: false }
+  }
   try {
-    const parsed = JSON.parse(raw) as Partial<LedgerAccount>
+    const parsed = JSON.parse(raw) as Partial<LedgerAccount> &
+      Record<string, unknown>
+    const launchCreditsDefined = Object.prototype.hasOwnProperty.call(
+      parsed,
+      'launchCredits',
+    )
+    const launchRaw = Number(parsed.launchCredits)
     return {
-      email: email.trim().toLowerCase(),
-      createdAt:
-        typeof parsed.createdAt === 'string' ? parsed.createdAt : nowIso(),
-      credits: Number.isFinite(parsed.credits) ? Math.max(0, Number(parsed.credits)) : 0,
-      purchases: Array.isArray(parsed.purchases) ? parsed.purchases : [],
-      library: Array.isArray(parsed.library) ? parsed.library : [],
+      account: {
+        email: email.trim().toLowerCase(),
+        createdAt:
+          typeof parsed.createdAt === 'string' ? parsed.createdAt : nowIso(),
+        credits: Number.isFinite(parsed.credits)
+          ? Math.max(0, Number(parsed.credits))
+          : 0,
+        launchCredits:
+          launchCreditsDefined && Number.isFinite(launchRaw)
+            ? Math.max(0, launchRaw)
+            : 0,
+        purchases: Array.isArray(parsed.purchases) ? parsed.purchases : [],
+        library: Array.isArray(parsed.library) ? parsed.library : [],
+      },
+      launchCreditsDefined,
     }
   } catch {
-    return emptyAccount(email)
+    return { account: emptyAccount(email), launchCreditsDefined: false }
   }
 }
 
@@ -79,7 +109,7 @@ export async function readAccount(
 ): Promise<LedgerAccount> {
   const key = accountKey(email)
   const raw = (await env.SOUVENIRS?.get(key)) ?? null
-  return asAccount(raw, email)
+  return parseAccount(raw, email).account
 }
 
 async function writeAccount(
@@ -98,11 +128,28 @@ export async function ensureAccount(
   env: LedgerEnv,
   email: string,
 ): Promise<LedgerAccount> {
-  const existing = await readAccount(env, email)
   const key = accountKey(email)
   const raw = (await env.SOUVENIRS?.get(key)) ?? null
-  if (!raw) await writeAccount(env, existing)
-  return existing
+  const { account, launchCreditsDefined } = parseAccount(raw, email)
+  let next = account
+  let dirty = !raw
+
+  // TODO(go-live): when preview ends (PADDLE_SANDBOX === "0"), convert each
+  // account's launchCredits into spendable credits once. Share-open bonus
+  // (+1 per open, cap +10, only on maps kept with launch credits) lands then too.
+
+  if (!launchCreditsDefined) {
+    if (isPreview(env)) {
+      next = { ...next, launchCredits: LAUNCH_CREDITS_GRANT }
+      dirty = true
+    } else {
+      next = { ...next, launchCredits: 0 }
+      dirty = true
+    }
+  }
+
+  if (dirty) await writeAccount(env, next)
+  return next
 }
 
 export async function applyPurchase(
@@ -184,6 +231,7 @@ export function publicAccount(account: LedgerAccount) {
     email: account.email,
     createdAt: account.createdAt,
     credits: account.credits,
+    launchCredits: account.launchCredits,
     purchases: account.purchases,
     library: account.library,
   }

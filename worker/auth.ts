@@ -11,6 +11,7 @@ export type AuthEnv = {
   FEEDBACK_TO?: string
   GOOGLE_CLIENT_ID?: string
   ALLOW_DEV_LINKS?: string
+  PADDLE_SANDBOX?: string
   SOUVENIRS?: SouvenirStore
 }
 

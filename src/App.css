@@ -421,6 +421,50 @@
   white-space: nowrap;
 }
 
+.preview-banner-launch {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 10px 14px;
+}
+
+.preview-banner-launch p {
+  margin: 0;
+  max-width: 42em;
+  text-align: left;
+}
+
+.preview-banner-cta {
+  flex-shrink: 0;
+  padding: 7px 12px;
+  border: 1px solid color-mix(in srgb, var(--terra) 55%, transparent);
+  border-radius: var(--radius-sm);
+  background: var(--terra);
+  color: white;
+  font-family: var(--sans);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.preview-banner-cta:hover {
+  filter: brightness(1.05);
+}
+
+.account-launch-credits {
+  margin: 0 0 4px;
+  padding: 8px 10px;
+  border: 1px solid color-mix(in srgb, var(--terra) 28%, transparent);
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--terra) 10%, var(--paper));
+  font-family: var(--sans);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--terra);
+  line-height: 1.35;
+}
+
 .app.is-landing .topbar {
   position: absolute;
   top: 0;
@@ -1973,6 +2017,15 @@ a.ghost:hover {
     font-size: 12px;
     padding-top: 8px;
     padding-bottom: 8px;
+  }
+
+  .preview-banner-launch {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .preview-banner-launch p {
+    text-align: center;
   }
 
   .preview-banner a {
