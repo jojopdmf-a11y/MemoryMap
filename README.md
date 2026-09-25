@@ -15,7 +15,7 @@ Flexible, case-insensitive headers:
 - **lat** / **lng** (optional): skip geocoding when both are present
 - **title** / name / ship: marker label
 - **notes**: popup text
-- **photo** / image / picture (optional): public https link to a stop photo. During Play it appears in the photo window (placement is under the map tools). Download bakes a resized JPEG copy into the souvenir so it works offline.
+- **photo** / image / picture (optional): public https link to a stop photo. Google Drive share/`uc?id=` links work. During Play it appears in the photo window (placement is under the map tools). Download bakes a resized JPEG copy into the souvenir so it works offline.
 
 Excel (`.xlsx`) and Google Sheets links work the same way. If the workbook has several tabs, you pick which one to plot. Apple Numbers needs an Excel or CSV export first.
 

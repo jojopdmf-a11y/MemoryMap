@@ -10,6 +10,7 @@ import { StopTable } from './components/StopTable'
 import {
   createBlankStop,
   displayDate,
+  displayPhotoSrc,
   parseCsv,
   parseDate,
   titleFromFilename,
@@ -465,7 +466,7 @@ export default function App() {
                 >
                   <span className="map-photo-kicker">Photo</span>
                   <img
-                    src={currentPhoto}
+                    src={displayPhotoSrc(currentPhoto)}
                     alt=""
                     onLoad={() => {
                       window.dispatchEvent(new Event('mm-chrome-resize'))

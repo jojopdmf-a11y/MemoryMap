@@ -601,7 +601,8 @@ const RUNTIME = `
         photoImg.removeAttribute("src");
       } else {
         photoBox.className = "mm-photo is-" + photoCorner;
-        if (photoImg.getAttribute("src") !== src) {
+        if ((photoImg.getAttribute("data-photo-url") || "") !== src) {
+          photoImg.setAttribute("data-photo-url", src);
           photoImg.onload = function () {
             requestAnimationFrame(function () {
               requestAnimationFrame(layoutLabels);
@@ -611,7 +612,10 @@ const RUNTIME = `
             photoBox.hidden = true;
             requestAnimationFrame(layoutLabels);
           };
-          photoImg.setAttribute("src", src);
+          var showSrc = src.indexOf("data:") === 0
+            ? src
+            : ("/api/photo?url=" + encodeURIComponent(src));
+          photoImg.setAttribute("src", showSrc);
         }
         photoBox.hidden = false;
       }

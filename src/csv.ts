@@ -243,10 +243,34 @@ export function normalizePhotoUrl(raw: string): string {
   try {
     const url = new URL(value)
     if (url.protocol !== 'http:' && url.protocol !== 'https:') return ''
+    const driveId = googleDriveFileId(url)
+    // Direct Drive uc/file links often fail as <img src>; lh3 serves them inline.
+    if (driveId) return `https://lh3.googleusercontent.com/d/${driveId}`
     return url.href
   } catch {
     return ''
   }
+}
+
+function googleDriveFileId(url: URL): string | null {
+  const host = url.hostname.toLowerCase()
+  if (
+    host === 'drive.google.com' ||
+    host === 'docs.google.com' ||
+    host === 'drive.usercontent.google.com'
+  ) {
+    const id = url.searchParams.get('id')?.trim()
+    if (id) return id
+    const match = url.pathname.match(/\/file\/d\/([^/]+)/)
+    if (match?.[1]) return match[1]
+  }
+  return null
+}
+
+/** Browser-safe image URL; picky hosts (Google Drive) go through our proxy. */
+export function displayPhotoSrc(url: string): string {
+  if (!url || url.startsWith('data:')) return url
+  return `/api/photo?url=${encodeURIComponent(url)}`
 }
 
 /** Skip banner rows (e.g. "MemoryMap Template") and start at the real header. */
