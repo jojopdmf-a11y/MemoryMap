@@ -51,6 +51,8 @@ export default function App() {
   const [tracing, setTracing] = useState(false)
   const [downloadOpen, setDownloadOpen] = useState(false)
   const [photoBroken, setPhotoBroken] = useState(false)
+  /** Pin click focus for date/photo chips; cleared when Play/scrub moves. */
+  const [focusIndex, setFocusIndex] = useState<number | null>(null)
   const geoGen = useRef(0)
   const stopsRef = useRef<Stop[] | null>(null)
   const { account } = useAccount()
@@ -151,6 +153,7 @@ export default function App() {
     setRevealed(0)
     setPlaying(false)
     setShowLocations(true)
+    setFocusIndex(null)
     setDriveLegs(null)
     setTracing(false)
     setLook({
@@ -216,6 +219,7 @@ export default function App() {
     setRevealed(0)
     setPlaying(false)
     setShowLocations(true)
+    setFocusIndex(null)
     setDriveLegs(null)
     setTracing(false)
   }
@@ -233,9 +237,13 @@ export default function App() {
   const labelMode = resolveLabelMode(tourComplete, showLocations)
   const currentStop =
     revealed > 0 ? plottedStops[revealed - 1] ?? null : null
+  const chromeStop =
+    focusIndex != null && plottedStops[focusIndex]
+      ? plottedStops[focusIndex]
+      : currentStop
   const currentPhoto =
-    look.photoCorner !== 'off' && currentStop?.photoUrl
-      ? currentStop.photoUrl
+    look.photoCorner !== 'off' && chromeStop?.photoUrl
+      ? chromeStop.photoUrl
       : ''
   const routeKey = plotted
     .map((stop) => `${stop.lat.toFixed(5)},${stop.lng.toFixed(5)}`)
@@ -244,6 +252,10 @@ export default function App() {
   useEffect(() => {
     setPhotoBroken(false)
   }, [currentPhoto, look.photoCorner])
+
+  useEffect(() => {
+    setFocusIndex(null)
+  }, [revealed])
   useEffect(() => {
     if (!look.followRoads) {
       setDriveLegs(null)
@@ -429,15 +441,19 @@ export default function App() {
                 revealed={revealed}
                 roads={look.followRoads ? driveLegs : null}
                 labelMode={labelMode}
+                onSelectStop={(index) => {
+                  setPlaying(false)
+                  setFocusIndex(index)
+                }}
               />
-              {currentStop && (
+              {chromeStop && (
                 <aside className="map-date-window" aria-live="polite">
                   <strong className="map-date-title">
                     {title.trim() || 'Untitled trip'}
                   </strong>
                   <span className="map-date-kicker">Date</span>
                   <strong className="map-date-value">
-                    {displayDate(currentStop.date, currentStop.dateRaw) ||
+                    {displayDate(chromeStop.date, chromeStop.dateRaw) ||
                       'Date unknown'}
                   </strong>
                 </aside>
@@ -514,8 +530,8 @@ export default function App() {
               fields={look.fields ?? DEFAULT_FIELDS}
               onToggleField={toggleField}
               activeIndex={
-                revealed > 0 && plottedStops[revealed - 1]
-                  ? stops.findIndex((s) => s.id === plottedStops[revealed - 1].id)
+                chromeStop
+                  ? stops.findIndex((s) => s.id === chromeStop.id)
                   : -1
               }
               onChange={(id, patch) => {

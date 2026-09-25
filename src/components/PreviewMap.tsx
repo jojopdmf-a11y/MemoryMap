@@ -25,6 +25,8 @@ type Props = {
   revealed: number
   roads?: LatLng[][] | null
   labelMode?: LabelMode
+  /** 0-based index into plotted stops when a pin is clicked. */
+  onSelectStop?: (index: number) => void
 }
 
 export function PreviewMap({
@@ -33,6 +35,7 @@ export function PreviewMap({
   revealed,
   roads = null,
   labelMode = 'play',
+  onSelectStop,
 }: Props) {
   const containerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<L.Map | null>(null)
@@ -41,6 +44,8 @@ export function PreviewMap({
   const markersRef = useRef<Map<string, L.Marker>>(new Map())
   const iconKeysRef = useRef<WeakMap<L.Marker, string>>(new WeakMap())
   const pathRef = useRef<L.Polyline | null>(null)
+  const onSelectRef = useRef(onSelectStop)
+  onSelectRef.current = onSelectStop
   const plottedKey = stops
     .filter((stop) => !stop.dismissed && stop.lat != null && stop.lng != null)
     .map((stop) => `${stop.lat},${stop.lng}`)
@@ -191,6 +196,9 @@ export function PreviewMap({
           })
         }
         if (html) marker.bindPopup(html, { autoPan: false })
+        marker.on('click', () => {
+          onSelectRef.current?.(index)
+        })
         iconKeysRef.current.set(
           marker,
           `${look.pin}|${look.pinColor}|${active}|${index}`,
@@ -209,6 +217,10 @@ export function PreviewMap({
           iconKeysRef.current.set(marker, iconKey)
         }
         if (html) marker.setPopupContent(html)
+        marker.off('click')
+        marker.on('click', () => {
+          onSelectRef.current?.(index)
+        })
         syncTooltip(marker, index, revealed, label, look.pinColor, labelMode)
       }
     })
