@@ -1733,6 +1733,58 @@ a.ghost:hover {
   white-space: nowrap;
 }
 
+.stop-table .pic-cell {
+  width: 3.5rem;
+  text-align: center;
+}
+
+.stop-table .pic-indicator {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-width: 2.75rem;
+  min-height: 1.5rem;
+  margin: 0;
+  cursor: text;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.stop-table .pic-indicator.has-photo {
+  color: #3d5a3a;
+  font-weight: 600;
+}
+
+.stop-table .pic-mark {
+  font-size: 10px;
+  line-height: 1;
+}
+
+.stop-table .pic-url {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  min-width: 0 !important;
+  opacity: 0;
+  cursor: text;
+  border-bottom: 0 !important;
+}
+
+.stop-table .pic-indicator:focus-within .pic-mark,
+.stop-table .pic-indicator:focus-within .pic-label {
+  opacity: 0;
+}
+
+.stop-table .pic-indicator:focus-within .pic-url {
+  opacity: 1;
+  position: relative;
+  inset: auto;
+  font-size: 11px;
+  color: inherit;
+}
+
 .stop-table tr.is-problem {
   background: color-mix(in srgb, var(--terra) 10%, transparent);
 }

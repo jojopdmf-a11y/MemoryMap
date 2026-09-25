@@ -177,7 +177,7 @@ export function StyleBar({
           onChange={(e) =>
             onChange({ photoCorner: e.target.value as Look['photoCorner'] })
           }
-          title="Where stop photos appear during Play when a Photo column URL is set"
+          title="Where stop photos appear during Play when a stop has a Pic"
         >
           {PHOTO_CORNER_OPTIONS.map((opt) => (
             <option key={opt.id} value={opt.id}>

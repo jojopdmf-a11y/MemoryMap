@@ -28,9 +28,21 @@ export function looksLikeGoogleSheetsUrl(value: string): boolean {
   return parseGoogleSheetsUrl(value) != null
 }
 
-async function workbookToSheets(buffer: ArrayBuffer): Promise<SheetChoice[]> {
+async function workbookToSheets(
+  buffer: ArrayBuffer,
+  opts?: { googleSheetId?: string },
+): Promise<SheetChoice[]> {
   const XLSX = await import('xlsx')
   const workbook = XLSX.read(buffer, { type: 'array', cellDates: true })
+  // Google Sheets often stores Drive photos as hyperlinks / HYPERLINK() /
+  // IMAGE() whose visible text is a file name — promote the real URL first.
+  for (const name of workbook.SheetNames) {
+    const sheet = workbook.Sheets[name]
+    if (sheet) promoteHttpHyperlinks(sheet)
+  }
+  if (opts?.googleSheetId) {
+    await promoteLinksFromGoogleHtmlZip(opts.googleSheetId, workbook)
+  }
   const sheets: SheetChoice[] = []
   for (const name of workbook.SheetNames) {
     const sheet = workbook.Sheets[name]
@@ -42,6 +54,203 @@ async function workbookToSheets(buffer: ArrayBuffer): Promise<SheetChoice[]> {
     }
   }
   return sheets
+}
+
+/** HYPERLINK("url",…) / IMAGE("url") — Google Sheets often exports photos this way. */
+const SHEET_URL_FORMULA =
+  /^(?:_xlfn\.)?(?:HYPERLINK|IMAGE)\(\s*"((?:[^"]|\\")+)"/i
+
+/** Replace cell display text with its http(s) link target when present. */
+function promoteHttpHyperlinks(sheet: Record<string, unknown>) {
+  for (const addr of Object.keys(sheet)) {
+    if (addr.startsWith('!')) continue
+    const cell = sheet[addr] as
+      | {
+          v?: unknown
+          w?: string
+          t?: string
+          f?: string
+          l?: { Target?: string; Rel?: { Target?: string } }
+        }
+      | undefined
+    if (!cell || typeof cell !== 'object') continue
+    let target = (cell.l?.Target || cell.l?.Rel?.Target || '').trim()
+    if (!/^https?:\/\//i.test(target) && typeof cell.f === 'string') {
+      const match = SHEET_URL_FORMULA.exec(cell.f.trim())
+      if (match) target = match[1].replace(/\\"/g, '"').trim()
+    }
+    if (!/^https?:\/\//i.test(target)) continue
+    // Skip relative / in-sheet anchors.
+    if (target.startsWith('#')) continue
+    cell.v = target
+    cell.w = target
+    cell.t = 's'
+  }
+}
+
+/**
+ * Google Sheets “Insert link” (rich text) often loses the URL in xlsx/CSV, but
+ * the HTML zip export keeps <a href>. Overlay those hrefs onto the workbook.
+ */
+async function promoteLinksFromGoogleHtmlZip(
+  id: string,
+  workbook: {
+    SheetNames: string[]
+    Sheets: Record<string, Record<string, unknown> | undefined>
+  },
+): Promise<void> {
+  let buffer: ArrayBuffer
+  try {
+    const res = await fetch(
+      `https://docs.google.com/spreadsheets/d/${id}/export?format=zip`,
+    )
+    if (!res.ok) return
+    buffer = await res.arrayBuffer()
+  } catch {
+    return
+  }
+
+  let entries: Map<string, string>
+  try {
+    entries = await unzipTextFiles(buffer)
+  } catch {
+    return
+  }
+
+  for (const name of workbook.SheetNames) {
+    const sheet = workbook.Sheets[name]
+    if (!sheet) continue
+    const html =
+      entries.get(`${name}.html`) ||
+      [...entries.entries()].find(([file]) =>
+        file.toLowerCase().endsWith('.html'),
+      )?.[1]
+    if (!html) continue
+    const grid = htmlTableHrefGrid(html)
+    applyHrefGridToSheet(sheet, grid)
+  }
+}
+
+function applyHrefGridToSheet(
+  sheet: Record<string, unknown>,
+  grid: Array<Array<string | null>>,
+) {
+  for (let r = 0; r < grid.length; r++) {
+    const row = grid[r]
+    for (let c = 0; c < row.length; c++) {
+      const href = row[c]
+      if (!href || !/^https?:\/\//i.test(href)) continue
+      const addr = cellAddress(r, c)
+      const existing = sheet[addr] as
+        | { v?: unknown; w?: string; t?: string }
+        | undefined
+      const visible = String(existing?.v ?? existing?.w ?? '').trim()
+      // Keep cells that already store a URL; replace filenames / labels.
+      if (/^https?:\/\//i.test(visible)) continue
+      sheet[addr] = {
+        ...(existing && typeof existing === 'object' ? existing : {}),
+        v: href,
+        w: href,
+        t: 's',
+      }
+    }
+  }
+}
+
+function cellAddress(row0: number, col0: number): string {
+  let n = col0
+  let col = ''
+  do {
+    col = String.fromCharCode(65 + (n % 26)) + col
+    n = Math.floor(n / 26) - 1
+  } while (n >= 0)
+  return `${col}${row0 + 1}`
+}
+
+/** Minimal ZIP reader for Google’s HTML export (central directory). */
+async function unzipTextFiles(
+  buffer: ArrayBuffer,
+): Promise<Map<string, string>> {
+  const view = new DataView(buffer)
+  const bytes = new Uint8Array(buffer)
+  let eocd = -1
+  for (let i = bytes.length - 22; i >= 0; i--) {
+    if (view.getUint32(i, true) === 0x06054b50) {
+      eocd = i
+      break
+    }
+  }
+  if (eocd < 0) return new Map()
+
+  const cdSize = view.getUint32(eocd + 12, true)
+  const cdOffset = view.getUint32(eocd + 16, true)
+  const out = new Map<string, string>()
+  let offset = cdOffset
+  const cdEnd = cdOffset + cdSize
+  while (offset + 46 <= cdEnd) {
+    if (view.getUint32(offset, true) !== 0x02014b50) break
+    const method = view.getUint16(offset + 10, true)
+    const compSize = view.getUint32(offset + 20, true)
+    const nameLen = view.getUint16(offset + 28, true)
+    const extraLen = view.getUint16(offset + 30, true)
+    const commentLen = view.getUint16(offset + 32, true)
+    const localOffset = view.getUint32(offset + 42, true)
+    const name = new TextDecoder().decode(
+      bytes.subarray(offset + 46, offset + 46 + nameLen),
+    )
+    offset += 46 + nameLen + extraLen + commentLen
+    if (!/\.html?$/i.test(name) || name.includes('/')) continue
+    if (view.getUint32(localOffset, true) !== 0x04034b50) continue
+    const localNameLen = view.getUint16(localOffset + 26, true)
+    const localExtraLen = view.getUint16(localOffset + 28, true)
+    const dataStart = localOffset + 30 + localNameLen + localExtraLen
+    const compressed = bytes.subarray(dataStart, dataStart + compSize)
+    try {
+      let raw: Uint8Array
+      if (method === 0) {
+        raw = compressed
+      } else if (method === 8) {
+        raw = new Uint8Array(
+          await new Response(
+            new Blob([compressed.buffer.slice(
+              compressed.byteOffset,
+              compressed.byteOffset + compressed.byteLength,
+            ) as ArrayBuffer])
+              .stream()
+              .pipeThrough(new DecompressionStream('deflate-raw')),
+          ).arrayBuffer(),
+        )
+      } else {
+        continue
+      }
+      out.set(name, new TextDecoder('utf-8').decode(raw))
+    } catch {
+      // Skip unreadable entries.
+    }
+  }
+  return out
+}
+
+/** Parse Google Sheets HTML export tables into a grid of href-or-null. */
+function htmlTableHrefGrid(html: string): Array<Array<string | null>> {
+  const doc = new DOMParser().parseFromString(html, 'text/html')
+  const table =
+    doc.querySelector('table.waffle') || doc.querySelector('table')
+  if (!table) return []
+  const grid: Array<Array<string | null>> = []
+  for (const tr of Array.from(table.querySelectorAll('tr'))) {
+    const row: Array<string | null> = []
+    for (const cell of Array.from(tr.children)) {
+      if (cell.tagName !== 'TD' && cell.tagName !== 'TH') continue
+      const anchor = cell.querySelector('a[href]')
+      const href = (anchor?.getAttribute('href') || '').trim()
+      row.push(/^https?:\/\//i.test(href) ? href : null)
+      const colspan = Number(cell.getAttribute('colspan') || 1)
+      for (let i = 1; i < colspan; i++) row.push(null)
+    }
+    if (row.length) grid.push(row)
+  }
+  return grid
 }
 
 function ingestFromSheets(title: string, sheets: SheetChoice[]): IngestResult {
@@ -171,7 +380,9 @@ export async function ingestGoogleSheetsUrl(url: string): Promise<IngestResult> 
 
   try {
     const buffer = await fetchSheetXlsx(parsed.id)
-    const sheets = await workbookToSheets(buffer)
+    const sheets = await workbookToSheets(buffer, {
+      googleSheetId: parsed.id,
+    })
     return ingestFromSheets('Google Sheet', sheets)
   } catch {
     try {

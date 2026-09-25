@@ -1,4 +1,4 @@
-import { formatDate, stopLabel } from '../csv'
+import { formatDate, normalizePhotoUrl, stopLabel } from '../csv'
 import type { CardField, CardFields } from '../look'
 import type { GeoStatus, Stop } from '../types'
 import { PlaceSuggest } from './PlaceSuggest'
@@ -34,7 +34,9 @@ export function StopTable({
     <div className="table-wrap">
       <table className="stop-table">
         <caption className="table-hint">
-          Check a column to show that field on the map.
+          Check Title, Date, Place, or Notes to show that text on the map.
+          Pic marks which stops already have a photo for Play — it is not a
+          field you turn on.
         </caption>
         <thead>
           <tr>
@@ -63,6 +65,9 @@ export function StopTable({
               checked={fields.notes}
               onToggle={onToggleField}
             />
+            <th title="Shows whether this stop has a photo for the map window">
+              Pic
+            </th>
             <th>Lat</th>
             <th>Lng</th>
             <th>Status</th>
@@ -149,6 +154,13 @@ export function StopTable({
                   aria-label={`Notes for stop ${index + 1}`}
                 />
               </td>
+              <td className="pic-cell">
+                <PhotoIndicator
+                  index={index}
+                  photoUrl={stop.photoUrl}
+                  onChange={(photoUrl) => onChange(stop.id, { photoUrl })}
+                />
+              </td>
               <td>
                 <CoordInput
                   value={stop.lat}
@@ -218,6 +230,44 @@ export function StopTable({
 
 function looksLikeIsoDate(raw: string): boolean {
   return /^\d{4}-\d{2}-\d{2}$/.test(raw.trim())
+}
+
+function PhotoIndicator({
+  index,
+  photoUrl,
+  onChange,
+}: {
+  index: number
+  photoUrl: string
+  onChange: (photoUrl: string) => void
+}) {
+  const hasPhoto = Boolean(photoUrl.trim())
+  return (
+    <label
+      className={`pic-indicator${hasPhoto ? ' has-photo' : ''}`}
+      title={
+        hasPhoto
+          ? `Photo linked — click to edit\n${photoUrl}`
+          : 'No photo — paste an https image link if needed'
+      }
+    >
+      <span className="pic-mark" aria-hidden="true">
+        {hasPhoto ? '●' : '○'}
+      </span>
+      <span className="pic-label">{hasPhoto ? 'Yes' : '—'}</span>
+      <input
+        className="pic-url"
+        value={photoUrl}
+        placeholder="https://…"
+        onChange={(e) => onChange(normalizePhotoUrl(e.target.value))}
+        aria-label={
+          hasPhoto
+            ? `Photo URL for stop ${index + 1}`
+            : `Add photo URL for stop ${index + 1}`
+        }
+      />
+    </label>
+  )
 }
 
 function FieldHeader({
