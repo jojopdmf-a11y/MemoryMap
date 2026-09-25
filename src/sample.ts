@@ -2,7 +2,7 @@ import type { Look } from './look'
 
 export type SampleTrip = {
   id:
-    | 'caribbean'
+    | 'toystory'
     | 'europe'
     | 'nashville'
     | 'appalachian'
@@ -23,24 +23,47 @@ export type SampleTrip = {
 
 export const SAMPLE_TRIPS: SampleTrip[] = [
   {
-    id: 'caribbean',
-    title: 'Caribbean Cruise',
-    blurb: 'Eastern Caribbean Experience',
-    filename: 'caribbean-cruise.csv',
+    id: 'toystory',
+    title: 'Disney On Ice: Toy Story',
+    blurb: 'USA & Canada tour, 2000–01',
+    filename: 'disney-toy-story-usa.csv',
     look: {
-      followRoads: false,
-      map: 'satellite',
-      path: 'dashed',
-      pathColor: '#f3e6c4',
-      pinColor: '#f3e6c4',
+      followRoads: true,
+      map: 'streets',
+      path: 'solid',
+      pathColor: '#c4844a',
+      pinColor: '#c4844a',
     },
-    csv: `title,date,place,lat,lng,notes,photo
-Home port,2025-01-12,Miami FL,25.7795,-80.1709,PortMiami,https://picsum.photos/seed/mm-miami/640/480
-Nassau,2025-01-14,Nassau Bahamas,25.0774,-77.3413,Prince George Wharf,https://picsum.photos/seed/mm-nassau/640/480
-San Juan,2025-01-16,San Juan Puerto Rico,18.4603,-66.1097,Old San Juan piers,https://picsum.photos/seed/mm-sanjuan/640/480
-St. Thomas,2025-01-17,Charlotte Amalie USVI,18.3358,-64.9228,Havensight harbor,https://picsum.photos/seed/mm-stthomas/640/480
-St. Maarten,2025-01-18,Philipsburg St Maarten,18.0116,-63.0472,Great Bay,https://picsum.photos/seed/mm-stmaarten/640/480
-Barbados,2025-01-19,Bridgetown Barbados,13.0980,-59.6320,Careenage,https://picsum.photos/seed/mm-barbados/640/480
+    csv: `title,date,place,lat,lng,notes
+Rosemont,2000-09-27,"Rosemont, IL, USA",41.9941,-87.8757,Disney On Ice · Toy Story
+Chicago,2000-10-03,"Chicago, IL, USA",41.8756,-87.6244,Disney On Ice · Toy Story
+Tucson,2000-10-10,"Tucson, AZ, USA",32.2229,-110.9748,Disney On Ice · Toy Story
+El Paso,2000-10-16,"El Paso, TX, USA",31.7601,-106.4870,Disney On Ice · Toy Story
+Bakersfield,2000-10-23,"Bakersfield, CA, USA",35.3739,-119.0195,Disney On Ice · Toy Story
+Sacramento,2000-10-30,"Sacramento, CA, USA",38.5811,-121.4939,Disney On Ice · Toy Story
+San Jose,2000-11-06,"San Jose, CA, USA",37.3362,-121.8906,Disney On Ice · Toy Story
+Oakland,2000-11-13,"Oakland, CA, USA",37.8045,-122.2714,Disney On Ice · Toy Story
+San Francisco,2000-11-20,"San Francisco, CA, USA",37.7879,-122.4075,Disney On Ice · Toy Story
+Salt Lake City,2000-11-27,"Salt Lake City, UT, USA",40.7596,-111.8868,Disney On Ice · Toy Story
+Rockford,2000-12-04,"Rockford, IL, USA",42.2714,-89.0940,Disney On Ice · Toy Story
+Madison,2000-12-11,"Madison, WI, USA",43.0747,-89.3842,Disney On Ice · Toy Story
+Toronto,2000-12-18,"Toronto, Ontario, Canada",43.6535,-79.3839,Disney On Ice · Toy Story
+Buffalo,2001-01-08,"Buffalo, NY, USA",42.8864,-78.8781,Disney On Ice · Toy Story
+New Haven,2001-01-15,"New Haven, CT, USA",41.3082,-72.9251,Disney On Ice · Toy Story
+Binghamton,2001-01-22,"Binghamton, NY, USA",42.0987,-75.9125,Disney On Ice · Toy Story
+Green Bay,2001-01-29,"Green Bay, WI, USA",44.5126,-88.0126,Disney On Ice · Toy Story
+Winnipeg,2001-02-05,"Winnipeg, Manitoba, Canada",49.8955,-97.1385,Disney On Ice · Toy Story
+Calgary,2001-02-12,"Calgary, Alberta, Canada",51.0456,-114.0575,Disney On Ice · Toy Story
+Edmonton,2001-02-19,"Edmonton, Alberta, Canada",53.5462,-113.4912,Disney On Ice · Toy Story
+Seattle,2001-02-26,"Seattle, WA, USA",47.6038,-122.3301,Disney On Ice · Toy Story
+Kennewick,2001-03-05,"Kennewick, WA, USA",46.2087,-119.1199,Disney On Ice · Toy Story
+Billings,2001-03-12,"Billings, MT, USA",45.7875,-108.4961,Disney On Ice · Toy Story
+Colorado Springs,2001-03-19,"Colorado Springs, CO, USA",38.8340,-104.8253,Disney On Ice · Toy Story
+Denver,2001-03-26,"Denver, CO, USA",39.7392,-104.9849,Disney On Ice · Toy Story
+Kansas City,2001-04-02,"Kansas City, MO, USA",39.1001,-94.5781,Disney On Ice · Toy Story
+Grand Rapids,2001-04-09,"Grand Rapids, MI, USA",42.9632,-85.6679,Disney On Ice · Toy Story
+Fort Wayne,2001-04-15,"Fort Wayne, IN, USA",41.0800,-85.1386,Disney On Ice · Toy Story
+Augusta,2001-04-23,"Augusta, GA, USA",33.4710,-81.9748,Disney On Ice · Toy Story
 `,
   },
   {

@@ -25,7 +25,7 @@ On the landing page you can also type a trip label plus date, city or street add
 
 Turn on **Road trip** under the map to follow driving roads instead of a straight line. Routing is fetched once (and baked into the souvenir). Zooming, panning, and Play do not request it again. If a leg cannot be traced — a cruise, for example — that segment stays a straight line.
 
-See `public/` for sample routes: the original five demos plus Silk Road, Oregon Trail, Classic Road Trip, Camino Francés, Trans-Siberian, Grand Tour, and Appian Way.
+See `public/` for sample routes: Disney On Ice Toy Story, European rail, L.A. to Nashville, Appalachian Trail, Asia landmarks, plus Silk Road, Oregon Trail, Classic Road Trip, Camino Francés, Trans-Siberian, Grand Tour, and Appian Way.
 
 ## Run
 
