@@ -1019,7 +1019,7 @@ body {
   border-radius: 12px;
 }
 .mm-photo[hidden] { display: none; }
-.mm-photo.is-top-right { top: 52px; right: 12px; left: auto; bottom: auto; }
+.mm-photo.is-top-right { top: 88px; right: 12px; left: auto; bottom: auto; }
 .mm-photo.is-under-date { top: 92px; left: 12px; right: auto; bottom: auto; }
 .mm-photo.is-bottom-left { bottom: 48px; left: 12px; top: auto; right: auto; }
 .mm-photo.is-bottom-right { bottom: 48px; right: 12px; top: auto; left: auto; }

@@ -1261,7 +1261,8 @@ a.ghost:hover {
 }
 
 .map-photo-window.is-top-right {
-  top: 52px;
+  /* Clear Leaflet zoom (+/−) at top-right (~10px margin + ~68px stack). */
+  top: 88px;
   right: 12px;
 }
 
