@@ -2,6 +2,12 @@ export type MapId = 'streets' | 'paper' | 'night' | 'satellite' | 'terrain'
 export type PinId = 'number' | 'pin' | 'dot'
 export type PathId = 'solid' | 'dashed' | 'none'
 export type ThemeId = 'cream' | 'ink' | 'dusk' | 'blush' | 'lilac' | 'pearl'
+export type PhotoCorner =
+  | 'top-right'
+  | 'under-date'
+  | 'bottom-left'
+  | 'bottom-right'
+  | 'off'
 
 export type CardField = 'title' | 'date' | 'place' | 'notes'
 
@@ -24,6 +30,8 @@ export type Look = {
   theme: ThemeId
   fields: CardFields
   followRoads: boolean
+  /** Where the stop photo chip sits on the map during playback. */
+  photoCorner: PhotoCorner
 }
 
 export const DEFAULT_LOOK: Look = {
@@ -36,6 +44,7 @@ export const DEFAULT_LOOK: Look = {
   theme: 'cream',
   fields: { ...DEFAULT_FIELDS },
   followRoads: false,
+  photoCorner: 'top-right',
 }
 
 export type ThemeVars = {
@@ -133,6 +142,14 @@ export const THEME_OPTIONS: Array<{ id: ThemeId; label: string }> = [
   { id: 'blush', label: 'Rose' },
   { id: 'lilac', label: 'Lilac' },
   { id: 'pearl', label: 'Pearl' },
+]
+
+export const PHOTO_CORNER_OPTIONS: Array<{ id: PhotoCorner; label: string }> = [
+  { id: 'top-right', label: 'Top right' },
+  { id: 'under-date', label: 'Under date' },
+  { id: 'bottom-left', label: 'Bottom left' },
+  { id: 'bottom-right', label: 'Bottom right' },
+  { id: 'off', label: 'Hidden' },
 ]
 
 export const PALETTE_BASIC = [

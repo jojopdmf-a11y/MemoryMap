@@ -237,6 +237,16 @@ export function PreviewMap({
 
     const runLayout = () => {
       if (!mapRef.current) return
+      const panel = containerRef.current?.closest('.map-panel')
+      const obstacles = panel
+        ? [
+            ...panel.querySelectorAll(
+              '.map-date-window, .map-photo-window, .leaflet-control-zoom',
+            ),
+          ]
+            .map((node) => node.getBoundingClientRect())
+            .filter((box) => box.width > 2 && box.height > 2)
+        : []
       const items = [...visible]
         .reverse()
         .map((stop, reverseIndex) => {
@@ -260,17 +270,21 @@ export function PreviewMap({
         })
         .filter((row): row is { marker: L.Marker; visible: boolean } => Boolean(row))
       layoutStopLabels(
-          map,
-          items,
-          look.path !== 'none' ? visLatLngs : [],
-        )
+        map,
+        items,
+        look.path !== 'none' ? visLatLngs : [],
+        obstacles,
+      )
     }
     requestAnimationFrame(() => requestAnimationFrame(runLayout))
     map.on('zoomend', runLayout)
     map.on('moveend', runLayout)
+    const onChrome = () => runLayout()
+    window.addEventListener('mm-chrome-resize', onChrome)
     return () => {
       map.off('zoomend', runLayout)
       map.off('moveend', runLayout)
+      window.removeEventListener('mm-chrome-resize', onChrome)
     }
   }, [stops, look, revealed, roads, labelMode])
 

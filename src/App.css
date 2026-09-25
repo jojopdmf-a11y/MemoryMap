@@ -1246,6 +1246,57 @@ a.ghost:hover {
   line-height: 1.2;
 }
 
+.map-photo-window {
+  position: absolute;
+  z-index: 600;
+  display: grid;
+  gap: 2px;
+  width: min(168px, calc(100% - 72px));
+  padding: 8px 10px 10px;
+  pointer-events: none;
+  background: color-mix(in srgb, var(--paper) 92%, transparent);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow-soft);
+  border-radius: var(--radius-sm);
+}
+
+.map-photo-window.is-top-right {
+  top: 52px;
+  right: 12px;
+}
+
+.map-photo-window.is-under-date {
+  top: 92px;
+  left: 12px;
+}
+
+.map-photo-window.is-bottom-left {
+  bottom: 48px;
+  left: 12px;
+}
+
+.map-photo-window.is-bottom-right {
+  bottom: 48px;
+  right: 12px;
+}
+
+.map-photo-kicker {
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.map-photo-window img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--muted) 16%, transparent);
+}
+
 .map-cue.is-busy,
 .map-cue.is-trace {
   top: auto;

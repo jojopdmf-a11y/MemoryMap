@@ -4,6 +4,7 @@ import { TILES, THEME_VARS, type Look } from './look'
 import { traceDriveLegs, type LatLng } from './route'
 import { CONTACT_EMAIL, CONTACT_MAILTO, INSTAGRAM_URL } from './site'
 import { dateRangeLabel } from './trip'
+import { bakeStopPhotos } from './photoBake'
 import type { ExportStop } from './types'
 
 const RUNTIME = `
@@ -39,6 +40,13 @@ const RUNTIME = `
   var dateBox = document.getElementById("mm-date");
   var dateTitle = document.getElementById("mm-date-title");
   var dateVal = document.getElementById("mm-date-value");
+  var photoBox = document.getElementById("mm-photo");
+  var photoImg = document.getElementById("mm-photo-img");
+  var photoCorner = (look.photoCorner || "top-right");
+  if (photoBox) {
+    photoBox.className = "mm-photo is-" + photoCorner;
+    if (photoCorner === "off") photoBox.hidden = true;
+  }
 
   function prettyDate(raw) {
     var m = /^(\\d{4})-(\\d{2})-(\\d{2})$/.exec(String(raw || "").trim());
@@ -387,6 +395,16 @@ const RUNTIME = `
     var origin = mapBox;
     var segs = look.path === "none" ? [] : pathSegments();
     var placed = [];
+    var blocks = [];
+    var stage = document.querySelector(".mm-stage");
+    if (stage) {
+      var nodes = stage.querySelectorAll("#mm-date, #mm-photo, .leaflet-control-zoom");
+      for (var bi = 0; bi < nodes.length; bi++) {
+        if (nodes[bi].hidden) continue;
+        var box = nodes[bi].getBoundingClientRect();
+        if (box.width > 2 && box.height > 2) blocks.push(box);
+      }
+    }
     var mode = tourDone() ? (showLocations ? "all" : "hidden") : "play";
     for (var i = markers.length - 1; i >= 0; i--) {
       var m = markers[i];
@@ -422,20 +440,34 @@ const RUNTIME = `
           if (rectsOverlap(rect, placed[p])) { hitLabel = true; break; }
         }
         var hitPath = segs.length && rectHitsPath(rect, segs, pinX, pinY);
-        cands.push({ dir: dir, rect: rect, hitLabel: hitLabel, hitPath: hitPath });
+        var hitObstacle = false;
+        for (var o = 0; o < blocks.length; o++) {
+          if (rectsOverlap(rect, blocks[o], 8)) { hitObstacle = true; break; }
+        }
+        cands.push({ dir: dir, rect: rect, hitLabel: hitLabel, hitPath: hitPath, hitObstacle: hitObstacle });
       }
       var pick = null;
       for (var c1 = 0; c1 < cands.length; c1++) {
-        if (!cands[c1].hitLabel && !cands[c1].hitPath) { pick = cands[c1]; break; }
+        if (!cands[c1].hitLabel && !cands[c1].hitPath && !cands[c1].hitObstacle) { pick = cands[c1]; break; }
       }
       if (!pick) {
         for (var c2 = 0; c2 < cands.length; c2++) {
-          if (!cands[c2].hitPath) { pick = cands[c2]; break; }
+          if (!cands[c2].hitPath && !cands[c2].hitObstacle) { pick = cands[c2]; break; }
+        }
+      }
+      if (!pick) {
+        for (var c2b = 0; c2b < cands.length; c2b++) {
+          if (!cands[c2b].hitObstacle && !cands[c2b].hitLabel) { pick = cands[c2b]; break; }
         }
       }
       if (!pick) {
         for (var c3 = 0; c3 < cands.length; c3++) {
-          if (!cands[c3].hitLabel) { pick = cands[c3]; break; }
+          if (!cands[c3].hitPath) { pick = cands[c3]; break; }
+        }
+      }
+      if (!pick) {
+        for (var c4 = 0; c4 < cands.length; c4++) {
+          if (!cands[c4].hitLabel) { pick = cands[c4]; break; }
         }
       }
       if (!pick && cands.length) pick = cands[0];
@@ -560,6 +592,29 @@ const RUNTIME = `
       if (dateTitle) dateTitle.textContent = trip.title || "Untitled trip";
       dateVal.textContent = dateText;
       dateBox.hidden = !dateText;
+    }
+    if (photoBox && photoImg) {
+      var src = current && current.photoUrl ? String(current.photoUrl) : "";
+      var showPhoto = photoCorner !== "off" && !!src;
+      if (!showPhoto) {
+        photoBox.hidden = true;
+        photoImg.removeAttribute("src");
+      } else {
+        photoBox.className = "mm-photo is-" + photoCorner;
+        if (photoImg.getAttribute("src") !== src) {
+          photoImg.onload = function () {
+            requestAnimationFrame(function () {
+              requestAnimationFrame(layoutLabels);
+            });
+          };
+          photoImg.onerror = function () {
+            photoBox.hidden = true;
+            requestAnimationFrame(layoutLabels);
+          };
+          photoImg.setAttribute("src", src);
+        }
+        photoBox.hidden = false;
+      }
     }
     var currentLi = list.querySelector("li.is-current");
     if (currentLi && list) {
@@ -756,7 +811,8 @@ export async function htmlForSouvenir(
       roads = knownRoads
     }
   }
-  return buildSouvenirHtml(title, stops, look, hostedUrl, roads)
+  const bakedStops = await bakeStopPhotos(stops)
+  return buildSouvenirHtml(title, bakedStops, look, hostedUrl, roads)
 }
 
 export function buildSouvenirHtml(
@@ -949,6 +1005,40 @@ body {
   margin-top: 4px;
 }
 .mm-date-value { font-size: 16px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.2; }
+.mm-photo {
+  position: absolute;
+  z-index: 600;
+  display: grid;
+  gap: 2px;
+  width: min(168px, calc(100% - 72px));
+  padding: 8px 10px 10px;
+  pointer-events: none;
+  background: color-mix(in srgb, var(--paper) 92%, transparent);
+  border: 1px solid var(--line);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+  border-radius: 12px;
+}
+.mm-photo[hidden] { display: none; }
+.mm-photo.is-top-right { top: 52px; right: 12px; left: auto; bottom: auto; }
+.mm-photo.is-under-date { top: 92px; left: 12px; right: auto; bottom: auto; }
+.mm-photo.is-bottom-left { bottom: 48px; left: 12px; top: auto; right: auto; }
+.mm-photo.is-bottom-right { bottom: 48px; right: 12px; top: auto; left: auto; }
+.mm-photo.is-off { display: none; }
+.mm-photo-kicker {
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.mm-photo img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--muted) 18%, transparent);
+}
 .mm-cue {
   position: absolute;
   z-index: 500;
@@ -1295,6 +1385,10 @@ body {
         <strong class="mm-date-title" id="mm-date-title"></strong>
         <span class="mm-date-kicker">Date</span>
         <strong class="mm-date-value" id="mm-date-value"></strong>
+      </aside>
+      <aside class="mm-photo is-top-right" id="mm-photo" hidden>
+        <span class="mm-photo-kicker">Photo</span>
+        <img id="mm-photo-img" alt="" />
       </aside>
       <p class="mm-cue" id="mm-cue">Press Play tour to watch the route appear</p>
     </div>

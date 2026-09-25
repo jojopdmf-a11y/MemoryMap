@@ -8,6 +8,7 @@ type FieldKey =
   | 'place'
   | 'title'
   | 'notes'
+  | 'photo'
   | 'city'
   | 'region'
   | 'country'
@@ -53,6 +54,16 @@ const FIELD_ALIASES: Record<string, FieldKey> = {
   description: 'notes',
   desc: 'notes',
   company: 'notes',
+  photo: 'photo',
+  photos: 'photo',
+  image: 'photo',
+  images: 'photo',
+  picture: 'photo',
+  pic: 'photo',
+  img: 'photo',
+  photourl: 'photo',
+  imageurl: 'photo',
+  pictureurl: 'photo',
 }
 
 function normalizeHeader(header: string): string {
@@ -183,6 +194,7 @@ export function createBlankStop(sourceRow: number): Stop {
     lat: null,
     lng: null,
     notes: '',
+    photoUrl: '',
     status: 'missing',
     dismissed: false,
   }
@@ -218,8 +230,23 @@ function scoreHeaderRow(cells: string[]): number {
   if (fields.lat && fields.lng) score += 2
   if (fields.title) score += 1
   if (fields.notes) score += 1
+  if (fields.photo) score += 1
   if (fields.region || fields.country) score += 1
   return score
+}
+
+/** Accept http(s) image links; ignore junk that is clearly not a URL. */
+export function normalizePhotoUrl(raw: string): string {
+  const value = raw.trim()
+  if (!value) return ''
+  if (value.startsWith('data:image/')) return value
+  try {
+    const url = new URL(value)
+    if (url.protocol !== 'http:' && url.protocol !== 'https:') return ''
+    return url.href
+  } catch {
+    return ''
+  }
 }
 
 /** Skip banner rows (e.g. "MemoryMap Template") and start at the real header. */
@@ -312,6 +339,7 @@ export function parseCsv(text: string): ParseResult {
       const place = composedPlace(row, fields)
       const title = cell(row, fields.title) || cell(row, fields.ship)
       const notes = cell(row, fields.notes)
+      const photoUrl = normalizePhotoUrl(cell(row, fields.photo))
       const lat = parseCoord(cell(row, fields.lat), 'lat')
       const lng = parseCoord(cell(row, fields.lng), 'lng')
       const bothCoords = lat != null && lng != null
@@ -325,6 +353,7 @@ export function parseCsv(text: string): ParseResult {
         lat: bothCoords ? lat : null,
         lng: bothCoords ? lng : null,
         notes,
+        photoUrl,
         status: initialStatus(
           bothCoords ? lat : null,
           bothCoords ? lng : null,

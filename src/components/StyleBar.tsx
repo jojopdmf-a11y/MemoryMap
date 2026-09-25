@@ -3,6 +3,7 @@ import type { Look } from '../look'
 import {
   MAP_OPTIONS,
   PATH_OPTIONS,
+  PHOTO_CORNER_OPTIONS,
   PIN_OPTIONS,
   SPEED_OPTIONS,
   THEME_OPTIONS,
@@ -163,6 +164,22 @@ export function StyleBar({
           onChange={(e) => onChange({ theme: e.target.value as Look['theme'] })}
         >
           {THEME_OPTIONS.map((opt) => (
+            <option key={opt.id} value={opt.id}>
+              {opt.label}
+            </option>
+          ))}
+        </select>
+      </label>
+      <label>
+        Photo
+        <select
+          value={look.photoCorner}
+          onChange={(e) =>
+            onChange({ photoCorner: e.target.value as Look['photoCorner'] })
+          }
+          title="Where stop photos appear during Play when a Photo column URL is set"
+        >
+          {PHOTO_CORNER_OPTIONS.map((opt) => (
             <option key={opt.id} value={opt.id}>
               {opt.label}
             </option>

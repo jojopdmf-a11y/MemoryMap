@@ -11,6 +11,7 @@ export function exportableStops(stops: Stop[]): ExportStop[] {
       lat: stop.lat as number,
       lng: stop.lng as number,
       notes: stop.notes,
+      photoUrl: stop.photoUrl || '',
     }))
 }
 

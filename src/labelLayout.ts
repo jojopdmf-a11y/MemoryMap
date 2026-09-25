@@ -228,6 +228,7 @@ export function layoutStopLabels(
   map: L.Map,
   items: Array<{ marker: Marker; visible: boolean }>,
   path: PathLatLng[] = [],
+  obstacles: DOMRect[] = [],
 ) {
   const mapBox = map.getContainer().getBoundingClientRect()
   const segments =
@@ -236,6 +237,7 @@ export function layoutStopLabels(
       : []
   const origin = map.getContainer().getBoundingClientRect()
   const placed: DOMRect[] = []
+  const blocks = obstacles.filter((box) => box.width > 2 && box.height > 2)
 
   for (const item of items) {
     const tip = item.marker.getTooltip()
@@ -252,7 +254,13 @@ export function layoutStopLabels(
     const pinX = origin.left + pin.x
     const pinY = origin.top + pin.y
 
-    type Cand = { dir: Dir; rect: DOMRect; hitLabel: boolean; hitPath: boolean }
+    type Cand = {
+      dir: Dir
+      rect: DOMRect
+      hitLabel: boolean
+      hitPath: boolean
+      hitObstacle: boolean
+    }
     const candidates: Cand[] = []
     for (const dir of LABEL_DIRECTIONS) {
       applyDirection(item.marker, dir)
@@ -262,12 +270,14 @@ export function layoutStopLabels(
       const hitLabel = placed.some((box) => rectsOverlap(rect, box))
       const hitPath =
         segments.length > 0 && rectHitsPath(rect, segments, pinX, pinY)
-      candidates.push({ dir, rect, hitLabel, hitPath })
+      const hitObstacle = blocks.some((box) => rectsOverlap(rect, box, 8))
+      candidates.push({ dir, rect, hitLabel, hitPath, hitObstacle })
     }
 
     const pick =
-      candidates.find((c) => !c.hitLabel && !c.hitPath) ||
-      // Prefer staying off the route even if two cards are a bit close.
+      candidates.find((c) => !c.hitLabel && !c.hitPath && !c.hitObstacle) ||
+      candidates.find((c) => !c.hitPath && !c.hitObstacle) ||
+      candidates.find((c) => !c.hitObstacle && !c.hitLabel) ||
       candidates.find((c) => !c.hitPath) ||
       candidates.find((c) => !c.hitLabel) ||
       candidates[0]

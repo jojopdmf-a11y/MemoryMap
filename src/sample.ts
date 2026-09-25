@@ -34,13 +34,13 @@ export const SAMPLE_TRIPS: SampleTrip[] = [
       pathColor: '#f3e6c4',
       pinColor: '#f3e6c4',
     },
-    csv: `title,date,place,lat,lng,notes
-Home port,2025-01-12,Miami FL,25.7795,-80.1709,PortMiami
-Nassau,2025-01-14,Nassau Bahamas,25.0774,-77.3413,Prince George Wharf
-San Juan,2025-01-16,San Juan Puerto Rico,18.4603,-66.1097,Old San Juan piers
-St. Thomas,2025-01-17,Charlotte Amalie USVI,18.3358,-64.9228,Havensight harbor
-St. Maarten,2025-01-18,Philipsburg St Maarten,18.0116,-63.0472,Great Bay
-Barbados,2025-01-19,Bridgetown Barbados,13.0980,-59.6320,Careenage
+    csv: `title,date,place,lat,lng,notes,photo
+Home port,2025-01-12,Miami FL,25.7795,-80.1709,PortMiami,https://picsum.photos/seed/mm-miami/640/480
+Nassau,2025-01-14,Nassau Bahamas,25.0774,-77.3413,Prince George Wharf,https://picsum.photos/seed/mm-nassau/640/480
+San Juan,2025-01-16,San Juan Puerto Rico,18.4603,-66.1097,Old San Juan piers,https://picsum.photos/seed/mm-sanjuan/640/480
+St. Thomas,2025-01-17,Charlotte Amalie USVI,18.3358,-64.9228,Havensight harbor,https://picsum.photos/seed/mm-stthomas/640/480
+St. Maarten,2025-01-18,Philipsburg St Maarten,18.0116,-63.0472,Great Bay,https://picsum.photos/seed/mm-stmaarten/640/480
+Barbados,2025-01-19,Bridgetown Barbados,13.0980,-59.6320,Careenage,https://picsum.photos/seed/mm-barbados/640/480
 `,
   },
   {

@@ -50,6 +50,7 @@ export default function App() {
   const [driveLegs, setDriveLegs] = useState<LatLng[][] | null>(null)
   const [tracing, setTracing] = useState(false)
   const [downloadOpen, setDownloadOpen] = useState(false)
+  const [photoBroken, setPhotoBroken] = useState(false)
   const geoGen = useRef(0)
   const stopsRef = useRef<Stop[] | null>(null)
   const { account } = useAccount()
@@ -230,10 +231,19 @@ export default function App() {
   const tourComplete =
     plotted.length > 0 && revealed >= plotted.length && !playing
   const labelMode = resolveLabelMode(tourComplete, showLocations)
+  const currentStop =
+    revealed > 0 ? plottedStops[revealed - 1] ?? null : null
+  const currentPhoto =
+    look.photoCorner !== 'off' && currentStop?.photoUrl
+      ? currentStop.photoUrl
+      : ''
   const routeKey = plotted
     .map((stop) => `${stop.lat.toFixed(5)},${stop.lng.toFixed(5)}`)
     .join('|')
 
+  useEffect(() => {
+    setPhotoBroken(false)
+  }, [currentPhoto, look.photoCorner])
   useEffect(() => {
     if (!look.followRoads) {
       setDriveLegs(null)
@@ -420,18 +430,32 @@ export default function App() {
                 roads={look.followRoads ? driveLegs : null}
                 labelMode={labelMode}
               />
-              {revealed > 0 && plottedStops[revealed - 1] && (
+              {currentStop && (
                 <aside className="map-date-window" aria-live="polite">
                   <strong className="map-date-title">
                     {title.trim() || 'Untitled trip'}
                   </strong>
                   <span className="map-date-kicker">Date</span>
                   <strong className="map-date-value">
-                    {displayDate(
-                      plottedStops[revealed - 1].date,
-                      plottedStops[revealed - 1].dateRaw,
-                    ) || 'Date unknown'}
+                    {displayDate(currentStop.date, currentStop.dateRaw) ||
+                      'Date unknown'}
                   </strong>
+                </aside>
+              )}
+              {currentPhoto && !photoBroken && (
+                <aside
+                  className={`map-photo-window is-${look.photoCorner}`}
+                  aria-live="polite"
+                >
+                  <span className="map-photo-kicker">Photo</span>
+                  <img
+                    src={currentPhoto}
+                    alt=""
+                    onLoad={() => {
+                      window.dispatchEvent(new Event('mm-chrome-resize'))
+                    }}
+                    onError={() => setPhotoBroken(true)}
+                  />
                 </aside>
               )}
               {ready && revealed === 0 && !tracing && (

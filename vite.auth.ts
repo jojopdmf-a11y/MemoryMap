@@ -7,6 +7,7 @@ import { handleAuth, type AuthEnv } from './worker/auth.ts'
 import { handleFeedback } from './worker/feedback.ts'
 import { handleGeo } from './worker/geo.ts'
 import { handlePaddle } from './worker/paddle.ts'
+import { handlePhoto } from './worker/photo.ts'
 import { handleSouvenir, type SouvenirStore } from './worker/souvenir.ts'
 
 loadDevVars()
@@ -112,6 +113,7 @@ async function pipe(
     const response =
       (await handleSouvenir(request, env)) ??
       (await handleGeo(request)) ??
+      (await handlePhoto(request)) ??
       (await handleAuth(request, env)) ??
       (await handleAccount(request, env)) ??
       (await handlePaddle(request, env)) ??

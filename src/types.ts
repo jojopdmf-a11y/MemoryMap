@@ -15,6 +15,8 @@ export type Stop = {
   lat: number | null
   lng: number | null
   notes: string
+  /** Public https URL (or data URL after souvenir bake). */
+  photoUrl: string
   status: GeoStatus
   dismissed: boolean
 }
@@ -26,6 +28,7 @@ export type ExportStop = {
   lat: number
   lng: number
   notes: string
+  photoUrl: string
 }
 
 export type ParseSuccess = {

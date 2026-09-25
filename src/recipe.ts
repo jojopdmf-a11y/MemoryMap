@@ -18,11 +18,13 @@ export function normalizeRecipe(recipe: SouvenirRecipe): SouvenirRecipe {
       lat: roundCoord(stop.lat),
       lng: roundCoord(stop.lng),
       notes: stop.notes.trim(),
+      photoUrl: (stop.photoUrl || '').trim(),
     })),
     look: {
       ...DEFAULT_LOOK,
       ...recipe.look,
       fields,
+      photoCorner: recipe.look.photoCorner ?? DEFAULT_LOOK.photoCorner,
     },
   }
 }
@@ -43,6 +45,7 @@ export function recipeFingerprint(recipe: SouvenirRecipe): string {
         theme: normalized.look.theme,
         fields: normalized.look.fields,
         followRoads: Boolean(normalized.look.followRoads),
+        photoCorner: normalized.look.photoCorner,
       },
     }),
   )

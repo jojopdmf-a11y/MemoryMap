@@ -3,6 +3,7 @@ import { handleAuth, type AuthEnv } from './worker/auth'
 import { handleFeedback } from './worker/feedback'
 import { handleGeo } from './worker/geo'
 import { handlePaddle, type PaddleEnv } from './worker/paddle'
+import { handlePhoto } from './worker/photo'
 import { handleSouvenir, type SouvenirEnv } from './worker/souvenir'
 
 export interface Env extends AuthEnv, SouvenirEnv, PaddleEnv {
@@ -17,6 +18,8 @@ export default {
       if (souvenir) return souvenir
       const geo = await handleGeo(request)
       if (geo) return geo
+      const photo = await handlePhoto(request)
+      if (photo) return photo
       const auth = await handleAuth(request, env)
       if (auth) return auth
       const account = await handleAccount(request, env)
