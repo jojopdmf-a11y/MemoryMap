@@ -1,3 +1,5 @@
+import { unwrapLngLatLngs, unwrapLngLeg, unwrapLngPath } from './geo'
+
 export type LatLng = [number, number]
 
 const BATCH = 40
@@ -8,7 +10,7 @@ function key(from: LatLng, to: LatLng): string {
 }
 
 function straight(from: LatLng, to: LatLng): LatLng[] {
-  return [from, to]
+  return unwrapLngLatLngs([from, to])
 }
 
 export function pathThroughStops(
@@ -18,17 +20,23 @@ export function pathThroughStops(
 ): LatLng[] {
   const count = Math.max(0, Math.min(revealed, stops.length))
   if (count < 2) return []
+  // Stops may already be unwrapped by the caller; unwrap again is a no-op
+  // when hops are already short, and fixes callers that pass raw ±180° lngs.
+  const unwrapped = unwrapLngPath(stops.slice(0, count))
   if (!roads) {
-    return stops.slice(0, count).map((stop) => [stop.lat, stop.lng])
+    return unwrapped.map((stop) => [stop.lat, stop.lng])
   }
   const out: LatLng[] = []
   for (let i = 0; i < count - 1; i += 1) {
-    const stop = stops[i]
-    const next = stops[i + 1]
+    const stop = unwrapped[i]
+    const next = unwrapped[i + 1]
     const leg = roads[i]
     const fallback =
       stop && next ? straight([stop.lat, stop.lng], [next.lat, next.lng]) : null
-    const use = leg && leg.length >= 2 ? leg : fallback
+    const use =
+      leg && leg.length >= 2
+        ? unwrapLngLeg(stop.lng, leg)
+        : fallback
     if (!use) continue
     if (out.length === 0) out.push(...use)
     else out.push(...use.slice(1))

@@ -15,6 +15,7 @@ import {
   type LabelMode,
   type Look,
 } from '../look'
+import { unwrapLngPath } from '../geo'
 import { pathThroughStops, type LatLng } from '../route'
 import { layoutStopLabels } from '../labelLayout'
 import type { Stop } from '../types'
@@ -61,6 +62,9 @@ export function PreviewMap({
       zoomControl: false,
       zoomSnap: 0.25,
       zoomDelta: 0.25,
+      // Jump to the other world copy when panning across ±180 so Pacific
+      // cruises stay coherent while the user looks around.
+      worldCopyJump: true,
     })
     L.control.zoom({ position: 'topright' }).addTo(map)
     layerRef.current = L.layerGroup().addTo(map)
@@ -116,8 +120,14 @@ export function PreviewMap({
     const plotted = stops.filter(
       (stop) => !stop.dismissed && stop.lat != null && stop.lng != null,
     )
-    const latlngs = plotted.map(
-      (stop) => [stop.lat as number, stop.lng as number] as L.LatLngTuple,
+    const unwrapped = unwrapLngPath(
+      plotted.map((stop) => ({
+        lat: stop.lat as number,
+        lng: stop.lng as number,
+      })),
+    )
+    const latlngs = unwrapped.map(
+      (stop) => [stop.lat, stop.lng] as L.LatLngTuple,
     )
     if (latlngs.length === 1) {
       map.setView(latlngs[0], 6, { animate: false })
@@ -147,17 +157,25 @@ export function PreviewMap({
     const plotted = stops.filter(
       (stop) => !stop.dismissed && stop.lat != null && stop.lng != null,
     )
+    const unwrapped = unwrapLngPath(
+      plotted.map((stop) => ({
+        id: stop.id,
+        lat: stop.lat as number,
+        lng: stop.lng as number,
+      })),
+    )
     const visible = plotted.slice(0, Math.max(0, revealed))
     const visibleIds = new Set(visible.map((stop) => stop.id))
-    const coords = plotted.map((stop) => ({
-      lat: stop.lat as number,
-      lng: stop.lng as number,
+    const coords = unwrapped.map((stop) => ({
+      lat: stop.lat,
+      lng: stop.lng,
     }))
     const visLatLngs = pathThroughStops(
       coords,
       revealed,
       look.followRoads ? roads : null,
     ) as L.LatLngTuple[]
+    const lngById = new Map(unwrapped.map((stop) => [stop.id, stop.lng]))
 
     for (const [id, marker] of markersRef.current) {
       if (!visibleIds.has(id)) {
@@ -179,9 +197,11 @@ export function PreviewMap({
         look.fields,
       )
       const html = popupInnerHtml(card, look.fields, escapeHtml)
+      const lng = lngById.get(stop.id) ?? (stop.lng as number)
+      const latLng: L.LatLngTuple = [stop.lat as number, lng]
       let marker = markersRef.current.get(stop.id)
       if (!marker) {
-        marker = L.marker([stop.lat as number, stop.lng as number], {
+        marker = L.marker(latLng, {
           icon: pinIcon(index + 1, look, active),
           zIndexOffset: active ? 1000 : 0,
         })
@@ -209,7 +229,7 @@ export function PreviewMap({
           syncTooltip(marker, index, revealed, label, look.pinColor, labelMode)
         }
       } else {
-        marker.setLatLng([stop.lat as number, stop.lng as number])
+        marker.setLatLng(latLng)
         const iconKey = `${look.pin}|${look.pinColor}|${active}|${index}`
         if (iconKeysRef.current.get(marker) !== iconKey) {
           marker.setIcon(pinIcon(index + 1, look, active))

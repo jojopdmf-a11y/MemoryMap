@@ -29,7 +29,8 @@ const RUNTIME = `
     zoomControl: false,
     scrollWheelZoom: false,
     zoomSnap: 0.25,
-    zoomDelta: 0.25
+    zoomDelta: 0.25,
+    worldCopyJump: true
   });
   L.control.zoom({ position: "topright" }).addTo(map);
   var mapEl = document.getElementById("map");
@@ -138,7 +139,27 @@ const RUNTIME = `
     });
   }
 
-  var latlngs = stops.map(function (s) { return [s.lat, s.lng]; });
+  function unwrapLng(lng, relativeTo) {
+    var value = lng;
+    while (value - relativeTo > 180) value -= 360;
+    while (value - relativeTo < -180) value += 360;
+    return value;
+  }
+  // Keep Pacific hops short so Asia sits left and the Americas right.
+  var stopLngs = [];
+  stops.forEach(function (s, i) {
+    var lng = Number(s.lng);
+    stopLngs.push(i === 0 ? lng : unwrapLng(lng, stopLngs[i - 1]));
+  });
+  function unwrapLeg(fromLng, leg) {
+    if (!leg || !leg.length) return [];
+    var out = [[leg[0][0], unwrapLng(leg[0][1], fromLng)]];
+    for (var i = 1; i < leg.length; i++) {
+      out.push([leg[i][0], unwrapLng(leg[i][1], out[i - 1][1])]);
+    }
+    return out;
+  }
+  var latlngs = stops.map(function (s, i) { return [s.lat, stopLngs[i]]; });
   if (latlngs.length === 1) {
     map.setView(latlngs[0], 6);
   } else if (latlngs.length > 1) {
@@ -230,7 +251,7 @@ const RUNTIME = `
     var n = Math.max(0, Math.min(count, stops.length));
     if (n < 2) return [];
     if (!roads) {
-      return stops.slice(0, n).map(function (s) { return [s.lat, s.lng]; });
+      return stops.slice(0, n).map(function (s, i) { return [s.lat, stopLngs[i]]; });
     }
     var out = [];
     for (var i = 0; i < n - 1; i++) {
@@ -238,8 +259,8 @@ const RUNTIME = `
       var stop = stops[i];
       var next = stops[i + 1];
       var use = (leg && leg.length >= 2)
-        ? leg
-        : [[stop.lat, stop.lng], [next.lat, next.lng]];
+        ? unwrapLeg(stopLngs[i], leg)
+        : [[stop.lat, stopLngs[i]], [next.lat, stopLngs[i + 1]]];
       if (out.length === 0) out.push.apply(out, use);
       else out.push.apply(out, use.slice(1));
     }
@@ -512,7 +533,7 @@ const RUNTIME = `
         var active = index === revealed - 1;
         var html = popupHtml(stop, index + 1);
         var label = pinLabel(stop);
-        var m = L.marker([stop.lat, stop.lng], {
+        var m = L.marker([stop.lat, stopLngs[index]], {
           icon: iconFor(index + 1, active),
           zIndexOffset: active ? 1000 : 0
         });
