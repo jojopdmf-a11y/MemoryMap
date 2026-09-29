@@ -167,6 +167,18 @@ export function DropZone({
                       }
                     />
                   </label>
+                  <label className="lp-extra lp-image">
+                    Image Web Link
+                    <input
+                      type="url"
+                      value={row.photoUrl}
+                      disabled={importing}
+                      placeholder="https://…"
+                      onChange={(e) =>
+                        updateRow(index, { photoUrl: e.target.value })
+                      }
+                    />
+                  </label>
                   <button
                     type="button"
                     className="ghost lp-extra"
@@ -182,6 +194,18 @@ export function DropZone({
                 </div>
               ))}
             </div>
+            <div className="lp-add-stop">
+              <button
+                type="button"
+                className="ghost"
+                disabled={importing}
+                onClick={() =>
+                  setRows((current) => [...current, emptyManualStop()])
+                }
+              >
+                Add stop
+              </button>
+            </div>
             {localError && (
               <p className="lp-error" role="alert">
                 {localError}
@@ -195,18 +219,8 @@ export function DropZone({
                 onClick={() => setRouteOpen((open) => !open)}
               >
                 {routeOpen
-                  ? 'Hide state and country'
-                  : 'Click here to add state and country'}
-              </button>
-              <button
-                type="button"
-                className="ghost"
-                disabled={importing}
-                onClick={() =>
-                  setRows((current) => [...current, emptyManualStop()])
-                }
-              >
-                Add stop
+                  ? 'Hide state, country and image links'
+                  : 'Click here to add State, Country and Image Links'}
               </button>
               <button type="submit" className="primary" disabled={importing}>
                 Map this route
@@ -288,10 +302,10 @@ export function DropZone({
               MemoryMap Template
             </a>
             <p>
-              Opens Google Sheets and makes your own copy. Fill Date and
-              Location for each stop, set Share → Anyone with the link → Viewer,
-              then click Open in MemoryMap in the Sheet (or paste the link
-              below).
+              Opens Google Sheets and makes your own copy. Fill Date, Location,
+              and optional Image for each stop, set Share → Anyone with the link
+              → Viewer, then click Open in MemoryMap in the Sheet (or paste the
+              link below).
             </p>
           </div>
           <form

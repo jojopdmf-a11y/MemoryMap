@@ -221,7 +221,9 @@
 }
 
 .lp-board.is-route-open .lp-stop {
-  grid-template-columns: minmax(7rem, 0.7fr) minmax(0, 1.4fr) minmax(0, 0.8fr) minmax(0, 0.9fr) auto;
+  grid-template-columns:
+    minmax(7rem, 0.7fr) minmax(0, 1.2fr) minmax(0, 0.7fr) minmax(0, 0.8fr)
+    minmax(0, 1.1fr) auto;
 }
 
 .lp-stop label {
@@ -238,6 +240,17 @@
 
 .lp-board.is-route-open .lp-stop .lp-extra {
   display: flex;
+}
+
+.lp-add-stop {
+  display: flex;
+  justify-content: flex-start;
+  margin-top: 6px;
+}
+
+.lp-add-stop .ghost {
+  padding: 4px 10px;
+  font-size: 13px;
 }
 
 .lp-actions {

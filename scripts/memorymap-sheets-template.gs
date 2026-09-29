@@ -8,6 +8,9 @@
  * 3. Back on the Sheet, cell F1 should show “Open in MemoryMap” centered
  * 4. Reload the tab; onOpen keeps that link up to date for each copy
  *
+ * Columns (row 2 headers): Trip Name | Date | Location | State | Country |
+ * Note | Image. Do not clear or hide column G — that is the Image column.
+ *
  * Remove any old drawing button / MemoryMap menu — not needed anymore.
  */
 
@@ -30,10 +33,11 @@ function writeMemoryMapLink_() {
   var dest =
     'https://memorymap.world/?sheet=' + encodeURIComponent(ss.getUrl())
 
-  // Clean up leftovers from older script versions that used column G.
-  sheet.getRange('G1:G10').clearContent().clearFormat()
-  if (sheet.getMaxColumns() >= 7) {
-    sheet.hideColumns(7)
+  // Keep column G (Image) visible — older script versions cleared/hid it
+  // thinking it was leftover UI, which wiped the Image header on every open.
+  ensureImageHeader_(sheet)
+  if (sheet.getMaxColumns() >= 7 && sheet.isColumnHiddenByUser(7)) {
+    sheet.showColumns(7)
   }
 
   var link = sheet.getRange(LINK_CELL)
@@ -47,4 +51,12 @@ function writeMemoryMapLink_() {
     .setFontColor('#1f7a6a')
     .setHorizontalAlignment('center')
     .setVerticalAlignment('middle')
+}
+
+/** Header row is row 2: Trip Name … Note | Image */
+function ensureImageHeader_(sheet) {
+  var header = sheet.getRange('G2')
+  if (!String(header.getValue() || '').trim()) {
+    header.setValue('Image')
+  }
 }

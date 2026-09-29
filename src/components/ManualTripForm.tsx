@@ -124,6 +124,16 @@ export function ManualTripForm({ importing, onSubmit }: Props) {
                 onChange={(e) => updateRow(index, { country: e.target.value })}
               />
             </label>
+            <label>
+              Image Web Link
+              <input
+                type="url"
+                value={row.photoUrl}
+                disabled={importing}
+                placeholder="https://…"
+                onChange={(e) => updateRow(index, { photoUrl: e.target.value })}
+              />
+            </label>
             <button
               type="button"
               className="ghost remove-stop"
