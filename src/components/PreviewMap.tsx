@@ -15,7 +15,7 @@ import {
   type LabelMode,
   type Look,
 } from '../look'
-import { unwrapLngPath } from '../geo'
+import { normalizeLngPath } from '../geo'
 import { pathThroughStops, type LatLng } from '../route'
 import { layoutStopLabels } from '../labelLayout'
 import type { Stop } from '../types'
@@ -28,6 +28,8 @@ type Props = {
   labelMode?: LabelMode
   /** 0-based index into plotted stops when a pin is clicked. */
   onSelectStop?: (index: number) => void
+  /** Bump to re-fit the route in view (Reset / replay from the end). */
+  fitNonce?: number
 }
 
 export function PreviewMap({
@@ -37,6 +39,7 @@ export function PreviewMap({
   roads = null,
   labelMode = 'play',
   onSelectStop,
+  fitNonce = 0,
 }: Props) {
   const containerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<L.Map | null>(null)
@@ -62,9 +65,6 @@ export function PreviewMap({
       zoomControl: false,
       zoomSnap: 0.25,
       zoomDelta: 0.25,
-      // Jump to the other world copy when panning across ±180 so Pacific
-      // cruises stay coherent while the user looks around.
-      worldCopyJump: true,
     })
     L.control.zoom({ position: 'topright' }).addTo(map)
     layerRef.current = L.layerGroup().addTo(map)
@@ -120,13 +120,13 @@ export function PreviewMap({
     const plotted = stops.filter(
       (stop) => !stop.dismissed && stop.lat != null && stop.lng != null,
     )
-    const unwrapped = unwrapLngPath(
+    const normalized = normalizeLngPath(
       plotted.map((stop) => ({
         lat: stop.lat as number,
         lng: stop.lng as number,
       })),
     )
-    const latlngs = unwrapped.map(
+    const latlngs = normalized.map(
       (stop) => [stop.lat, stop.lng] as L.LatLngTuple,
     )
     if (latlngs.length === 1) {
@@ -147,7 +147,7 @@ export function PreviewMap({
         /* Leaflet can throw if a pane is mid-teardown after HMR. */
       }
     })
-  }, [plottedKey, stops])
+  }, [plottedKey, stops, fitNonce])
 
   useEffect(() => {
     const map = mapRef.current
@@ -157,7 +157,7 @@ export function PreviewMap({
     const plotted = stops.filter(
       (stop) => !stop.dismissed && stop.lat != null && stop.lng != null,
     )
-    const unwrapped = unwrapLngPath(
+    const normalized = normalizeLngPath(
       plotted.map((stop) => ({
         id: stop.id,
         lat: stop.lat as number,
@@ -166,7 +166,7 @@ export function PreviewMap({
     )
     const visible = plotted.slice(0, Math.max(0, revealed))
     const visibleIds = new Set(visible.map((stop) => stop.id))
-    const coords = unwrapped.map((stop) => ({
+    const coords = normalized.map((stop) => ({
       lat: stop.lat,
       lng: stop.lng,
     }))
@@ -175,7 +175,7 @@ export function PreviewMap({
       revealed,
       look.followRoads ? roads : null,
     ) as L.LatLngTuple[]
-    const lngById = new Map(unwrapped.map((stop) => [stop.id, stop.lng]))
+    const lngById = new Map(normalized.map((stop) => [stop.id, stop.lng]))
 
     for (const [id, marker] of markersRef.current) {
       if (!visibleIds.has(id)) {
@@ -269,44 +269,54 @@ export function PreviewMap({
 
     const runLayout = () => {
       if (!mapRef.current) return
-      const panel = containerRef.current?.closest('.map-panel')
-      const obstacles = panel
-        ? [
-            ...panel.querySelectorAll(
-              '.map-date-window, .map-photo-window, .leaflet-control-zoom',
-            ),
-          ]
-            .map((node) => node.getBoundingClientRect())
-            .filter((box) => box.width > 2 && box.height > 2)
-        : []
-      const items = [...visible]
-        .reverse()
-        .map((stop, reverseIndex) => {
-          const index = visible.length - 1 - reverseIndex
-          const marker = markersRef.current.get(stop.id)
-          if (!marker) return null
-          const tone = labelTone(index, revealed, labelMode)
-          const shown =
-            Boolean(pinLabelText(
-              {
-                title: stop.title,
-                date: stop.date ? formatDate(stop.date, stop.dateRaw) : stop.dateRaw,
-                place: stop.place,
-                notes: stop.notes,
-              },
-              look.fields,
-            )) &&
-            labelMode !== 'hidden' &&
-            tone !== 'fading'
-          return { marker, visible: shown }
-        })
-        .filter((row): row is { marker: L.Marker; visible: boolean } => Boolean(row))
-      layoutStopLabels(
-        map,
-        items,
-        look.path !== 'none' ? visLatLngs : [],
-        obstacles,
-      )
+      try {
+        const panel = containerRef.current?.closest('.map-panel')
+        const obstacles = panel
+          ? [
+              ...panel.querySelectorAll(
+                '.map-date-window, .map-photo-window, .leaflet-control-zoom',
+              ),
+            ]
+              .map((node) => node.getBoundingClientRect())
+              .filter((box) => box.width > 2 && box.height > 2)
+          : []
+        const items = [...visible]
+          .reverse()
+          .map((stop, reverseIndex) => {
+            const index = visible.length - 1 - reverseIndex
+            const marker = markersRef.current.get(stop.id)
+            if (!marker) return null
+            const tone = labelTone(index, revealed, labelMode)
+            const shown =
+              Boolean(
+                pinLabelText(
+                  {
+                    title: stop.title,
+                    date: stop.date
+                      ? formatDate(stop.date, stop.dateRaw)
+                      : stop.dateRaw,
+                    place: stop.place,
+                    notes: stop.notes,
+                  },
+                  look.fields,
+                ),
+              ) &&
+              labelMode !== 'hidden' &&
+              tone !== 'fading'
+            return { marker, visible: shown }
+          })
+          .filter(
+            (row): row is { marker: L.Marker; visible: boolean } => Boolean(row),
+          )
+        layoutStopLabels(
+          map,
+          items,
+          look.path !== 'none' ? visLatLngs : [],
+          obstacles,
+        )
+      } catch {
+        /* Ignore layout races mid-zoom; markers/path stay put. */
+      }
     }
     requestAnimationFrame(() => requestAnimationFrame(runLayout))
     map.on('zoomend', runLayout)

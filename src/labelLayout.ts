@@ -221,7 +221,11 @@ function applyDirection(marker: Marker, dir: Dir) {
   if (!tip) return
   tip.options.direction = dir.direction
   tip.options.offset = L.point(dir.offset[0], dir.offset[1])
-  if (typeof tip._updatePosition === 'function') tip._updatePosition()
+  try {
+    if (typeof tip._updatePosition === 'function') tip._updatePosition()
+  } catch {
+    /* Leaflet can throw mid-zoom while the tooltip pane is rebuilding. */
+  }
 }
 
 export function layoutStopLabels(
