@@ -5,9 +5,7 @@
  * to Petropavlovsk (~158) spans +281°, so the line crosses the Americas and
  * Atlantic — the long way — instead of the Pacific. Unwrapping keeps each
  * successive longitude within ±180° of the previous so short ocean hops stay
- * short. We then shift the whole path so its midpoint sits near lng 0 — that
- * keeps Asia left / Americas right for Pacific cruises while staying on the
- * main world copy, so zoom/pan cannot orphan markers at lng -220.
+ * short, and fitBounds centers on the Pacific (Asia left, Americas right).
  */
 
 export type LngPoint = { lat: number; lng: number }
@@ -29,24 +27,6 @@ export function unwrapLngPath<T extends LngPoint>(points: T[]): T[] {
     out.push({ ...points[i], lng: unwrapLng(points[i].lng, prev) })
   }
   return out
-}
-
-/**
- * Unwrap hops, then slide the path so its longitude midpoint is ~0.
- * Relative shape is unchanged; markers stay on Leaflet’s primary world copy.
- */
-export function normalizeLngPath<T extends LngPoint>(points: T[]): T[] {
-  const unwrapped = unwrapLngPath(points)
-  if (unwrapped.length === 0) return []
-  if (unwrapped.length === 1) {
-    let lng = unwrapped[0].lng
-    while (lng > 180) lng -= 360
-    while (lng < -180) lng += 360
-    return [{ ...unwrapped[0], lng }]
-  }
-  const lngs = unwrapped.map((p) => p.lng)
-  const mid = (Math.min(...lngs) + Math.max(...lngs)) / 2
-  return unwrapped.map((p) => ({ ...p, lng: p.lng - mid }))
 }
 
 /** Unwrap [lat, lng] tuples the same way. */

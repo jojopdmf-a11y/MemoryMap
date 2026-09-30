@@ -29,7 +29,8 @@ const RUNTIME = `
     zoomControl: false,
     scrollWheelZoom: false,
     zoomSnap: 0.25,
-    zoomDelta: 0.25
+    zoomDelta: 0.25,
+    worldCopyJump: true
   });
   L.control.zoom({ position: "topright" }).addTo(map);
   var mapEl = document.getElementById("map");
@@ -144,22 +145,12 @@ const RUNTIME = `
     while (value - relativeTo < -180) value += 360;
     return value;
   }
-  // Keep Pacific hops short, then center on lng 0 so zoom/pan cannot
-  // orphan markers on another world copy.
+  // Keep Pacific hops short so Asia sits left and the Americas right.
   var stopLngs = [];
   stops.forEach(function (s, i) {
     var lng = Number(s.lng);
     stopLngs.push(i === 0 ? lng : unwrapLng(lng, stopLngs[i - 1]));
   });
-  if (stopLngs.length === 1) {
-    while (stopLngs[0] > 180) stopLngs[0] -= 360;
-    while (stopLngs[0] < -180) stopLngs[0] += 360;
-  } else if (stopLngs.length > 1) {
-    var lo = Math.min.apply(null, stopLngs);
-    var hi = Math.max.apply(null, stopLngs);
-    var mid = (lo + hi) / 2;
-    for (var si = 0; si < stopLngs.length; si++) stopLngs[si] -= mid;
-  }
   function unwrapLeg(fromLng, leg) {
     if (!leg || !leg.length) return [];
     var out = [[leg[0][0], unwrapLng(leg[0][1], fromLng)]];
@@ -168,17 +159,14 @@ const RUNTIME = `
     }
     return out;
   }
-  function fitRoute() {
-    var latlngs = stops.map(function (s, i) { return [s.lat, stopLngs[i]]; });
-    if (latlngs.length === 1) {
-      map.setView(latlngs[0], 6);
-    } else if (latlngs.length > 1) {
-      map.fitBounds(L.latLngBounds(latlngs).pad(0.18));
-    } else {
-      map.setView([20, 0], 2);
-    }
+  var latlngs = stops.map(function (s, i) { return [s.lat, stopLngs[i]]; });
+  if (latlngs.length === 1) {
+    map.setView(latlngs[0], 6);
+  } else if (latlngs.length > 1) {
+    map.fitBounds(L.latLngBounds(latlngs).pad(0.18));
+  } else {
+    map.setView([20, 0], 2);
   }
-  fitRoute();
 
   var playBtn = document.getElementById("mm-play");
   var resetBtn = document.getElementById("mm-reset");
@@ -245,10 +233,7 @@ const RUNTIME = `
 
   function play() {
     if (stops.length === 0) return;
-    if (revealed >= stops.length) {
-      fitRoute();
-      draw(0);
-    }
+    if (revealed >= stops.length) draw(0);
     setPlaying(true);
     if (revealed === 0) draw(1);
     schedule();
@@ -674,7 +659,6 @@ const RUNTIME = `
   resetBtn.addEventListener("click", function () {
     pause();
     showLocations = true;
-    fitRoute();
     draw(0);
   });
   if (locBtn) {
