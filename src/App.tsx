@@ -54,6 +54,8 @@ export default function App() {
   const [photoBroken, setPhotoBroken] = useState(false)
   /** Pin click focus for date/photo chips; cleared when Play/scrub moves. */
   const [focusIndex, setFocusIndex] = useState<number | null>(null)
+  /** Re-fit the map after Reset or replaying from the end. */
+  const [fitNonce, setFitNonce] = useState(0)
   const geoGen = useRef(0)
   const stopsRef = useRef<Stop[] | null>(null)
   const { account } = useAccount()
@@ -314,6 +316,7 @@ export default function App() {
       return
     }
     if (revealed === 0 || revealed >= plotted.length) {
+      if (revealed >= plotted.length) setFitNonce((n) => n + 1)
       setRevealed(1)
     }
     setPlaying(true)
@@ -323,6 +326,7 @@ export default function App() {
     setPlaying(false)
     setRevealed(0)
     setShowLocations(true)
+    setFitNonce((n) => n + 1)
   }
 
   function scrubTour(count: number) {
@@ -442,6 +446,7 @@ export default function App() {
                 revealed={revealed}
                 roads={look.followRoads ? driveLegs : null}
                 labelMode={labelMode}
+                fitNonce={fitNonce}
                 onSelectStop={(index) => {
                   setPlaying(false)
                   setFocusIndex(index)

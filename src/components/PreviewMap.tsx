@@ -28,6 +28,8 @@ type Props = {
   labelMode?: LabelMode
   /** 0-based index into plotted stops when a pin is clicked. */
   onSelectStop?: (index: number) => void
+  /** Bump to re-fit the route (Reset / replay from the end). */
+  fitNonce?: number
 }
 
 export function PreviewMap({
@@ -37,6 +39,7 @@ export function PreviewMap({
   roads = null,
   labelMode = 'play',
   onSelectStop,
+  fitNonce = 0,
 }: Props) {
   const containerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<L.Map | null>(null)
@@ -62,9 +65,6 @@ export function PreviewMap({
       zoomControl: false,
       zoomSnap: 0.25,
       zoomDelta: 0.25,
-      // Jump to the other world copy when panning across ±180 so Pacific
-      // cruises stay coherent while the user looks around.
-      worldCopyJump: true,
     })
     L.control.zoom({ position: 'topright' }).addTo(map)
     layerRef.current = L.layerGroup().addTo(map)
@@ -147,7 +147,7 @@ export function PreviewMap({
         /* Leaflet can throw if a pane is mid-teardown after HMR. */
       }
     })
-  }, [plottedKey, stops])
+  }, [plottedKey, stops, fitNonce])
 
   useEffect(() => {
     const map = mapRef.current

@@ -29,8 +29,7 @@ const RUNTIME = `
     zoomControl: false,
     scrollWheelZoom: false,
     zoomSnap: 0.25,
-    zoomDelta: 0.25,
-    worldCopyJump: true
+    zoomDelta: 0.25
   });
   L.control.zoom({ position: "topright" }).addTo(map);
   var mapEl = document.getElementById("map");
@@ -159,14 +158,17 @@ const RUNTIME = `
     }
     return out;
   }
-  var latlngs = stops.map(function (s, i) { return [s.lat, stopLngs[i]]; });
-  if (latlngs.length === 1) {
-    map.setView(latlngs[0], 6);
-  } else if (latlngs.length > 1) {
-    map.fitBounds(L.latLngBounds(latlngs).pad(0.18));
-  } else {
-    map.setView([20, 0], 2);
+  function fitRoute() {
+    var latlngs = stops.map(function (s, i) { return [s.lat, stopLngs[i]]; });
+    if (latlngs.length === 1) {
+      map.setView(latlngs[0], 6);
+    } else if (latlngs.length > 1) {
+      map.fitBounds(L.latLngBounds(latlngs).pad(0.18));
+    } else {
+      map.setView([20, 0], 2);
+    }
   }
+  fitRoute();
 
   var playBtn = document.getElementById("mm-play");
   var resetBtn = document.getElementById("mm-reset");
@@ -233,7 +235,10 @@ const RUNTIME = `
 
   function play() {
     if (stops.length === 0) return;
-    if (revealed >= stops.length) draw(0);
+    if (revealed >= stops.length) {
+      fitRoute();
+      draw(0);
+    }
     setPlaying(true);
     if (revealed === 0) draw(1);
     schedule();
@@ -659,6 +664,7 @@ const RUNTIME = `
   resetBtn.addEventListener("click", function () {
     pause();
     showLocations = true;
+    fitRoute();
     draw(0);
   });
   if (locBtn) {
