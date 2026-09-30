@@ -160,6 +160,14 @@ const RUNTIME = `
   }
   function fitRoute() {
     var latlngs = stops.map(function (s, i) { return [s.lat, stopLngs[i]]; });
+    var crossesDateline = stopLngs.some(function (lng) { return lng < -180 || lng > 180; });
+    if (crossesDateline && latlngs.length > 1) {
+      map.setMaxBounds(L.latLngBounds(latlngs).pad(0.85));
+      map.options.maxBoundsViscosity = 0.9;
+    } else {
+      map.setMaxBounds(null);
+      map.options.maxBoundsViscosity = 0;
+    }
     if (latlngs.length === 1) {
       map.setView(latlngs[0], 6);
     } else if (latlngs.length > 1) {

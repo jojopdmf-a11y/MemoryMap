@@ -129,6 +129,19 @@ export function PreviewMap({
     const latlngs = unwrapped.map(
       (stop) => [stop.lat, stop.lng] as L.LatLngTuple,
     )
+    // Dateline routes sit at lng ≈ -220 after unwrap. Clamp pan/zoom to that
+    // strip so the view cannot slide onto a world copy where pins vanish.
+    // Sample trips stay inside ±180 and are left unrestricted.
+    const crossesDateline = unwrapped.some(
+      (stop) => stop.lng < -180 || stop.lng > 180,
+    )
+    if (crossesDateline && latlngs.length > 1) {
+      map.setMaxBounds(L.latLngBounds(latlngs).pad(0.85))
+      map.options.maxBoundsViscosity = 0.9
+    } else {
+      map.setMaxBounds(undefined)
+      map.options.maxBoundsViscosity = 0
+    }
     if (latlngs.length === 1) {
       map.setView(latlngs[0], 6, { animate: false })
     } else if (latlngs.length > 1) {
