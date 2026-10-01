@@ -1,8 +1,8 @@
-title,date,place,lat,lng,notes
-Xi'an (Chang'an),1271-04-12,"Xi'an (Chang'an), China",34.3416,108.9398,
-Dunhuang,1271-06-03,"Dunhuang, China",40.1421,94.6618,
-Kashgar,1271-08-21,"Kashgar, China",39.4704,75.9898,
-Samarkand,1271-10-09,"Samarkand, Uzbekistan",39.6270,66.9750,
-Bukhara,1271-11-28,"Bukhara, Uzbekistan",39.7681,64.4556,
-Baghdad,1272-02-14,"Baghdad, Iraq",33.3152,44.3661,
-Constantinople,1272-04-02,"Constantinople (Istanbul), Turkey",41.0082,28.9784,
+title,date,place,lat,lng,notes,photo
+Xi'an (Chang'an),1271-04-12,"Xi'an (Chang'an), China",34.3416,108.9398,,https://thumb.wikimedia.org/wikipedia/commons/thumb/4/49/Terracotta_Army%2C_View_of_Pit_1.jpg/960px-Terracotta_Army%2C_View_of_Pit_1.jpg
+Dunhuang,1271-06-03,"Dunhuang, China",40.1421,94.6618,,https://thumb.wikimedia.org/wikipedia/commons/thumb/a/a1/Mogao_Caves.jpg/960px-Mogao_Caves.jpg
+Kashgar,1271-08-21,"Kashgar, China",39.4704,75.9898,,
+Samarkand,1271-10-09,"Samarkand, Uzbekistan",39.6270,66.9750,,https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b6/Registan_Samarkand_Uzbekistan.JPG/960px-Registan_Samarkand_Uzbekistan.JPG
+Bukhara,1271-11-28,"Bukhara, Uzbekistan",39.7681,64.4556,,https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b2/Po-i-Kalyan_in_Bukhara_02.jpg/960px-Po-i-Kalyan_in_Bukhara_02.jpg
+Baghdad,1272-02-14,"Baghdad, Iraq",33.3152,44.3661,,
+Constantinople,1272-04-02,"Constantinople (Istanbul), Turkey",41.0082,28.9784,,https://thumb.wikimedia.org/wikipedia/commons/thumb/2/22/Hagia_Sophia_Mars_2013.jpg/960px-Hagia_Sophia_Mars_2013.jpg

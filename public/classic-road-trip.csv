@@ -1,8 +1,8 @@
-title,date,place,lat,lng,notes
-Chicago,1955-06-10,"Chicago, Illinois",41.8781,-87.6298,
-St. Louis,1955-06-14,"St. Louis, Missouri",38.6270,-90.1994,
-Tulsa,1955-06-18,"Tulsa, Oklahoma",36.1540,-95.9928,
-Amarillo,1955-06-21,"Amarillo, Texas",35.2220,-101.8313,
-Albuquerque,1955-06-24,"Albuquerque, New Mexico",35.0844,-106.6504,
-Flagstaff,1955-06-27,"Flagstaff, Arizona",35.1983,-111.6513,
-Santa Monica,1955-06-30,"Santa Monica, California",34.0195,-118.4912,
+title,date,place,lat,lng,notes,photo
+Chicago,1955-06-10,"Chicago, Illinois",41.8781,-87.6298,,https://thumb.wikimedia.org/wikipedia/commons/thumb/8/8e/Skyline_de_Chicago_desde_el_centro%2C_Illinois%2C_Estados_Unidos%2C_2012-10-20%2C_DD_06.jpg/960px-Skyline_de_Chicago_desde_el_centro%2C_Illinois%2C_Estados_Unidos%2C_2012-10-20%2C_DD_06.jpg
+St. Louis,1955-06-14,"St. Louis, Missouri",38.6270,-90.1994,,https://thumb.wikimedia.org/wikipedia/commons/thumb/3/35/Gateway_Arch_St_Louis.jpg/960px-Gateway_Arch_St_Louis.jpg
+Tulsa,1955-06-18,"Tulsa, Oklahoma",36.1540,-95.9928,,
+Amarillo,1955-06-21,"Amarillo, Texas",35.2220,-101.8313,,https://thumb.wikimedia.org/wikipedia/commons/thumb/9/95/Cadillac_Ranch.jpg/960px-Cadillac_Ranch.jpg
+Albuquerque,1955-06-24,"Albuquerque, New Mexico",35.0844,-106.6504,,
+Flagstaff,1955-06-27,"Flagstaff, Arizona",35.1983,-111.6513,,https://thumb.wikimedia.org/wikipedia/commons/thumb/5/5c/Flagstaff-Flagstaff_3rd_Post_Office_Building-1917.jpg/960px-Flagstaff-Flagstaff_3rd_Post_Office_Building-1917.jpg
+Santa Monica,1955-06-30,"Santa Monica, California",34.0195,-118.4912,,https://thumb.wikimedia.org/wikipedia/commons/thumb/0/06/Santa_Monica_Pier.jpg/960px-Santa_Monica_Pier.jpg

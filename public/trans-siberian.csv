@@ -1,8 +1,8 @@
-title,date,place,lat,lng,notes
-Moscow,1910-07-01,"Moscow, Russia",55.7558,37.6173,
-Yekaterinburg,1910-07-03,"Yekaterinburg, Russia",56.8389,60.6057,
-Novosibirsk,1910-07-06,"Novosibirsk, Russia",55.0084,82.9357,
-Krasnoyarsk,1910-07-09,"Krasnoyarsk, Russia",56.0153,92.8932,
-Irkutsk,1910-07-12,"Irkutsk, Russia",52.2869,104.3050,
-Khabarovsk,1910-07-16,"Khabarovsk, Russia",48.4827,135.0838,
-Vladivostok,1910-07-18,"Vladivostok, Russia",43.1198,131.8869,
+title,date,place,lat,lng,notes,photo
+Moscow,1910-07-01,"Moscow, Russia",55.7558,37.6173,,https://thumb.wikimedia.org/wikipedia/commons/thumb/4/40/Sant_Vasily_cathedral_in_Moscow.JPG/960px-Sant_Vasily_cathedral_in_Moscow.JPG
+Yekaterinburg,1910-07-03,"Yekaterinburg, Russia",56.8389,60.6057,,https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3e/Views_of_Yekaterinburg_from_Vysotsky_viewpoint_-_12.jpg/960px-Views_of_Yekaterinburg_from_Vysotsky_viewpoint_-_12.jpg
+Novosibirsk,1910-07-06,"Novosibirsk, Russia",55.0084,82.9357,,
+Krasnoyarsk,1910-07-09,"Krasnoyarsk, Russia",56.0153,92.8932,,
+Irkutsk,1910-07-12,"Irkutsk, Russia",52.2869,104.3050,,https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c2/Lake_Baikal.jpg/960px-Lake_Baikal.jpg
+Khabarovsk,1910-07-16,"Khabarovsk, Russia",48.4827,135.0838,,
+Vladivostok,1910-07-18,"Vladivostok, Russia",43.1198,131.8869,,https://thumb.wikimedia.org/wikipedia/commons/thumb/a/a9/Vladivostok_TSR.JPG/960px-Vladivostok_TSR.JPG

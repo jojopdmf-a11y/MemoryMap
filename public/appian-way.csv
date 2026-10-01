@@ -1,8 +1,8 @@
-title,date,place,lat,lng,notes
-Rome,0120-03-10,"Rome, Italy",41.9028,12.4964,
-Albano Laziale,0120-03-11,"Albano Laziale / Alban Hills, Italy",41.7275,12.6611,
-Terracina,0120-03-13,"Terracina, Italy",41.2917,13.2486,
-Capua,0120-03-15,"Capua, Italy",41.1050,14.2125,
-Benevento,0120-03-17,"Benevento, Italy",41.1297,14.7826,
-Taranto,0120-03-20,"Taranto, Italy",40.4644,17.2470,
-Brindisi,0120-03-22,"Brindisi, Italy",40.6322,17.9432,
+title,date,place,lat,lng,notes,photo
+Rome,0120-03-10,"Rome, Italy",41.9028,12.4964,,https://thumb.wikimedia.org/wikipedia/commons/thumb/5/53/Colosseum_in_Rome%2C_Italy_-_April_2007.jpg/960px-Colosseum_in_Rome%2C_Italy_-_April_2007.jpg
+Albano Laziale,0120-03-11,"Albano Laziale / Alban Hills, Italy",41.7275,12.6611,,
+Terracina,0120-03-13,"Terracina, Italy",41.2917,13.2486,,https://thumb.wikimedia.org/wikipedia/commons/thumb/a/a5/Terracina-vista01.jpg/960px-Terracina-vista01.jpg
+Capua,0120-03-15,"Capua, Italy",41.1050,14.2125,,
+Benevento,0120-03-17,"Benevento, Italy",41.1297,14.7826,,https://thumb.wikimedia.org/wikipedia/commons/thumb/4/49/Arch_of_Trajan_%28Benevento%29_01.jpg/960px-Arch_of_Trajan_%28Benevento%29_01.jpg
+Taranto,0120-03-20,"Taranto, Italy",40.4644,17.2470,,
+Brindisi,0120-03-22,"Brindisi, Italy",40.6322,17.9432,,https://thumb.wikimedia.org/wikipedia/commons/thumb/f/fc/Le_colonne_della_Via_Appia_a_Brindisi.jpg/960px-Le_colonne_della_Via_Appia_a_Brindisi.jpg
