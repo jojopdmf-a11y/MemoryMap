@@ -56,7 +56,12 @@ export async function handlePhoto(request: Request): Promise<Response | null> {
     const upstream = await fetch(remote.href, {
       redirect: 'follow',
       signal: controller.signal,
-      headers: { Accept: 'image/*,*/*;q=0.8' },
+      // Wikimedia and some CDNs reject bare Cloudflare Worker fetches.
+      headers: {
+        Accept: 'image/*,*/*;q=0.8',
+        'User-Agent':
+          'MemoryMap/1.0 (https://memorymap.world; hello@memorymap.world)',
+      },
     })
     if (!upstream.ok) {
       return bad(502, `Photo host returned ${upstream.status}.`)
