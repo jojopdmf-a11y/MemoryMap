@@ -12,6 +12,8 @@ export function SiteFooter() {
       <span aria-hidden="true">·</span>
       <a href="/privacy">Privacy</a>
       <span aria-hidden="true">·</span>
+      <a href="/terms">Terms</a>
+      <span aria-hidden="true">·</span>
       <InstagramLink />
     </footer>
   )
