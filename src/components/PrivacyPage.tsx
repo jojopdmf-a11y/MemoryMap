@@ -65,9 +65,12 @@ export function PrivacyPage() {
       <h2>Photos and media you link</h2>
       <p>
         Optional photo fields can include a public https link to an image. We
-        may fetch and resize that image so Play and the souvenir can show it.
-        <strong> You are responsible for having the rights to use and share
-        those images.</strong> Do not link photos you are not allowed to use.
+        may fetch and resize that image so Play and the souvenir can show it.{' '}
+        <strong>
+          You are responsible for having the rights to use and share those
+          images.
+        </strong>{' '}
+        Do not link photos you are not allowed to use.
         We do not independently clear image rights for you.
       </p>
 
